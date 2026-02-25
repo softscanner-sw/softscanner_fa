@@ -177,7 +177,7 @@ to the expected values above. Differences must be explained before merging.
 # Quick re-validation (all three subjects)
 npm run phase1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng"
 npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular"
-npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular"
+npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular" 
 
 # Determinism check (uses posts-users-ui-ng)
 npm run verify:determinism -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json"
