@@ -1,12 +1,10 @@
 # CLAUDE.md
 Repository goal: implement the paper’s Approach pipeline, one gate at a time.
 
-**Current active gate: Stage 2 — GitHub stabilization.**
+**Stage 2 is DONE. Current allowed work: finalize release/protection docs + create A2 scaffold branch.**
 
-A2/A3 and Phase B are blocked until:
-
-* A1 is pushed to GitHub
-* Tag `v0.1-a1` exists
+A1 is published and tagged. A2 implementation is still blocked pending scaffold branch creation.
+A2 code, A3, and Phase B remain blocked until scaffold is in place and A2 is formally started.
 
 ---
 
@@ -46,22 +44,20 @@ If determinism fails: stop feature work; fix determinism first.
 
 ---
 
-## Current Active Gate: Stage 2 — GitHub stabilization (ONLY)
+## Current Allowed Work
 
-Allowed work:
+Allowed:
 
-* Documentation updates (README, docs/validation)
-* Git repo initialization, commits, push
-* CI workflow creation
-* Branch protection setup guidance (as text; you do the UI)
-* Release tag creation guidance (and local git commands)
+* README updates for release/protection documentation
+* Create branch `feat/a2-bounded-paths` and add A2 placeholder docs/stubs
+* Any A1 bugfix strictly required to maintain determinism/correctness
 
-Blocked work:
+Blocked:
 
-* No A2 implementation
-* No A3 implementation
-* No Phase B implementation
-* No changes that expand extraction scope beyond Phase A1 unless strictly required to preserve A1 determinism/correctness
+* Any A2 extraction code
+* Any A3 implementation
+* Any Phase B implementation
+* Any change that expands A1 extraction scope beyond the current spec
 
 ---
 
@@ -73,7 +69,7 @@ Phase A1 implementation is considered complete locally when:
 * CLI emits deterministic outputs (8 JSON artifacts) with explicit or default outputDir
 * `docs/validation/subjects.md` manual checks match expected invariants
 
-**Remaining requirement to unlock A2:** publish and tag `v0.1-a1` on GitHub with CI green.
+**A2 implementation still blocked; A2 scaffold (branch + placeholder docs) allowed.**
 
 ---
 
@@ -121,7 +117,7 @@ A1 is complete only if:
 * Determinism passes (byte-identical).
 * Tests cover representative Angular patterns.
 
-A2 must not begin before A1 is tagged and pushed.
+A1 is tagged and published (`v0.1-a1`). A2 scaffold branch may be created; A2 code is still blocked.
 
 ---
 
@@ -180,12 +176,11 @@ No refactors during feature work unless needed to make acceptance gates green.
 
 ---
 
-## Git discipline (Stage 2)
+## Git discipline (post-Stage 2)
 
-* Main branch is the stabilization branch for A1 publication.
-* CI must be green on main before tagging.
-* Tag exactly: `v0.1-a1`
-* Only after tag exists may A2 begin on a new branch (`feat/a2-bounded-paths`).
+* `main` is the A1 stabilization branch. CI required; direct push blocked.
+* Tag `v0.1-a1` exists. A2 scaffold may be started on `feat/a2-bounded-paths`.
+* A2 code merges to `main` only after A2 is formally complete and gated.
 
 ---
 
