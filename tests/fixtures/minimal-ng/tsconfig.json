@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      "@angular/core": ["../../../node_modules/@angular/core"],
+      "@angular/router": ["../../../node_modules/@angular/router"],
+      "@angular/common": ["../../../node_modules/@angular/common"],
+      "@angular/compiler": ["../../../node_modules/@angular/compiler"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

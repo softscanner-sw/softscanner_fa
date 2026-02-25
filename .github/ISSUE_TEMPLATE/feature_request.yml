@@ -1,0 +1,38 @@
+name: Feature Request
+description: Request a new extraction capability or tooling improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What extraction capability is missing or insufficient?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Target phase
+      description: Which phase does this belong to?
+      options:
+        - "Phase 1 (static extraction)"
+        - "Phase 2 (feasibility)"
+        - "Phase 3 (scenarios)"
+        - "Unsure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+    validations:
+      required: false

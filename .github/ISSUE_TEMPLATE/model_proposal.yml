@@ -1,0 +1,51 @@
+name: Model Proposal
+description: Propose a new field, type, or structural change to the Phase 1 data model
+labels: ["model", "discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose additions or modifications to the Phase 1 model.
+        Before submitting, please verify that the proposal does not introduce Phase 2+
+        artifacts (UserJourney, Scenario, Execution, Screenshot, CoverageResult, etc.).
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What extraction gap or Phase 2 input requirement drives this proposal?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed TypeScript definition
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: invariants
+    attributes:
+      label: Invariants and ordering rules
+      description: |
+        Which design invariants does this touch?
+        (Determinism, Traceability, Bounded constraints, Minimalism)
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected_files
+    attributes:
+      label: Affected model files
+      description: List the models/*.ts files that would change.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
