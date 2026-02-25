@@ -180,7 +180,7 @@ npm run phase1 -- <projectRoot> <tsConfigPath> [outputDir] [--debug]
 | `projectRoot` | yes | Absolute or relative path to the target project root |
 | `tsConfigPath` | yes | Path to the tsconfig that **includes source files** |
 | `outputDir` | no | Directory to write JSON artifacts (default: `output/<basename(projectRoot)>`) |
-| `--debug` | no | Writes all 8 debug JSON artifacts in addition to the bundle |
+| `--debug` | no | Writes the 7 auxiliary JSON artifacts in addition to `phase1-bundle.json` (8 total) |
 
 **Default output directory:** when `outputDir` is omitted, the CLI writes to
 `output/<basename(projectRoot)>` relative to the current working directory.
@@ -248,6 +248,44 @@ The script runs extraction twice into temp directories and diffs
 Three regression subjects are tracked in [`docs/validation/subjects.md`](docs/validation/subjects.md).
 Re-run them after any change to `NavigationGraphBuilder`, `RouteMapBuilder`, or
 `ComponentRegistryBuilder` and confirm the expected stats match.
+
+---
+
+## Branch protection (main)
+
+The following CI checks are required to pass before merging to `main`:
+
+| Check name | Job |
+|---|---|
+| `Typecheck & Test (Node 18)` | typecheck-and-test matrix |
+| `Typecheck & Test (Node 20)` | typecheck-and-test matrix |
+| `Typecheck & Test (Node 22)` | typecheck-and-test matrix |
+| `Build` | build |
+| `Lint` | lint |
+| `Determinism` | determinism |
+
+Configure in **Settings → Branches → Branch protection rules → Require status checks to pass**.
+
+---
+
+## Release v0.1-a1 procedure
+
+1. Run all acceptance gates locally and confirm they pass:
+   ```bash
+   npm run typecheck
+   npm test
+   npm run lint
+   npm run verify:determinism -- "<projectRoot>" "<tsConfigPath>"
+   ```
+2. Re-run all three validation subjects and confirm stats match `docs/validation/subjects.md`.
+3. Confirm working tree is clean (`git status`).
+4. Create the tag and push:
+   ```bash
+   git tag v0.1-a1
+   git push origin main --tags
+   ```
+5. Confirm CI is green on the tag on GitHub.
+6. After CI passes, create branch `feat/a2-bounded-paths` — A2 scaffold may begin.
 
 ---
 

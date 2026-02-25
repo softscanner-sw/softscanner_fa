@@ -40,6 +40,9 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Claude Code local settings (machine-specific)
+.claude/
+
 # Phase 1 CLI output (generated; not committed)
 output/
 
