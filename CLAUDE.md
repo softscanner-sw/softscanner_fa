@@ -1,10 +1,10 @@
 # CLAUDE.md
 Repository goal: implement the paper’s Approach pipeline, one gate at a time.
 
-**Stage 2 is DONE. Current allowed work: finalize release/protection docs + create A2 scaffold branch.**
+**Stage 2 is DONE. Next task: create A2 scaffold branch (`feat/a2-bounded-paths`).**
 
-A1 is published and tagged. A2 implementation is still blocked pending scaffold branch creation.
-A2 code, A3, and Phase B remain blocked until scaffold is in place and A2 is formally started.
+A1 is published and tagged (`v0.1-a1`). CI is green. Branch protection is active.
+A2 implementation is still blocked; only scaffold (branch + placeholder docs) is allowed now.
 
 ---
 
@@ -48,9 +48,8 @@ If determinism fails: stop feature work; fix determinism first.
 
 Allowed:
 
-* README updates for release/protection documentation
 * Create branch `feat/a2-bounded-paths` and add A2 placeholder docs/stubs
-* Any A1 bugfix strictly required to maintain determinism/correctness
+* A1 bugfixes strictly required to maintain determinism/correctness
 
 Blocked:
 
