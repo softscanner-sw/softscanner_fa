@@ -1,190 +1,373 @@
 # CLAUDE.md
-Repository goal: implement the paper’s Approach pipeline, one gate at a time.
+Repository goal: implement Phase A exactly as defined in
+`docs/paper/approach.md`, following sequencing and gates defined in `docs/ROADMAP.md`.
 
-**Stage 2 is DONE. Next task: create A2 scaffold branch (`feat/a2-bounded-paths`).**
-
-A1 is published and tagged (`v0.1-a1`). CI is green. Branch protection is active.
-A2 implementation is still blocked; only scaffold (branch + placeholder docs) is allowed now.
-
----
-
-## Paper Binding
-
-The authoritative specification is under `docs/`:
-
-* `docs/paper/main.pdf` (paper)
-* `docs/paper/approach.md` (normative operational spec)
-
-Claude must consult these files when implementing or modifying Phase A1 behavior.
-
-If implementation diverges from them, fix implementation (do not weaken the spec).
+Claude is an implementation agent.
+Claude does not define semantics.
+Claude does not reinterpret the spec.
 
 ---
 
-## Commands (acceptance gates)
+# 1. Authority Hierarchy (Non-Negotiable)
+1. `docs/paper/approach.md` — **Normative semantics and schemas (frozen)**
+2. `docs/ROADMAP.md` — Work sequencing, deliverables, acceptance gates
+3. `CLAUDE.md` — Implementation discipline and architectural rules
+
+If implementation conflicts with `approach.md`:
+
+→ Fix implementation.
+→ Never weaken or reinterpret the spec.
+
+If ambiguity or insufficiency is discovered in `approach.md`:
+
+→ **STOP implementation immediately.**
+→ Notify maintainers clearly and precisely which rule is ambiguous or insufficient.
+→ Do not improvise semantics.
+→ Do not create speculative scaffolding.
+→ Wait for spec clarification before continuing.
+
+No unilateral semantic decisions.
+
+---
+
+# 2. Phase Isolation Rules (Strict)
+## A1 — Extraction Phase
+Allowed to access:
+
+* Angular AST
+* `ts-morph`
+* `@angular/compiler`
+* Source files
+* Template parsing
+* Business logic analyzers
+
+Must emit exactly:
+
+* `Phase1Bundle` as defined in `approach.md`
+* Deterministic multigraph only
+
+Must enforce:
+
+* Identity invariants
+* Graph integrity invariants
+* Ordering invariants
+
+A1 is the only phase allowed to touch the AST or filesystem.
+
+---
+
+## A2 — Enumeration Phase
+Must consume:
+
+* Serialized A1 bundle only
+
+Must NOT access:
+
+* AST
+* Source files
+* Parsers
+* Analyzers
+* Builders
+* Angular compiler
+
+Must treat A1 multigraph as immutable input.
+Must not modify A1 schema.
+
+---
+
+## A3 — Classification Phase
+Must consume:
+
+* Serialized A2 artifact only
+
+Must NOT:
+
+* Recompute enabledness
+* Re-run redirect logic
+* Recompute route activation
+* Access AST
+* Access A1 internals
+* Infer new constraints beyond frozen rules
+
+A3 operates strictly on A2 output.
+Violation of phase isolation = architectural failure.
+
+---
+
+# 3. Determinism Protocol (Hard Gate)
+Every change must pass:
 
 ```bash
-npm install
-npm run typecheck
+npm run typecheck # uses tsconfig.src.json
+npm run typecheck:tests # uses tsconfig.test.json
 npm test
 npm run lint
-npm run build
-npm run phase1                # tsx src/cli.ts <projectRoot> <tsConfigPath> [outputDir] [--debug]
-npm run verify:determinism    # output must be byte-identical across runs
+npm run verify:determinism
 ```
 
-Mandatory acceptance protocol (every change):
+Determinism means:
 
-1. `npm run typecheck`
-2. `npm test`
-3. `npm run lint`
-4. `npm run verify:determinism`
+* A1 bundle byte-identical across runs
+* A2 bundle byte-identical across runs
+* A3 bundle byte-identical across runs
+* Stable ID generation
+* Stable node ordering
+* Stable edge ordering
+* No nondeterministic Map/Set iteration
+* Stable file traversal order
 
-If determinism fails: stop feature work; fix determinism first.
+If determinism fails:
 
----
-
-## Current Allowed Work
-
-Allowed:
-
-* Create branch `feat/a2-bounded-paths` and add A2 placeholder docs/stubs
-* A1 bugfixes strictly required to maintain determinism/correctness
-
-Blocked:
-
-* Any A2 extraction code
-* Any A3 implementation
-* Any Phase B implementation
-* Any change that expands A1 extraction scope beyond the current spec
+* Stop feature work.
+* Fix determinism first.
+* No exceptions.
 
 ---
 
-## Phase A1 status
+# 4. Validation Subjects (Mandatory, All of Them)
+All declared subjects in `docs/validation/subjects.md` must be run for every Phase A stage.
+No stage is complete unless:
 
-Phase A1 implementation is considered complete locally when:
+* All subjects run successfully
+* Outputs are byte-identical across repeated runs
+* Any delta is documented with concrete semantic reason
 
-* Acceptance gates pass (typecheck, test, lint, determinism)
-* CLI emits deterministic outputs (8 JSON artifacts) with explicit or default outputDir
-* `docs/validation/subjects.md` manual checks match expected invariants
-
-**A2 implementation still blocked; A2 scaffold (branch + placeholder docs) allowed.**
+Partial validation is forbidden.
+Fixtures are not sufficient.
+Real subjects are mandatory.
 
 ---
 
-## Architecture (authoritative)
+# 5. Architecture Discipline (Refactor-In-Place Model)
+The current architecture must evolve, not fork.
+Current structure (simplified):
 
 ```
 src/
-├── models/       # Pure types — stable public contract for A1 outputs
-├── parsers/      # Thin AST adapters (ts-morph + @angular/compiler)
-├── analyzers/    # Domain logic consuming parsers, emitting model objects
-├── builders/     # Aggregate analyzer outputs into registries
-├── orchestrator/ # End-to-end pipeline (Phase1Orchestrator)
-├── services/     # Cross-cutting utilities (I/O, validation, export)
-└── cli.ts        # CLI entry
+├── analyzers/
+├── builders/
+├── parsers/
+├── models/
+├── orchestrator/
+├── services/
+├── visualization/
+├── cli.ts
+├── viz-cli.ts
 ```
 
-Phase A1 pipeline order (fixed):
-
-1. TsProjectBuilder
-2. ComponentRegistryBuilder
-3. ModuleRegistryBuilder
-4. RouteMapBuilder (+ GuardConstraintSummarizer)
-5. WidgetEventMapBuilder (+ LogicAnalyzer)
-6. NavigationGraphBuilder
-7. Assemble Phase1AnalysisBundle + stats
-8. AnalysisValidator.validatePhase1(bundle)
-9. Export (AnalysisExporter)
+### Architectural Principles
+1. **Refactor existing layers — do not duplicate them.**
+2. No parallel graph representations.
+3. No second “navigation model”.
+4. No shadow workflow representations.
+5. Delete obsolete code immediately when superseded.
+6. No compatibility scaffolds.
+7. No speculative abstractions.
 
 ---
 
-## A1 Completion Gate (frozen)
+## 5.1 Phase A Mapping Onto Existing Structure
+### A1 responsibilities must live in:
 
-A1 is complete only if:
+* `src/parsers/`
+* `src/analyzers/`
+* `src/builders/`
+* `src/orchestrator/phase1-orchestrator.ts`
 
-* Graph nodes include: Virtual `"__entry__"`, all Route nodes, all Component nodes, all External nodes.
-* For every ComponentRoute: Route → Component transition exists (kind=UI_EFFECT).
-* `navigation.nodes` contains GraphNodeType=Component for every ComponentInfo.
-* Navigation edges:
+The existing `navigation-graph-builder.ts` must either:
 
-  * Template routerLink/href → Component → Route/External transitions
-  * Handler navigate/navigateByUrl → Component → Route transitions (when resolvable)
-* uiPreconditions copied from widget predicates on UI-triggered transitions.
-* All transitions have Origin (Virtual nodes exempt).
-* AnalysisValidator passes.
-* Determinism passes (byte-identical).
-* Tests cover representative Angular patterns.
+* Be refactored to emit the frozen multigraph schema, OR
+* Be removed and replaced cleanly.
 
-A1 is tagged and published (`v0.1-a1`). A2 scaffold branch may be created; A2 code is still blocked.
+It must not coexist with a second graph builder.
 
 ---
 
-## IDs and determinism (frozen; enforced)
-
-ID formats (frozen by model):
-
-* Route: `"<normalizedFullPath>@<moduleId>"`
-* ComponentInfo: `"<file>#<ClassName>"`
-* WidgetInfo: `"<componentId>|<file>:<line>:<col>|<kind>|<stableIndex>"`
-
-GraphNode IDs:
-
-* Route node id = Route.id
-* Component node id = ComponentInfo.id
-* External node id = stable hash(url)
-* Virtual entry node id = `"__entry__"`
-
-GraphEdge id:
-
-* MUST follow `docs/paper/approach.md` §3.4.1:
-  `edge.id = "${from}::${transition.signature}::${to}::${stableIndex}"`
-
-transition.signature:
-
-* MUST follow `docs/paper/approach.md` §3.4.2 (do not redefine elsewhere)
-
-GraphEdge.transitions sorting:
-
-* MUST follow `docs/paper/approach.md` §3.4.3
-* sort key: `kind + (trigger.eventType||"") + origin.file + origin.startLine + origin.startCol + (trigger.widgetId||"") + (handler.name||"")`
+### A2 must be implemented as:
+* A new isolated module under `src/` (e.g., `src/a2/` or `src/workflows/`)
+* Must depend only on serialized A1 bundle types
+* Must not import analyzers/parsers/builders
 
 ---
 
-## Validation invariants (minimum)
-
-A valid Phase1AnalysisBundle must satisfy:
-
-1. Every ComponentRoute.componentId references an existing ComponentInfo.id
-2. Every WidgetEvent.widgetId exists in the owning component.widgets list
-3. Every GraphEdge.from/to exists in navigation.nodes
-4. UI-triggered transitions must have trigger.widgetId + template origin
+### A3 must be implemented as:
+* A separate isolated module under `src/`
+* Must depend only on A2 output types
+* Must not import A1 internals
+* Must not access redirect/enabledness logic
 
 ---
 
-## Work protocol (how Claude operates)
+## 5.2 Models Directory Rules
+`src/models/` must:
 
+* Mirror exactly the schemas in `approach.md`
+* Contain no legacy navigation-graph types once migration is complete
+* Contain no duplicate representations of:
+  * Routes
+  * Widgets
+  * Edges
+  * Workflows
+
+When schema changes in spec:
+
+* Update models
+* Update all usages
+* Remove outdated types
+
+Never accumulate type fossils.
+
+---
+
+## 5.3 Visualization Rules
+`src/visualization/` must:
+
+* Be a pure consumer of artifacts
+* Never recompute semantics
+* Never reconstruct redirect logic
+* Never infer constraints
+
+Visualization must reflect artifacts exactly.
+If semantics appear wrong → fix Phase A, not viz.
+
+---
+
+# 6. Code Deletion Policy (Mandatory)
+Whenever:
+
+* A builder becomes obsolete
+* A model becomes obsolete
+* A script becomes obsolete
+* A test references removed semantics
+
+It must be deleted in the same PR that replaces it.
+No dead code.
+No transitional layers.
+No commented legacy blocks.
+The repository must converge toward simplicity, not grow sideways.
+
+---
+
+# 7. A1 Enforcement Requirements
+A1 must fail-fast if:
+
+* Any node lacks `refs`
+* Any edge lacks `refs`
+* Any `Edge.from` does not exist
+* Any `Edge.to !== null` does not exist
+* Any unresolved navigation lacks:
+  * `targetRouteId === null`
+  * `to === null`
+  * `targetText` non-empty
+* Node ordering not stable
+* Edge ordering not stable
+
+Identity must follow `approach.md` exactly.
+No selector-based component IDs.
+No ad-hoc route IDs.
+
+---
+
+# 8. A2 Enforcement Requirements
+A2 must:
+
+* Traverse executable edges only
+* Enforce route-context discipline
+* Enforce effect-burst gating
+* Enforce routeVisitCap
+* Apply deterministic redirect closure
+* Record:
+  * unresolvedTargets
+  * redirectLoop
+  * redirectClosureStabilized
+* Count only progress edges toward `k`
+
+A2 must not:
+
+* Create synthetic nodes
+* Create synthetic edges
+* Modify A1 graph
+* Recompute structure
+
+Workflows are lists of A1 `Edge.id` only.
+
+---
+
+# 9. A3 Enforcement Requirements
+A3 must:
+
+* Merge constraints mechanically
+* Apply verdict rules in strict order
+* Only prune on explicit contradiction rules
+* Never SAT-solve beyond frozen rule set
+* Never infer params from route templates
+* Never reinterpret guards
+
+Redirect failure rule must follow spec exactly.
+
+---
+
+# 10. Work Protocol for Claude
 For any non-trivial change, Claude must output:
 
-1. PLAN: files to change + acceptance commands
-2. IMPLEMENT: minimal diff
-3. VERIFY: run the 4 acceptance commands + report pass/fail
-4. SUMMARY: files changed + invariants preserved + schema changed (yes/no)
+### 1. PLAN
+* Files to modify
+* Why required under spec
+* Why no duplication introduced
+* Which obsolete code will be deleted
 
-No refactors during feature work unless needed to make acceptance gates green.
+### 2. IMPLEMENT
+* Minimal diff
+* Refactor-in-place preferred
+* No speculative refactors
+
+### 3. VERIFY
+* Run all 5 gates
+* Run all validation subjects
+* Confirm determinism
+
+### 4. SUMMARY
+* Files changed
+* Files deleted
+* Schema changed (yes/no)
+* Determinism preserved (yes/no)
+* All subjects validated (yes/no)
+
+No hidden architectural drift.
 
 ---
 
-## Git discipline (post-Stage 2)
-
-* `main` is the A1 stabilization branch. CI required; direct push blocked.
-* Tag `v0.1-a1` exists. A2 scaffold may be started on `feat/a2-bounded-paths`.
-* A2 code merges to `main` only after A2 is formally complete and gated.
+# 11. Git Discipline
+* `main` = stable Phase A
+* Feature branches:
+  * `feat/a1-*`
+  * `feat/a2-*`
+  * `feat/a3-*`
+* No direct pushes to `main`
+* CI must pass
+* No merging with failing determinism
+* No merging without multi-subject validation
 
 ---
 
-## Commit style
+# 12. What Claude Must Never Do
+* Weaken `approach.md`
+* Continue implementation when spec ambiguity exists
+* Introduce parallel graph representations
+* Preserve legacy navigation models after migration
+* Skip validation subjects
+* Ignore determinism failure
+* Add architecture that duplicates analyzers/builders logic
+* Add compatibility layers to avoid deletion
 
-Conventional Commits: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`
-Scopes: `models`, `parsers`, `analyzers`, `builders`, `orchestrator`, `services`, `cli`, `docs`
-Branches: `feat/*`, `fix/*`, `refactor/*`, `docs/*`, `chore/*`
+---
+
+# 13. Separation of Responsibilities
+
+| File          | Responsibility                                      |
+| ------------- | --------------------------------------------------- |
+| `approach.md` | Defines semantics and schemas                       |
+| `ROADMAP.md`  | Defines sequencing and gates                        |
+| `CLAUDE.md`   | Defines architectural and implementation discipline |
+
+If these blur, Phase A becomes unstable.

@@ -54,7 +54,9 @@ export interface WidgetPathInfo {
  * Examples: `[routerLink]`, `href`, `(click)`, `(submit)`, `formControlName`.
  */
 export interface WidgetBinding {
-  /** Binding name as written, e.g. "routerLink", "(click)", "formControlName". */
+  /** Template AST node kind: 'attr' (static), 'boundAttr' ([prop]), 'event' ((event)). */
+  kind: 'attr' | 'boundAttr' | 'event';
+  /** Binding name as written, e.g. "routerLink", "click", "formControlName". */
   name: string;
   /** Raw binding expression or literal value. */
   value?: string;
@@ -76,6 +78,8 @@ export interface WidgetInfo {
   id: string;
   componentId: string;
   kind: WidgetKind;
+  /** DOM tag name from the template element (e.g. 'button', 'a', 'form'). */
+  tagName?: string;
 
   /** Template element origin. */
   origin: Origin;

@@ -1,15 +1,9 @@
 /**
  * analysis-bundle.ts
- * Aggregator DTO returned by the Phase 1 orchestrator.
+ * Phase 1 output artifact types.
  *
- * This is the single output object of a complete Phase 1 static extraction run.
- * It bundles all registries and the assembled navigation–interaction multigraph,
- * along with the config used and optional summary statistics.
- *
- * Excluded by design (non-goals for Phase 1):
- *   - UserJourney, Scenario, WorkflowResult
- *   - Screenshot, Execution, CoverageResult
- *   - Satisfiability / feasibility results
+ * Phase1Bundle (spec-compliant) is the sole A1 output: multigraph + stats.
+ * A1InternalBundle extends it with internal registries for debug artifacts.
  */
 
 import type { AnalyzerConfig } from './analyzer-config.js';
@@ -17,19 +11,20 @@ import type { ModuleRegistry } from './module.js';
 import type { RouteMap } from './routes.js';
 import type { ComponentRegistry } from './components.js';
 import type { WidgetEventMap } from './events.js';
-import type { AppNavigation } from './navigation-graph.js';
+
+// Re-export the spec-compliant Phase1Bundle from multigraph.ts
+export type { Phase1Bundle } from './multigraph.js';
 
 /**
- * Complete output of a Phase 1 static extraction run.
- *
- * Given the same codebase and `config`, this object must be deterministic:
- * same IDs, same ordering, same content.
+ * Internal extended bundle with debug registries.
+ * Used only within A1 for debug output; NOT the spec artifact.
+ * The spec artifact is Phase1Bundle (multigraph + stats only).
  */
-export interface Phase1AnalysisBundle {
+export interface A1InternalBundle {
   /** Configuration used to produce this bundle. */
   config: AnalyzerConfig;
 
-  /** All NgModules (or equivalent) discovered. */
+  /** All NgModules discovered. */
   moduleRegistry: ModuleRegistry;
   /** All routes in normalized, flat form. */
   routeMap: RouteMap;
@@ -37,17 +32,4 @@ export interface Phase1AnalysisBundle {
   componentRegistry: ComponentRegistry;
   /** Per-component widget–event mappings. */
   widgetEventMaps: WidgetEventMap[];
-
-  /** The assembled navigation–interaction multigraph. */
-  navigation: AppNavigation;
-
-  /** Optional extraction summary for quick inspection. */
-  stats?: {
-    modules: number;
-    routes: number;
-    components: number;
-    widgets: number;
-    edges: number;
-    transitions: number;
-  };
 }

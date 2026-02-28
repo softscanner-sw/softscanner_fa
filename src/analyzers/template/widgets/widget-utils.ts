@@ -102,7 +102,7 @@ export function hasAttr(node: TemplateAstNode, attrName: string): boolean {
 export function extractBoundedAttributes(node: TemplateAstNode, maxLen = 200): Record<string, string> {
   const INTERESTING = new Set([
     'id', 'class', 'name', 'type', 'aria-label', 'data-testid',
-    'role', 'formcontrolname', 'placeholder',
+    'role', 'formcontrolname', 'placeholder', 'title',
   ]);
   const result: Record<string, string> = {};
 

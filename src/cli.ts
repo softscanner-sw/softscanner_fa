@@ -3,34 +3,26 @@
  * cli.ts
  * Command-line entry point for Phase 1 static extraction.
  *
+ * Output layout:
+ *   <outputDir>/json/phase1-bundle.json   — spec-compliant Phase1Bundle
+ *   <outputDir>/json/graph.json           — multigraph (debug)
+ *   <outputDir>/json/routes.json          — route map (debug)
+ *   <outputDir>/json/components.json      — component registry (debug)
+ *   <outputDir>/json/modules.json         — module registry (debug)
+ *   <outputDir>/json/widgetEventMaps.json — widget event maps (debug)
+ *   <outputDir>/json/config.json          — analyzer config (debug)
+ *   <outputDir>/json/stats.json           — stats (debug)
+ *
  * Usage:
  *   npx tsx src/cli.ts <projectRoot> <tsConfigPath> [outputDir] [--debug]
- *
- * Arguments:
- *   projectRoot   Absolute path to the Angular project root.
- *   tsConfigPath  Absolute path to the tsconfig used for analysis
- *                 (e.g. tsconfig.app.json or tsconfig.json).
- *   outputDir     Directory to write phase1-bundle.json and debug artifacts.
- *                 Defaults to output/<basename(projectRoot)> relative to CWD.
- *
- * Exit codes:
- *   0  Success
- *   1  Missing arguments or runtime error
  */
 
 import * as path from 'node:path';
 import type { AnalyzerConfig } from './models/analyzer-config.js';
 import { Phase1Orchestrator } from './orchestrator/phase1-orchestrator.js';
-import { ConsoleLogger } from './services/logger.js';
-
-// ---------------------------------------------------------------------------
-// Argument parsing
-// ---------------------------------------------------------------------------
+import { TeeLogger } from './services/logger.js';
 
 const rawArgs = process.argv.slice(2);
-
-// Extract --debug flag; remaining positional args are projectRoot, tsConfigPath, outputDir
-// Note: --verbose is intercepted by npm itself; use --debug instead.
 const verbose = rawArgs.includes('--debug');
 const positional = rawArgs.filter((a) => !a.startsWith('--'));
 const [projectRoot, tsConfigPath, rawOutputDir] = positional;
@@ -40,33 +32,35 @@ if (!projectRoot || !tsConfigPath) {
   console.error('');
   console.error('  projectRoot   — absolute path to the Angular project root');
   console.error('  tsConfigPath  — absolute path to the tsconfig file');
-  console.error('  outputDir     — (optional) directory to write JSON output');
+  console.error('  outputDir     — (optional) base output directory');
   console.error('                  defaults to output/<project-name> relative to CWD');
+  console.error('                  JSON artifacts written to <outputDir>/json/');
   console.error('  --debug       — emit debug-level pipeline logs to stdout');
   process.exit(1);
 }
 
-// Apply default output directory when none is supplied.
-// Default: output/<basename(projectRoot)> relative to the current working directory.
 const outputDir = rawOutputDir ?? path.join('output', path.basename(path.resolve(projectRoot)));
 
+const resolvedProjectRoot = path.resolve(projectRoot);
+const resolvedTsConfigPath = path.isAbsolute(tsConfigPath)
+  ? tsConfigPath
+  : path.resolve(resolvedProjectRoot, tsConfigPath);
+
 const cfg: AnalyzerConfig = {
-  projectRoot: path.resolve(projectRoot),
-  tsConfigPath: path.resolve(tsConfigPath),
+  projectRoot: resolvedProjectRoot,
+  tsConfigPath: resolvedTsConfigPath,
   framework: 'Angular',
   backendGranularity: 'None',
 };
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
-
 const resolvedOutput = path.resolve(outputDir);
+const jsonDir = path.join(resolvedOutput, 'json');
 
 console.log('Phase 1 static extraction starting…');
 console.log(`  projectRoot : ${cfg.projectRoot}`);
 console.log(`  tsConfigPath: ${cfg.tsConfigPath}`);
 console.log(`  outputDir   : ${resolvedOutput}`);
+console.log(`  jsonDir     : ${jsonDir}`);
 if (rawOutputDir === undefined) {
   console.log('                (default — no outputDir argument supplied)');
 }
@@ -77,28 +71,35 @@ if (verbose) {
 const t0 = Date.now();
 
 try {
-  const logger = verbose ? new ConsoleLogger('debug') : undefined;
+  const logger = verbose ? new TeeLogger('debug') : undefined;
 
   const orchestratorOptions = {
-    outputPath: path.join(resolvedOutput, 'phase1-bundle.json'),
-    debugOutputDir: resolvedOutput,
+    outputPath: path.join(jsonDir, 'phase1-bundle.json'),
+    debugOutputDir: jsonDir,
     ...(logger !== undefined && { logger }),
   };
 
   const bundle = new Phase1Orchestrator(cfg, orchestratorOptions).run();
   const elapsed = Date.now() - t0;
 
-  const stats = bundle.stats;
+  const { stats } = bundle;
   console.log('');
   console.log('Phase 1 complete ✓');
-  console.log(`  modules    : ${stats?.modules ?? '?'}`);
-  console.log(`  routes     : ${stats?.routes ?? '?'}`);
-  console.log(`  components : ${stats?.components ?? '?'}`);
-  console.log(`  widgets    : ${stats?.widgets ?? '?'}`);
-  console.log(`  edges      : ${stats?.edges ?? '?'}`);
-  console.log(`  transitions: ${stats?.transitions ?? '?'}`);
+  console.log(`  nodes      : ${stats.nodeCount}`);
+  console.log(`  edges      : ${stats.edgeCount}`);
+  console.log(`  structural : ${stats.structuralEdgeCount}`);
+  console.log(`  executable : ${stats.executableEdgeCount}`);
   console.log(`  elapsed    : ${elapsed} ms`);
-  console.log(`  output     : ${resolvedOutput}`);
+  console.log(`  output     : ${jsonDir}`);
+
+  // Write log file when --debug is used
+  if (verbose && logger !== undefined) {
+    const subjectName = path.basename(resolvedProjectRoot);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const logPath = path.join('logs', subjectName, timestamp, 'phase1.log');
+    logger.flush(path.resolve(logPath));
+    console.log(`  log        : ${logPath}`);
+  }
 
   process.exit(0);
 } catch (err) {

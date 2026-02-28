@@ -111,6 +111,10 @@ export interface RedirectRoute extends BaseRoute {
 /** A wildcard/catch-all route (path: '**'). */
 export interface WildcardRoute extends BaseRoute {
   kind: 'WildcardRoute';
+  /** ComponentInfo.id of the rendered component, if specified. */
+  componentId?: string;
+  /** Human-readable component class name (convenience field). */
+  componentName?: string;
 }
 
 // ---------------------------------------------------------------------------

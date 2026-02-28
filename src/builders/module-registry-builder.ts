@@ -16,6 +16,7 @@ import type { Project, ClassDeclaration, Decorator } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import type { AnalyzerConfig } from '../models/analyzer-config.js';
 import type { ModuleInfo, ModuleRegistry, ModuleRole } from '../models/module.js';
+import type { Origin } from '../models/origin.js';
 import { TsAstUtils } from '../parsers/ts/ts-ast-utils.js';
 import { SilentLogger } from '../services/logger.js';
 import type { Logger } from '../services/logger.js';
@@ -82,6 +83,10 @@ export class ModuleRegistryBuilder {
 
     let imports: string[] = [];
     let declarations: string[] = [];
+    let providers: string[] = [];
+    let exports: string[] = [];
+    let importEntries: Array<{ name: string; origin: Origin }> = [];
+    let exportEntries: Array<{ name: string; origin: Origin }> = [];
     let hasBootstrap = false;
 
     if (configArg !== undefined) {
@@ -90,10 +95,22 @@ export class ModuleRegistryBuilder {
           const propText = prop.getText();
           if (propText.startsWith('imports')) {
             const val = prop.getChildren().at(-1);
-            if (val !== undefined) imports = TsAstUtils.extractArrayOfIdentifiers(val);
+            if (val !== undefined) {
+              imports = TsAstUtils.extractArrayOfIdentifiers(val);
+              importEntries = TsAstUtils.extractArrayOfIdentifiersWithOrigin(val);
+            }
           } else if (propText.startsWith('declarations')) {
             const val = prop.getChildren().at(-1);
             if (val !== undefined) declarations = TsAstUtils.extractArrayOfIdentifiers(val);
+          } else if (propText.startsWith('providers')) {
+            const val = prop.getChildren().at(-1);
+            if (val !== undefined) providers = TsAstUtils.extractArrayOfIdentifiers(val);
+          } else if (propText.startsWith('exports')) {
+            const val = prop.getChildren().at(-1);
+            if (val !== undefined) {
+              exports = TsAstUtils.extractArrayOfIdentifiers(val);
+              exportEntries = TsAstUtils.extractArrayOfIdentifiersWithOrigin(val);
+            }
           } else if (propText.startsWith('bootstrap')) {
             hasBootstrap = true;
           }
@@ -101,7 +118,7 @@ export class ModuleRegistryBuilder {
       }
     }
 
-    return { id: filePath, name: className, filePath, imports, declarations, hasBootstrap, origin };
+    return { id: filePath, name: className, filePath, imports, declarations, providers, exports, importEntries, exportEntries, hasBootstrap, origin };
   }
 
   // ---------------------------------------------------------------------------
@@ -116,6 +133,12 @@ export class ModuleRegistryBuilder {
     const role = this._determineRole(raw, lazyModuleFiles, importedByMap);
     const isLazy = lazyModuleFiles.has(raw.filePath);
 
+    // Build per-element origin maps for edge ref generation
+    const importOrigins: Record<string, Origin> = {};
+    for (const entry of raw.importEntries) importOrigins[entry.name] = entry.origin;
+    const exportOrigins: Record<string, Origin> = {};
+    for (const entry of raw.exportEntries) exportOrigins[entry.name] = entry.origin;
+
     const info: ModuleInfo = {
       id: raw.id,
       name: raw.name,
@@ -123,7 +146,11 @@ export class ModuleRegistryBuilder {
       origin: raw.origin,
       imports: raw.imports,
       declarations: raw.declarations,
-      routesOwned: [],  // populated post-hoc by RouteMapBuilder if needed
+      providers: raw.providers,
+      exports: raw.exports,
+      routesOwned: [],  // populated post-hoc by orchestrator
+      importOrigins,
+      exportOrigins,
     };
     if (isLazy) info.lazyBoundary = { isLazy: true };
 
@@ -201,6 +228,10 @@ interface RawModule {
   filePath: string;
   imports: string[];
   declarations: string[];
+  providers: string[];
+  exports: string[];
+  importEntries: Array<{ name: string; origin: import('../models/origin.js').Origin }>;
+  exportEntries: Array<{ name: string; origin: import('../models/origin.js').Origin }>;
   hasBootstrap: boolean;
   origin: import('../models/origin.js').Origin;
 }

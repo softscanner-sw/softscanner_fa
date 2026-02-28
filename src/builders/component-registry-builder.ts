@@ -92,6 +92,17 @@ export class ComponentRegistryBuilder {
 
     for (const sourceFile of sourceFiles) {
       const filePath = sourceFile.getFilePath();
+
+      // Exclude test-only files: spec files, stubs, and test/testing directories.
+      // Use forward-slash checks — ts-morph normalises paths on all platforms.
+      if (
+        filePath.endsWith('.spec.ts') ||
+        filePath.endsWith('.stub.ts') ||
+        filePath.includes('/testing/') ||
+        filePath.includes('/test/') ||
+        filePath.includes('/__tests__/')
+      ) continue;
+
       const classes = [...sourceFile.getClasses()].sort((a, b) =>
         (a.getName() ?? '').localeCompare(b.getName() ?? ''),
       );

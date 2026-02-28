@@ -41,8 +41,17 @@ export interface ModuleInfo {
   imports: string[];
   /** ComponentInfo.id values declared in this module (sorted, unique). */
   declarations: string[];
+  /** Service class names provided by this module (sorted, unique). */
+  providers: string[];
+  /** Module class names exported by this module (sorted, unique). */
+  exports: string[];
   /** Route IDs whose definition belongs to this module (sorted, unique). */
   routesOwned: string[];
+
+  /** Per-import-name origin for edge ref generation (internal; not part of Phase1Bundle). */
+  importOrigins?: Record<string, Origin>;
+  /** Per-export-name origin for edge ref generation (internal; not part of Phase1Bundle). */
+  exportOrigins?: Record<string, Origin>;
 
   /** Present when the module is lazily loaded via the router. */
   lazyBoundary?: {
