@@ -23,10 +23,32 @@ if (!projectRoot || !rawTsConfigPath) {
   process.exit(1);
 }
 
-// Resolve tsConfigPath relative to projectRoot (not CWD)
-const tsConfigPath = path.isAbsolute(rawTsConfigPath)
-  ? rawTsConfigPath
-  : path.resolve(projectRoot, rawTsConfigPath);
+/**
+ * Resolve tsconfig path flexibly.
+ * Accepts absolute, subject-relative ("tsconfig.json"), or
+ * repo-relative ("tests/fixtures/minimal-ng/tsconfig.json") paths.
+ */
+function resolveTsconfigPath(subjectRoot, tsconfigField) {
+  if (path.isAbsolute(tsconfigField)) {
+    return tsconfigField;
+  }
+  // Candidate A: subject-relative (e.g. "tsconfig.json", "src/tsconfig.app.json")
+  const candidateA = path.resolve(subjectRoot, tsconfigField);
+  if (fs.existsSync(candidateA)) {
+    return candidateA;
+  }
+  // Candidate B: repo-relative / CWD-relative (e.g. "tests/fixtures/minimal-ng/tsconfig.json")
+  const candidateB = path.resolve(tsconfigField);
+  if (fs.existsSync(candidateB)) {
+    return candidateB;
+  }
+  console.error(`Cannot find tsconfig at either of:`);
+  console.error(`  subject-relative: ${candidateA}`);
+  console.error(`  repo-relative:    ${candidateB}`);
+  process.exit(1);
+}
+
+const tsConfigPath = resolveTsconfigPath(projectRoot, rawTsConfigPath);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'softscanner-det-'));
 const out1 = path.join(tmpDir, 'run1');
