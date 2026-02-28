@@ -106,6 +106,7 @@ export class WidgetProcessor {
           id: widgetId,
           componentId: this._componentId,
           kind,
+          ...(node.name != null ? { tagName: node.name } : {}),
           origin,
           path: { componentId: this._componentId, path: pathStr },
           attributes: extractBoundedAttributes(node, maxLen),
@@ -141,8 +142,12 @@ export class WidgetProcessor {
 
   private _extractBindings(node: TemplateAstNode, _origin: Origin): WidgetBinding[] {
     const BINDING_NAMES = new Set([
-      'routerlink', 'href', 'formcontrolname', 'formgroupname',
-      'ngmodel', 'click', 'submit', 'change', 'input',
+      // Navigation attributes
+      'routerlink', 'href',
+      // Form-model attributes
+      'formcontrolname', 'formgroupname', 'ngmodel',
+      // DOM event names captured for handler analysis
+      'click', 'submit', 'ngsubmit', 'change', 'input',
     ]);
     const bindings: WidgetBinding[] = [];
     const maxLen = this._cfg.maxTemplateSnippetLength ?? 200;
@@ -157,7 +162,7 @@ export class WidgetProcessor {
             child.span,
             name,
           );
-          const binding: WidgetBinding = { name, origin: bindingOrigin };
+          const binding: WidgetBinding = { kind: child.kind as 'attr' | 'boundAttr' | 'event', name, origin: bindingOrigin };
           if (child.value !== undefined) binding.value = child.value.trim().slice(0, maxLen);
           bindings.push(binding);
         }

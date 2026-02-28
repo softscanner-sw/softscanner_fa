@@ -23,7 +23,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "build:watch": "tsc --project tsconfig.build.json --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.src.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -31,7 +32,9 @@
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "clean": "rimraf dist",
     "phase1": "tsx src/cli.ts",
-    "verify:determinism": "node scripts/verify-determinism.mjs"
+    "viz": "tsx src/viz-cli.ts",
+    "verify:determinism": "node scripts/verify-determinism.mjs",
+    "logs:clean": "rimraf logs"
   },
   "keywords": [
     "static-analysis",

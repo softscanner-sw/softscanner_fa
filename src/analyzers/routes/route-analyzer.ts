@@ -55,6 +55,10 @@ export class RouteAnalyzer {
   analyzeRoutes(componentRegistry: ComponentRegistry): ComponentRouteMap {
     const allRoutes: Route[] = [];
     const visited = new Set<string>(); // guard against infinite lazy recursion
+    // Global dedup across all source-file iterations: prevents the same route
+    // object literal (resolved cross-file) from being processed twice when both
+    // the importing file and the original definition file are visited.
+    const seenRecordOrigins = new Set<string>();
 
     // Walk every source file looking for route arrays
     for (const sourceFile of this._project.getSourceFiles()) {
@@ -67,24 +71,45 @@ export class RouteAnalyzer {
       if (records.length === 0) continue;
 
       const moduleId = filePath;
-      this._convertRecords(records, '/', moduleId, null, allRoutes, visited, componentRegistry);
+      this._convertRecords(records, '/', moduleId, null, allRoutes, visited, seenRecordOrigins, componentRegistry);
     }
 
-    // Sort by fullPath
+    // Sort by fullPath (deterministic)
     allRoutes.sort((a, b) => a.fullPath.localeCompare(b.fullPath));
+
+    // Dedup routes by canonical fullPath.
+    // When multiple routes share the same fullPath (e.g., a lazy-load placeholder
+    // from app.module.ts and the actual ComponentRoute from the feature module),
+    // prefer the route that carries a resolved component. Guards are merged from
+    // all routes in the group so metadata is not lost.
+    const groupsByFullPath = new Map<string, Route[]>();
+    for (const route of allRoutes) {
+      let group = groupsByFullPath.get(route.fullPath);
+      if (group === undefined) {
+        group = [];
+        groupsByFullPath.set(route.fullPath, group);
+      }
+      group.push(route);
+    }
+
+    const dedupedRoutes: Route[] = [];
+    for (const [, group] of groupsByFullPath) {
+      const canonical = this._selectCanonicalRoute(group);
+      dedupedRoutes.push(canonical);
+    }
 
     // Build RouteMap
     const byId: Record<string, Route> = {};
-    for (const route of allRoutes) {
+    for (const route of dedupedRoutes) {
       byId[route.id] = route;
     }
-    const routeMap: RouteMap = { routes: allRoutes, byId };
+    const routeMap: RouteMap = { routes: dedupedRoutes, byId };
 
     // Build component usage index
     const routesByComponentId: Record<string, ComponentRoute[]> = {};
     const componentUsageCounts: Record<string, number> = {};
 
-    for (const route of allRoutes) {
+    for (const route of dedupedRoutes) {
       if (route.kind === 'ComponentRoute') {
         const cid = route.componentId;
         if (routesByComponentId[cid] === undefined) routesByComponentId[cid] = [];
@@ -112,11 +137,17 @@ export class RouteAnalyzer {
     parentId: string | null,
     out: Route[],
     visited: Set<string>,
+    seenRecordOrigins: Set<string>,
     componentRegistry: ComponentRegistry,
   ): string[] {
     const childIds: string[] = [];
 
     for (const record of records) {
+      // Skip route literals that were already converted via cross-file resolution.
+      const originKey = `${record.origin.file}::${record.origin.startLine}::${record.origin.startCol}`;
+      if (seenRecordOrigins.has(originKey)) continue;
+      seenRecordOrigins.add(originKey);
+
       const fullPath = buildFullPath(parentFullPath, record.path);
       const routeId = makeRouteId(fullPath, moduleId);
 
@@ -157,6 +188,16 @@ export class RouteAnalyzer {
         route = r;
       } else if (isWildcard(record)) {
         const w: WildcardRoute = { ...base, kind: 'WildcardRoute' };
+        // Wildcard routes may still specify a component (e.g., PageNotFoundComponent)
+        if (record.componentName !== undefined) {
+          const componentId = this._resolveComponentId(
+            record.componentName,
+            record.componentImportPathHint,
+            componentRegistry,
+          );
+          w.componentId = componentId;
+          w.componentName = record.componentName;
+        }
         route = w;
       } else {
         // ComponentRoute (or lazy — treat as ComponentRoute with unknown componentId)
@@ -173,13 +214,82 @@ export class RouteAnalyzer {
       out.push(route);
       childIds.push(routeId);
 
+      // Recurse into inline children[] array
+      if (record.children !== undefined && record.children.length > 0) {
+        const childrenIds = this._convertRecords(
+          record.children,
+          fullPath,
+          moduleId,
+          routeId,
+          out,
+          visited,
+          seenRecordOrigins,
+          componentRegistry,
+        );
+        route.childrenIds.push(...childrenIds);
+      }
+
       // Recurse into lazy-loaded modules
       if (record.loadChildrenExpr !== undefined) {
-        this._recurseIntoLazyModule(record.loadChildrenExpr, fullPath, routeId, out, visited, componentRegistry);
+        this._recurseIntoLazyModule(record.loadChildrenExpr, fullPath, routeId, out, visited, seenRecordOrigins, componentRegistry);
       }
     }
 
     return childIds;
+  }
+
+  /**
+   * Given a group of routes that share the same fullPath, select the canonical
+   * representative. Prefers a route with a resolved component over a lazy-load
+   * placeholder (`__unknown__`). Merges guards and childrenIds from all group
+   * members into the canonical so no metadata is lost.
+   */
+  private _selectCanonicalRoute(group: Route[]): Route {
+    if (group.length === 1) return group[0]!;
+
+    // Score: higher = better component info
+    const score = (r: Route): number => {
+      if (r.kind === 'ComponentRoute') {
+        if (r.componentId !== '__unknown__' && !r.componentId.startsWith('__unresolved__')) return 3;
+        if (r.componentId !== '__unknown__') return 2;
+        return 1;
+      }
+      if (r.kind === 'WildcardRoute' && r.componentId !== undefined) return 3;
+      return 0;
+    };
+
+    // Sort descending by score, then by id for determinism
+    const sorted = [...group].sort((a, b) => {
+      const sd = score(b) - score(a);
+      if (sd !== 0) return sd;
+      return a.id.localeCompare(b.id);
+    });
+
+    const canonical = sorted[0]!;
+
+    // Merge guards from other routes (dedup by kind+guardName)
+    const seenGuards = new Set(canonical.guards.map((g) => `${g.kind}::${g.guardName}`));
+    for (const other of sorted) {
+      if (other === canonical) continue;
+      for (const g of other.guards) {
+        const key = `${g.kind}::${g.guardName}`;
+        if (!seenGuards.has(key)) {
+          seenGuards.add(key);
+          canonical.guards.push(g);
+        }
+      }
+    }
+    canonical.guards.sort((a, b) => a.guardName.localeCompare(b.guardName));
+
+    // Merge childrenIds (union, sorted, deduped)
+    const allChildIds = new Set(canonical.childrenIds);
+    for (const other of sorted) {
+      if (other === canonical) continue;
+      for (const cid of other.childrenIds) allChildIds.add(cid);
+    }
+    canonical.childrenIds = [...allChildIds].sort();
+
+    return canonical;
   }
 
   private _resolveComponentId(
@@ -208,6 +318,7 @@ export class RouteAnalyzer {
     parentRouteId: string,
     out: Route[],
     visited: Set<string>,
+    seenRecordOrigins: Set<string>,
     componentRegistry: ComponentRegistry,
   ): void {
     // Extract the import path from the loadChildren expression.
@@ -231,7 +342,7 @@ export class RouteAnalyzer {
           tsConfigPath: '',
         });
         if (records.length > 0) {
-          this._convertRecords(records, parentFullPath, filePath, parentRouteId, out, visited, componentRegistry);
+          this._convertRecords(records, parentFullPath, filePath, parentRouteId, out, visited, seenRecordOrigins, componentRegistry);
         }
         break;
       }

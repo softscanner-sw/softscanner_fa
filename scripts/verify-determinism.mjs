@@ -16,12 +16,17 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-const [, , projectRoot, tsConfigPath] = process.argv;
+const [, , projectRoot, rawTsConfigPath] = process.argv;
 
-if (!projectRoot || !tsConfigPath) {
+if (!projectRoot || !rawTsConfigPath) {
   console.error('Usage: node scripts/verify-determinism.mjs <projectRoot> <tsConfigPath>');
   process.exit(1);
 }
+
+// Resolve tsConfigPath relative to projectRoot (not CWD)
+const tsConfigPath = path.isAbsolute(rawTsConfigPath)
+  ? rawTsConfigPath
+  : path.resolve(projectRoot, rawTsConfigPath);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'softscanner-det-'));
 const out1 = path.join(tmpDir, 'run1');
@@ -50,9 +55,9 @@ function runExtraction(outputDir, runLabel) {
 runExtraction(out1, 'Run 1');
 runExtraction(out2, 'Run 2');
 
-// Compare the two bundle files
-const bundle1Path = path.join(out1, 'phase1-bundle.json');
-const bundle2Path = path.join(out2, 'phase1-bundle.json');
+// Compare the two bundle files (cli.ts writes to json/ subdirectory)
+const bundle1Path = path.join(out1, 'json', 'phase1-bundle.json');
+const bundle2Path = path.join(out2, 'json', 'phase1-bundle.json');
 
 const bundle1 = fs.readFileSync(bundle1Path, 'utf8');
 const bundle2 = fs.readFileSync(bundle2Path, 'utf8');

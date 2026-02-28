@@ -1,174 +1,142 @@
 /**
  * analysis-validator.ts
- * Centralized Phase 1 invariant checks.
+ * Phase 1 invariant checks per approach.md §10.
  * Throws a descriptive error on the first violation found.
  *
- * Validation rules enforced:
- *   1. Every ComponentRoute.componentId references an existing ComponentInfo.id.
- *   2. Every WidgetEvent.widgetId appears in the owning component's widgets list.
- *   3. Every GraphEdge.from / .to references an existing GraphNode.id.
- *   4. For UI-triggered transitions, trigger.widgetId must appear in the
- *      source component's widgets list.
- *   5. All "sorted, unique" arrays are spot-checked.
+ * Invariants enforced:
+ *   1. Every edge.from references an existing node id.
+ *   2. edge.to references an existing node id OR is null (unresolved navigation).
+ *   3. refs non-empty on every node.
+ *   4. refs non-empty on every edge.
+ *   5. Unresolved navigation: to===null iff targetRouteId===null.
+ *   6. nodes sorted by id.
+ *   7. edges sorted by (from, kind, to ?? '', id).
+ *   8. No duplicate node ids.
+ *   9. stats consistency.
  */
 
-import type { Phase1AnalysisBundle } from '../models/analysis-bundle.js';
-import type { ComponentRegistry } from '../models/components.js';
-import type { RouteMap } from '../models/routes.js';
-import type { WidgetEventMap } from '../models/events.js';
-import type { AppNavigation } from '../models/navigation-graph.js';
+import type { Phase1Bundle } from '../models/multigraph.js';
+import { STRUCTURAL_EDGE_KINDS } from '../models/multigraph.js';
 
 export class AnalysisValidator {
-  /**
-   * Validate a Phase1AnalysisBundle against all Phase 1 invariants.
-   * Throws `ValidationError` on the first violation.
-   */
-  static validatePhase1(bundle: Phase1AnalysisBundle): void {
-    AnalysisValidator._validateRoutes(bundle.routeMap, bundle.componentRegistry);
-    AnalysisValidator._validateWidgetEvents(bundle.widgetEventMaps, bundle.componentRegistry);
-    AnalysisValidator._validateGraph(bundle.navigation);
-    AnalysisValidator._validateSortedUnique(bundle);
-  }
+  static validatePhase1(bundle: Phase1Bundle): void {
+    const { multigraph, stats } = bundle;
+    const { nodes, edges } = multigraph;
 
-  // ---------------------------------------------------------------------------
-  // Rule 1 — ComponentRoute.componentId exists in ComponentRegistry
-  // ---------------------------------------------------------------------------
-
-  private static _validateRoutes(
-    routeMap: RouteMap,
-    componentRegistry: ComponentRegistry,
-  ): void {
-    for (const route of routeMap.routes) {
-      if (route.kind !== 'ComponentRoute') continue;
-
-      if (
-        route.componentId !== '__unknown__' &&
-        !route.componentId.startsWith('__unresolved__') &&
-        componentRegistry.byId[route.componentId] === undefined
-      ) {
-        throw new ValidationError(
-          `Rule 1 violation: ComponentRoute "${route.id}" references componentId ` +
-          `"${route.componentId}" which does not exist in ComponentRegistry.`,
-        );
+    // Build node id set
+    const nodeIds = new Set<string>();
+    for (const node of nodes) {
+      if (nodeIds.has(node.id)) {
+        throw new ValidationError(`Duplicate node id: "${node.id}"`);
       }
+      nodeIds.add(node.id);
     }
-  }
 
-  // ---------------------------------------------------------------------------
-  // Rule 2 — WidgetEvent.widgetId exists in owning component's widgets list
-  // ---------------------------------------------------------------------------
-
-  private static _validateWidgetEvents(
-    widgetEventMaps: WidgetEventMap[],
-    componentRegistry: ComponentRegistry,
-  ): void {
-    for (const wem of widgetEventMaps) {
-      const component = componentRegistry.byId[wem.componentId];
-      if (component === undefined) continue; // component not in registry — skip
-
-      const widgetSet = new Set(component.widgets);
-
-      for (const event of wem.events) {
-        if (!widgetSet.has(event.widgetId)) {
-          throw new ValidationError(
-            `Rule 2 violation: WidgetEvent in component "${wem.componentId}" ` +
-            `references widgetId "${event.widgetId}" which is not in the component's widgets list.`,
-          );
-        }
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Rule 3 — GraphEdge endpoints exist in nodes
-  // ---------------------------------------------------------------------------
-
-  private static _validateGraph(navigation: AppNavigation): void {
-    const nodeIds = new Set(navigation.nodes.map((n) => n.id));
-
-    for (const edge of navigation.edges) {
+    // Rule 1+2: edge endpoint existence
+    for (const edge of edges) {
       if (!nodeIds.has(edge.from)) {
         throw new ValidationError(
-          `Rule 3 violation: GraphEdge "${edge.id}" has from="${edge.from}" ` +
-          `which does not exist in navigation nodes.`,
+          `Edge "${edge.id}": from="${edge.from}" does not exist in nodes.`,
         );
       }
-      if (!nodeIds.has(edge.to)) {
+      if (edge.to !== null && !nodeIds.has(edge.to)) {
         throw new ValidationError(
-          `Rule 3 violation: GraphEdge "${edge.id}" has to="${edge.to}" ` +
-          `which does not exist in navigation nodes.`,
+          `Edge "${edge.id}": to="${edge.to}" does not exist in nodes.`,
         );
       }
+    }
 
-      // Rule 4 — UI-triggered transitions must have a valid widgetId origin
-      for (const transition of edge.transitions) {
-        if (
-          transition.trigger?.widgetId !== undefined &&
-          transition.origin.file === ''
-        ) {
-          throw new ValidationError(
-            `Rule 4 violation: Transition in edge "${edge.id}" has trigger.widgetId ` +
-            `"${transition.trigger.widgetId}" but origin.file is empty — ` +
-            `origin must point to a template file.`,
-          );
-        }
+    // Rule 3: non-empty refs on nodes
+    for (const node of nodes) {
+      if (node.refs.length === 0) {
+        throw new ValidationError(`Node "${node.id}": refs must be non-empty.`);
       }
     }
-  }
 
-  // ---------------------------------------------------------------------------
-  // Rule 5 — Spot-check sorted/unique arrays
-  // ---------------------------------------------------------------------------
-
-  private static _validateSortedUnique(bundle: Phase1AnalysisBundle): void {
-    // Check route params
-    for (const route of bundle.routeMap.routes) {
-      AnalysisValidator._assertSortedUnique(
-        route.params.routeParams,
-        `Route "${route.id}" params.routeParams`,
-      );
-      AnalysisValidator._assertSortedUnique(
-        route.guards.map((g) => g.guardName),
-        `Route "${route.id}" guard names`,
-      );
+    // Rule 4: non-empty refs on edges
+    for (const edge of edges) {
+      if (edge.refs.length === 0) {
+        throw new ValidationError(`Edge "${edge.id}": refs must be non-empty.`);
+      }
     }
 
-    // Check module imports/declarations
-    for (const mod of bundle.moduleRegistry.modules) {
-      AnalysisValidator._assertSortedUnique(mod.imports, `Module "${mod.id}" imports`);
-      AnalysisValidator._assertSortedUnique(mod.declarations, `Module "${mod.id}" declarations`);
+    // Rule 5: unresolved navigation coupling
+    for (const edge of edges) {
+      if (edge.targetRouteId === null && edge.to !== null) {
+        throw new ValidationError(
+          `Edge "${edge.id}": targetRouteId is null but to is not null ("${edge.to}").`,
+        );
+      }
+      if (edge.targetRouteId !== undefined && edge.targetRouteId !== null && edge.to === null) {
+        throw new ValidationError(
+          `Edge "${edge.id}": targetRouteId is "${edge.targetRouteId}" but to is null.`,
+        );
+      }
     }
 
-    // Check component usesComponentIds
-    for (const comp of bundle.componentRegistry.components) {
-      AnalysisValidator._assertSortedUnique(
-        comp.usesComponentIds,
-        `Component "${comp.id}" usesComponentIds`,
-      );
+    // Rule 6: nodes sorted by id
+    for (let i = 1; i < nodes.length; i++) {
+      const prev = nodes[i - 1]!;
+      const curr = nodes[i]!;
+      if (prev.id.localeCompare(curr.id) > 0) {
+        throw new ValidationError(
+          `Nodes not sorted: "${prev.id}" appears before "${curr.id}".`,
+        );
+      }
     }
-  }
 
-  private static _assertSortedUnique(arr: string[], label: string): void {
-    const deduped = [...new Set(arr)].sort();
-    if (arr.length !== deduped.length) {
+    // Rule 7: edges sorted by (from, kind, to, id)
+    for (let i = 1; i < edges.length; i++) {
+      const prev = edges[i - 1]!;
+      const curr = edges[i]!;
+      const cmp = compareEdgeSort(prev, curr);
+      if (cmp > 0) {
+        throw new ValidationError(
+          `Edges not sorted: "${prev.id}" appears before "${curr.id}".`,
+        );
+      }
+    }
+
+    // Rule 9: stats consistency
+    if (stats.nodeCount !== nodes.length) {
       throw new ValidationError(
-        `Rule 5 violation: ${label} contains duplicate values: [${arr.join(', ')}]`,
+        `stats.nodeCount (${stats.nodeCount}) !== nodes.length (${nodes.length}).`,
       );
     }
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] !== deduped[i]) {
-        throw new ValidationError(
-          `Rule 5 violation: ${label} is not lexicographically sorted. ` +
-          `Got [${arr.join(', ')}], expected [${deduped.join(', ')}].`,
-        );
-      }
+    if (stats.edgeCount !== edges.length) {
+      throw new ValidationError(
+        `stats.edgeCount (${stats.edgeCount}) !== edges.length (${edges.length}).`,
+      );
+    }
+    const actualStructural = edges.filter((e) => STRUCTURAL_EDGE_KINDS.has(e.kind)).length;
+    if (stats.structuralEdgeCount !== actualStructural) {
+      throw new ValidationError(
+        `stats.structuralEdgeCount (${stats.structuralEdgeCount}) !== actual (${actualStructural}).`,
+      );
+    }
+    const actualExecutable = edges.length - actualStructural;
+    if (stats.executableEdgeCount !== actualExecutable) {
+      throw new ValidationError(
+        `stats.executableEdgeCount (${stats.executableEdgeCount}) !== actual (${actualExecutable}).`,
+      );
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// Error type
-// ---------------------------------------------------------------------------
+function compareEdgeSort(
+  a: { from: string; kind: string; to: string | null; id: string },
+  b: { from: string; kind: string; to: string | null; id: string },
+): number {
+  const fromCmp = a.from.localeCompare(b.from);
+  if (fromCmp !== 0) return fromCmp;
+  const kindCmp = a.kind.localeCompare(b.kind);
+  if (kindCmp !== 0) return kindCmp;
+  const aTo = a.to ?? '';
+  const bTo = b.to ?? '';
+  const toCmp = aTo.localeCompare(bTo);
+  if (toCmp !== 0) return toCmp;
+  return a.id.localeCompare(b.id);
+}
 
 export class ValidationError extends Error {
   constructor(message: string) {

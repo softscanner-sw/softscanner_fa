@@ -25,8 +25,6 @@ import type { AnalyzerConfig } from '../../models/analyzer-config.js';
 import { TsAstUtils } from '../../parsers/ts/ts-ast-utils.js';
 import { normalizeEventType, extractHandlerName, extractCallContexts, sortWidgetEvents } from './logic-utils.js';
 
-// Event-binding attribute kinds that carry handler expressions
-const EVENT_BINDING_KINDS = new Set(['event', 'boundAttr']);
 const NAV_BINDING_NAMES = new Set(['routerlink', 'href']);
 
 export class LogicAnalyzer {
@@ -126,8 +124,8 @@ export class LogicAnalyzer {
           continue;
         }
 
-        // Event bindings: (click), (submit), etc.
-        if (EVENT_BINDING_KINDS.has(binding.name) || binding.name.startsWith('(')) {
+        // Event bindings: (click), (submit), (ngSubmit), etc.
+        if (binding.kind === 'event') {
           const eventType = normalizeEventType(binding.name);
           const handlerExpr = binding.value ?? '';
           const handlerName = extractHandlerName(handlerExpr);

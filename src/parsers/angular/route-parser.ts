@@ -41,6 +41,8 @@ export interface ParsedRouteRecord {
   loadChildrenExpr?: string;
   /** Raw loadComponent() expression text (standalone lazy component). */
   loadComponentExpr?: string;
+  /** Inline children route array (parsed recursively). */
+  children?: ParsedRouteRecord[];
 
   guards: Array<{ kind: string; guardName: string; origin: Origin }>;
   resolvers: Array<{ key: string; resolverName: string; origin: Origin }>;
@@ -166,6 +168,7 @@ export class RouteParser {
     let pathMatch: 'full' | 'prefix' | undefined;
     let loadChildrenExpr: string | undefined;
     let loadComponentExpr: string | undefined;
+    let children: ParsedRouteRecord[] | undefined;
 
     const guards: ParsedRouteRecord['guards'] = [];
     const resolvers: ParsedRouteRecord['resolvers'] = [];
@@ -199,6 +202,15 @@ export class RouteParser {
           break;
         case 'loadComponent':
           loadComponentExpr = TsAstUtils.truncateDeterministically(rawValue, maxLen);
+          break;
+        case 'children':
+          if (valueNode.getKindName() === 'ArrayLiteralExpression') {
+            children = [];
+            for (const el of RouteParser._getArrayElements(valueNode)) {
+              const child = RouteParser._parseRouteObject(el, cfg);
+              if (child !== null) children.push(child);
+            }
+          }
           break;
         default:
           // Guard arrays
@@ -247,6 +259,7 @@ export class RouteParser {
     if (pathMatch !== undefined) record.pathMatch = pathMatch;
     if (loadChildrenExpr !== undefined) record.loadChildrenExpr = loadChildrenExpr;
     if (loadComponentExpr !== undefined) record.loadComponentExpr = loadComponentExpr;
+    if (children !== undefined && children.length > 0) record.children = children;
     return record;
   }
 

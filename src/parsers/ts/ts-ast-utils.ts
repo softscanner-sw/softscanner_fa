@@ -48,6 +48,8 @@ export class TsAstUtils {
       startLine: startLine0 + 1,    // convert 0-based → 1-based
       startCol: startChar0 + 1,     // convert 0-based → 1-based
       endLine: endLine0 + 1,
+      start: startPos,              // char offset for SourceRef
+      end: endPos,                  // char offset for SourceRef
     };
     if (symbolHint !== undefined) {
       origin.symbol = symbolHint;
@@ -126,16 +128,42 @@ export class TsAstUtils {
   /**
    * Extract identifiers from an ArrayLiteralExpression node.
    * Returns a sorted, deduplicated array of identifier texts.
+   *
+   * ArrayLiteralExpression children: [OpenBracket, SyntaxList, CloseBracket]
+   * SyntaxList children: [Identifier, Comma, Identifier, ...]
+   * So we iterate two levels deep to reach individual element nodes.
    */
   static extractArrayOfIdentifiers(node: Node): string[] {
     const results: string[] = [];
     for (const child of node.getChildren()) {
-      const text = child.getText().trim();
-      if (text.length > 0 && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text)) {
-        results.push(text);
+      for (const el of child.getChildren()) {
+        const text = el.getText().trim();
+        if (text.length > 0 && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text)) {
+          results.push(text);
+        }
       }
     }
     return TsAstUtils._sortUnique(results);
+  }
+
+  /**
+   * Extract identifiers from an ArrayLiteralExpression node, with their origin.
+   * Returns a sorted (by name), deduplicated array of { name, origin } entries.
+   */
+  static extractArrayOfIdentifiersWithOrigin(node: Node): Array<{ name: string; origin: Origin }> {
+    const results: Array<{ name: string; origin: Origin }> = [];
+    const seen = new Set<string>();
+    for (const child of node.getChildren()) {
+      for (const el of child.getChildren()) {
+        const text = el.getText().trim();
+        if (text.length > 0 && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text) && !seen.has(text)) {
+          seen.add(text);
+          results.push({ name: text, origin: TsAstUtils.getOrigin(el, text) });
+        }
+      }
+    }
+    results.sort((a, b) => a.name.localeCompare(b.name));
+    return results;
   }
 
   /**

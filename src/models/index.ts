@@ -1,7 +1,6 @@
 /**
  * models/index.ts
  * Barrel export for the Phase 1 model package.
- * Import from this file to consume the full model surface.
  */
 
 export type { Origin } from './origin.js';
@@ -58,13 +57,29 @@ export type {
   WidgetEventMap,
 } from './events.js';
 
+// Spec-compliant multigraph types (approach.md §9)
 export type {
-  GraphNodeType,
-  GraphNode,
-  TransitionKind,
-  GraphTransition,
-  GraphEdge,
-  AppNavigation,
-} from './navigation-graph.js';
+  SourceRef,
+  NodeKind,
+  SpecWidgetKind,
+  EdgeKind,
+  Atom,
+  ConstraintSurface,
+  NodeBase,
+  ModuleNode,
+  RouteNode,
+  ComponentNode,
+  WidgetNode,
+  ServiceNode,
+  ExternalNode,
+  Node,
+  TriggerRef,
+  HandlerRef,
+  Edge,
+  Multigraph,
+  Phase1Bundle,
+} from './multigraph.js';
 
-export type { Phase1AnalysisBundle } from './analysis-bundle.js';
+export { emptyConstraintSurface, STRUCTURAL_EDGE_KINDS } from './multigraph.js';
+
+export type { A1InternalBundle } from './analysis-bundle.js';

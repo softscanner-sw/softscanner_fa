@@ -17,6 +17,10 @@ export interface Origin {
   endLine?: number;
   /** 1-based end column. */
   endCol?: number;
+  /** Inclusive start character offset (for SourceRef conversion). */
+  start?: number;
+  /** Exclusive end character offset (for SourceRef conversion). */
+  end?: number;
   /** Handler/guard/class/etc symbol name if available. */
   symbol?: string;
   /** Optional short snippet; bounded to <200 chars. */
