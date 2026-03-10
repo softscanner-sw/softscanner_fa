@@ -84,10 +84,13 @@ export class TemplateConstraintExtractor {
       templateAst, templateText, resolvedTemplateFile,
     );
 
+    // Pre-compute line-start offsets for line/col → char-offset conversion.
+    const lineStarts = this._buildLineStarts(templateText);
+
     return widgets.map((widget) => ({
       ...widget,
-      visibilityPredicates: this._matchPredicates(widget, visibilityPredicates),
-      enablementPredicates: this._matchPredicates(widget, enablementPredicates),
+      visibilityPredicates: this._matchPredicates(widget, visibilityPredicates, lineStarts),
+      enablementPredicates: this._matchPredicates(widget, enablementPredicates, lineStarts),
     }));
   }
 
@@ -114,7 +117,11 @@ export class TemplateConstraintExtractor {
       const refs = this._extractRefs(dir.expr);
       if (refs !== undefined) predicate.refs = refs;
       const visItem: PredicateWithSpan = { predicate };
-      if (dir.span !== undefined) visItem.span = dir.span;
+      // Use the structural element's span for containment matching: the
+      // *ngIf applies to the entire host element and all its descendants,
+      // not just the attribute binding.
+      const containmentSpan = dir.elementSpan ?? dir.span;
+      if (containmentSpan !== undefined) visItem.span = containmentSpan;
       results.push(visItem);
     }
 
@@ -170,16 +177,21 @@ export class TemplateConstraintExtractor {
   // Matching: attach predicates to a widget by position
   // ---------------------------------------------------------------------------
 
-  private _matchPredicates(widget: WidgetInfo, predicates: PredicateWithSpan[]): Predicate[] {
-    const widgetStart = this._positionToOffset(widget.origin.startLine, widget.origin.startCol);
-    const widgetEnd = this._positionToOffset(widget.origin.endLine, widget.origin.startCol);
+  private _matchPredicates(
+    widget: WidgetInfo,
+    predicates: PredicateWithSpan[],
+    lineStarts: number[],
+  ): Predicate[] {
+    const widgetCharStart = this._lineColToCharOffset(
+      widget.origin.startLine, widget.origin.startCol, lineStarts,
+    );
 
     return predicates
       .filter((p) => {
         if (p.span === undefined) return true; // no span: attach to all widgets (conservative)
-        // The predicate applies to this widget if the predicate span begins before
-        // the widget ends (ancestor or same-element predicates).
-        return p.span.start <= (widgetEnd ?? widgetStart);
+        // The predicate applies to this widget if the widget falls within the
+        // predicate's element span (ancestor containment or same-element).
+        return p.span.start <= widgetCharStart && widgetCharStart <= p.span.end;
       })
       .map((p) => p.predicate);
   }
@@ -205,9 +217,20 @@ export class TemplateConstraintExtractor {
     return [...new Set(identifiers)].sort();
   }
 
-  private _positionToOffset(line?: number, col?: number): number {
-    // Approximate: used only for ordering/filtering; not required to be exact.
-    return ((line ?? 0) * 10_000) + (col ?? 0);
+  private _buildLineStarts(text: string): number[] {
+    const starts = [0];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\n') starts.push(i + 1);
+    }
+    return starts;
+  }
+
+  private _lineColToCharOffset(line: number | undefined, col: number | undefined, lineStarts: number[]): number {
+    const l = line ?? 0;
+    const c = col ?? 0;
+    // Lines in widget origin are 1-based; lineStarts is 0-based indexed.
+    const base = l > 0 && l <= lineStarts.length ? lineStarts[l - 1]! : 0;
+    return base + c;
   }
 }
 

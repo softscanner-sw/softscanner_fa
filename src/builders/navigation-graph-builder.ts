@@ -41,6 +41,8 @@ import type {
   SpecWidgetKind,
   TriggerRef,
   HandlerRef,
+  WidgetUIProps,
+  Atom,
 } from '../models/multigraph.js';
 import { emptyConstraintSurface, STRUCTURAL_EDGE_KINDS } from '../models/multigraph.js';
 import { SilentLogger } from '../services/logger.js';
@@ -102,6 +104,233 @@ function mapWidgetKind(kind: string): SpecWidgetKind {
 }
 
 // ---------------------------------------------------------------------------
+// WidgetUIProps bridge (WidgetInfo → WidgetUIProps per spec §9 lines 464-497)
+// ---------------------------------------------------------------------------
+
+/** Return 'true', 'false', or null if not a literal boolean expression. */
+function _isLiteralBoolean(expr: string): 'true' | 'false' | null {
+  const trimmed = expr.trim();
+  if (trimmed === 'true') return 'true';
+  if (trimmed === 'false') return 'false';
+  return null;
+}
+
+/** Attribute/binding names already captured by dedicated WidgetUIProps fields. */
+const _UI_CAPTURED_NAMES = new Set([
+  'disabled', 'hidden', 'required', 'name', 'formcontrolname',
+  'ngmodel', 'type', 'min', 'max', 'minlength', 'maxlength', 'pattern',
+  'routerlink', 'href',
+]);
+
+/**
+ * Build WidgetUIProps from intermediate WidgetInfo data.
+ * Bridges existing extraction (predicates, validators, attributes, bindings)
+ * to spec-compliant WidgetUIProps (approach.md §9).
+ */
+function buildWidgetUIProps(widget: WidgetInfo): WidgetUIProps {
+  const ui: WidgetUIProps = { rawAttrsText: {} };
+
+  // ── Visibility (from visibilityPredicates) ──
+  // Priority: any literal hidden wins; else first non-empty expression
+  let visExprCaptured = false;
+  for (const pred of widget.visibilityPredicates) {
+    if (pred.kind === 'ngIf') {
+      const lit = _isLiteralBoolean(pred.expr);
+      if (lit === 'false') {
+        ui.visibleLiteral = false;
+      } else if (lit === null && !visExprCaptured && pred.expr.trim() !== '') {
+        ui.visibleExprText = pred.expr;
+        visExprCaptured = true;
+      }
+    } else if (pred.kind === 'hidden') {
+      const lit = _isLiteralBoolean(pred.expr);
+      if (lit === 'true') {
+        // hidden=true → not visible
+        ui.visibleLiteral = false;
+      } else if (lit === null && !visExprCaptured && pred.expr.trim() !== '') {
+        ui.visibleExprText = pred.expr;
+        visExprCaptured = true;
+      }
+    } else if (!visExprCaptured && pred.expr.trim() !== '') {
+      // ngSwitchCase, customDirective, permissionDirective
+      ui.visibleExprText = pred.expr;
+      visExprCaptured = true;
+    }
+  }
+
+  // ── Enabledness (from enablementPredicates + bare disabled attr) ──
+  if ('disabled' in widget.attributes) {
+    ui.enabledLiteral = false;
+  }
+  let enabExprCaptured = false;
+  for (const pred of widget.enablementPredicates) {
+    if (pred.kind === 'disabled') {
+      const lit = _isLiteralBoolean(pred.expr);
+      if (lit === 'true') {
+        ui.enabledLiteral = false;
+      } else if (lit === null && !enabExprCaptured && pred.expr.trim() !== '') {
+        ui.enabledExprText = pred.expr;
+        enabExprCaptured = true;
+      }
+    } else if (!enabExprCaptured && pred.expr.trim() !== '') {
+      // permissionDirective, customDirective
+      ui.enabledExprText = pred.expr;
+      enabExprCaptured = true;
+    }
+  }
+
+  // ── Requiredness ──
+  if (widget.validators?.required === true) {
+    ui.requiredLiteral = true;
+  }
+  // Check for [required]="expr" binding
+  const requiredBinding = widget.bindings.find(
+    (b) => b.kind === 'boundAttr' && b.name.toLowerCase() === 'required',
+  );
+  if (requiredBinding?.value !== undefined) {
+    const lit = _isLiteralBoolean(requiredBinding.value);
+    if (lit === 'true') {
+      ui.requiredLiteral = true;
+    } else if (lit !== 'false' && requiredBinding.value.trim() !== '') {
+      ui.requiredExprText = requiredBinding.value;
+    }
+  }
+
+  // ── Binding captures ──
+  if (widget.attributes['name'] !== undefined) {
+    ui.nameAttr = widget.attributes['name'];
+  }
+
+  // formControlName: attr or boundAttr
+  const fcnBinding = widget.bindings.find(
+    (b) => b.name.toLowerCase() === 'formcontrolname',
+  );
+  if (fcnBinding?.value !== undefined) {
+    ui.formControlName = fcnBinding.value.replace(/^['"]|['"]$/g, '');
+  } else if (widget.attributes['formcontrolname'] !== undefined) {
+    ui.formControlName = widget.attributes['formcontrolname'];
+  }
+
+  // ngModel
+  const ngModelBinding = widget.bindings.find(
+    (b) => b.name.toLowerCase() === 'ngmodel' && b.kind === 'boundAttr',
+  );
+  if (ngModelBinding?.value !== undefined) {
+    ui.ngModelText = ngModelBinding.value;
+  }
+
+  // ── Input shape constraints ──
+  if (widget.attributes['type'] !== undefined) {
+    ui.inputType = widget.attributes['type'];
+  }
+  if (widget.validators?.minLength !== undefined) {
+    ui.minLength = widget.validators.minLength;
+  }
+  if (widget.validators?.maxLength !== undefined) {
+    ui.maxLength = widget.validators.maxLength;
+  }
+  if (widget.validators?.pattern !== undefined) {
+    ui.pattern = widget.validators.pattern;
+  }
+  // min/max from attributes (numeric input constraints)
+  const minAttr = widget.attributes['min'];
+  if (minAttr !== undefined) {
+    const n = Number(minAttr);
+    if (!isNaN(n)) ui.min = n;
+  }
+  const maxAttr = widget.attributes['max'];
+  if (maxAttr !== undefined) {
+    const n = Number(maxAttr);
+    if (!isNaN(n)) ui.max = n;
+  }
+
+  // ── rawAttrsText: remaining non-event bindings as catch-all ──
+  const rawEntries: Array<[string, string]> = [];
+  for (const b of widget.bindings) {
+    if (b.kind === 'event') continue;
+    if (_UI_CAPTURED_NAMES.has(b.name.toLowerCase())) continue;
+    if (b.value !== undefined) {
+      rawEntries.push([b.name, b.value]);
+    }
+  }
+  // Deterministic key ordering
+  rawEntries.sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [k, v] of rawEntries) {
+    ui.rawAttrsText[k] = v;
+  }
+
+  return ui;
+}
+
+// ---------------------------------------------------------------------------
+// Atom emission (spec §7 — UI atom rules on executable edges)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build UI atoms for a widget-origin executable edge.
+ * Emits visibility, enabledness, and requiredness atoms from WidgetUIProps.
+ */
+export function buildWidgetAtoms(widgetId: string, ui: WidgetUIProps, source: SourceRef): Atom[] {
+  const atoms: Atom[] = [];
+
+  // §7.1 — Visibility
+  if (ui.visibleLiteral === false) {
+    atoms.push({ kind: 'WidgetVisible', args: [widgetId, 'false'], source });
+  } else if (ui.visibleExprText !== undefined) {
+    atoms.push({ kind: 'WidgetVisibleExpr', args: [widgetId, ui.visibleExprText], source });
+  }
+
+  // §7.1 — Enabledness
+  if (ui.enabledLiteral === false) {
+    atoms.push({ kind: 'WidgetEnabled', args: [widgetId, 'false'], source });
+  } else if (ui.enabledExprText !== undefined) {
+    atoms.push({ kind: 'WidgetEnabledExpr', args: [widgetId, ui.enabledExprText], source });
+  }
+
+  // §7.1 — Requiredness
+  if (ui.requiredLiteral === true) {
+    atoms.push({ kind: 'WidgetRequired', args: [widgetId, 'true'], source });
+  } else if (ui.requiredExprText !== undefined) {
+    atoms.push({ kind: 'WidgetRequiredExpr', args: [widgetId, ui.requiredExprText], source });
+  }
+
+  return atoms;
+}
+
+/**
+ * Build FormValid atom for WIDGET_SUBMITS_FORM edges (spec §7.2).
+ */
+export function buildFormAtom(widgetId: string, source: SourceRef): Atom {
+  return { kind: 'FormValid', args: [widgetId], source };
+}
+
+/**
+ * Build InputConstraint atoms for literal input shape constraints (spec §7.3).
+ * Emits one atom per constraint key (minLength, maxLength, min, max, pattern).
+ */
+export function buildInputConstraintAtoms(widgetId: string, ui: WidgetUIProps, source: SourceRef): Atom[] {
+  const atoms: Atom[] = [];
+
+  if (ui.minLength !== undefined) {
+    atoms.push({ kind: 'InputConstraint', args: [widgetId, 'minLength', String(ui.minLength)], source });
+  }
+  if (ui.maxLength !== undefined) {
+    atoms.push({ kind: 'InputConstraint', args: [widgetId, 'maxLength', String(ui.maxLength)], source });
+  }
+  if (ui.min !== undefined) {
+    atoms.push({ kind: 'InputConstraint', args: [widgetId, 'min', String(ui.min)], source });
+  }
+  if (ui.max !== undefined) {
+    atoms.push({ kind: 'InputConstraint', args: [widgetId, 'max', String(ui.max)], source });
+  }
+  if (ui.pattern !== undefined) {
+    atoms.push({ kind: 'InputConstraint', args: [widgetId, 'pattern', ui.pattern], source });
+  }
+
+  return atoms;
+}
+
+// ---------------------------------------------------------------------------
 // Builder
 // ---------------------------------------------------------------------------
 
@@ -138,6 +367,21 @@ export class NavigationGraphBuilder {
     const routeById = new Map<string, Route>();
     for (const route of routeMap.routes) {
       routeById.set(route.id, route);
+    }
+
+    // Component → activating route fullPaths (for relative routerLink resolution)
+    const componentToRouteFullPaths = new Map<string, string[]>();
+    for (const route of routeMap.routes) {
+      let compId: string | undefined;
+      if (route.kind === 'ComponentRoute') {
+        compId = (route as ComponentRoute).componentId;
+      } else if (route.kind === 'WildcardRoute') {
+        compId = (route as WildcardRoute).componentId;
+      }
+      if (compId === undefined) continue;
+      const paths = componentToRouteFullPaths.get(compId) ?? [];
+      paths.push(route.fullPath);
+      componentToRouteFullPaths.set(compId, paths);
     }
 
     // Component lookup (className → ComponentInfo)
@@ -189,7 +433,12 @@ export class NavigationGraphBuilder {
           params: [...route.params.routeParams],
           guards: route.guards.map((g) => g.guardName).sort(),
           roles: this._extractRoles(route),
-          ...(isRedirect ? { redirectTo: (route as RedirectRoute).redirectToFullPath } : {}),
+          routeType: route.kind,
+          ...(isRedirect
+            ? { redirectTo: (route as RedirectRoute).redirectToFullPath }
+            : (route as unknown as { redirectToFullPath?: string }).redirectToFullPath !== undefined
+              ? { redirectTo: (route as unknown as { redirectToFullPath: string }).redirectToFullPath }
+              : {}),
         },
       };
       nodes.push(node);
@@ -231,6 +480,7 @@ export class NavigationGraphBuilder {
     allWidgets.sort((a, b) => a.id.localeCompare(b.id));
 
     const widgetById = new Map<string, WidgetInfo>();
+    const widgetUIById = new Map<string, WidgetUIProps>();
     for (const widget of allWidgets) {
       widgetById.set(widget.id, widget);
 
@@ -248,6 +498,9 @@ export class NavigationGraphBuilder {
         (b) => b.name === 'href' && b.kind === 'attr',
       );
 
+      const widgetUI = buildWidgetUIProps(widget);
+      widgetUIById.set(widget.id, widgetUI);
+
       const node: WidgetNode = {
         id: widget.id,
         kind: 'Widget',
@@ -264,6 +517,7 @@ export class NavigationGraphBuilder {
             : {}),
           ...(hrefBinding?.value !== undefined ? { staticHref: hrefBinding.value } : {}),
           ...(Object.keys(widget.attributes).length > 0 ? { attributes: widget.attributes } : {}),
+          ui: widgetUI,
         },
       };
       nodes.push(node);
@@ -403,8 +657,14 @@ export class NavigationGraphBuilder {
       }
     }
 
-    // WIDGET_COMPOSES_WIDGET — requires parent-child widget tracking (deferred: no data yet)
-    // Will be emitted when WidgetInfo gains parentWidgetId field.
+    // WIDGET_CONTAINS_WIDGET — parent-child widget containment (form→controls, select→options)
+    for (const widget of allWidgets) {
+      if (widget.parentWidgetId !== undefined && nodeIds.has(widget.parentWidgetId) && nodeIds.has(widget.id)) {
+        addEdge('WIDGET_CONTAINS_WIDGET', widget.parentWidgetId, widget.id, [
+          toRef(widget.origin, projectRoot),
+        ]);
+      }
+    }
 
     // COMPONENT_COMPOSES_COMPONENT — resolve selectors to component IDs
     for (const comp of sortedComponents) {
@@ -495,25 +755,37 @@ export class NavigationGraphBuilder {
     // ─── 7b. EXECUTABLE EDGES ─────────────────────────────────────────────
 
     // ROUTE_REDIRECTS_TO_ROUTE
+    // Emit for RedirectRoute and for non-RedirectRoute with preserved redirect
+    // info from dedup (§5 redirect preservation).
     for (const route of routeMap.routes) {
-      if (route.kind !== 'RedirectRoute') continue;
-      const redirect = route as RedirectRoute;
-      const targetId = pathToRouteId.get(redirect.redirectToFullPath);
+      const redirectToFullPath: string | undefined =
+        route.kind === 'RedirectRoute'
+          ? (route as RedirectRoute).redirectToFullPath
+          : (route as unknown as { redirectToFullPath?: string }).redirectToFullPath;
+
+      if (redirectToFullPath === undefined) continue;
+
+      const targetId = pathToRouteId.get(redirectToFullPath);
       const targetRoute = targetId !== undefined ? routeById.get(targetId) : undefined;
+      const routeRef = toRef(route.origin, projectRoot);
+      const redirectCS = this._buildNavConstraints(targetRoute);
+      redirectCS.evidence = [routeRef];
 
       addEdge('ROUTE_REDIRECTS_TO_ROUTE', route.id, targetId ?? null, [
-        toRef(route.origin, projectRoot),
+        routeRef,
       ], {
         isSystem: true,
         targetRouteId: targetId ?? null,
-        ...(targetId === undefined ? { targetText: redirect.redirectToFullPath } : {}),
-        constraints: this._buildNavConstraints(targetRoute),
+        ...(targetId === undefined ? { targetText: redirectToFullPath } : {}),
+        constraints: redirectCS,
       });
     }
 
     // Widget-origin edges: WIDGET_NAVIGATES_ROUTE, WIDGET_NAVIGATES_EXTERNAL
     for (const widget of allWidgets) {
       if (!nodeIds.has(widget.componentId)) continue;
+      const wUI = widgetUIById.get(widget.id);
+      const widgetRef = toRef(widget.origin, projectRoot);
 
       for (const binding of widget.bindings) {
         const name = binding.name.toLowerCase();
@@ -522,23 +794,39 @@ export class NavigationGraphBuilder {
         if (name === 'routerlink') {
           const targetPath = this._normalizeRouterLinkValue(binding.value ?? '');
           let targetId = targetPath !== null ? pathToRouteId.get(targetPath) : undefined;
-          // Fallback 1: array navigation with dynamic segments
+          // Fallback 1: relative path resolution against parent route
+          if (targetId === undefined) {
+            targetId = this._resolveRelativeNavigation(
+              binding.value ?? '', widget.componentId, componentToRouteFullPaths, pathToRouteId,
+            );
+          }
+          // Fallback 2: array navigation with dynamic segments
           if (targetId === undefined && (binding.value ?? '').startsWith('[')) {
             targetId = this._resolveArrayNavigation(binding.value ?? '', pathToRouteId);
           }
-          // Fallback 2: interpolation resolution (e.g., /owners/{{owner.id}})
+          // Fallback 3: interpolation resolution (e.g., /owners/{{owner.id}})
           if (targetId === undefined) {
             targetId = this._resolveInterpolationNavigation(binding.value ?? '', pathToRouteId);
           }
           const targetRoute = targetId !== undefined ? routeById.get(targetId) : undefined;
+          const navCS = this._buildNavConstraints(targetRoute);
+          // Attach widget UI atoms + input constraint atoms
+          if (wUI !== undefined) {
+            navCS.uiAtoms = [
+              ...buildWidgetAtoms(widget.id, wUI, widgetRef),
+              ...buildInputConstraintAtoms(widget.id, wUI, widgetRef),
+            ];
+          }
+          const bindingRef = toRef(binding.origin, projectRoot);
+          navCS.evidence = [bindingRef];
 
           addEdge('WIDGET_NAVIGATES_ROUTE', widget.id, targetId ?? null, [
-            toRef(binding.origin, projectRoot),
+            bindingRef,
           ], {
             trigger: { viaRouterLink: true },
             targetRouteId: targetId ?? null,
             ...(targetId === undefined ? { targetText: binding.value ?? '' } : {}),
-            constraints: this._buildNavConstraints(targetRoute),
+            constraints: navCS,
           });
         }
 
@@ -546,10 +834,21 @@ export class NavigationGraphBuilder {
         if (name === 'href' && this._isExternal(binding.value ?? '')) {
           const url = binding.value ?? '';
           const extId = getOrCreateExternal(url, binding.origin);
+          const bindingRef = toRef(binding.origin, projectRoot);
+          const uiAtoms = wUI !== undefined
+            ? [...buildWidgetAtoms(widget.id, wUI, widgetRef), ...buildInputConstraintAtoms(widget.id, wUI, widgetRef)]
+            : [];
           addEdge('WIDGET_NAVIGATES_EXTERNAL', widget.id, extId, [
-            toRef(binding.origin, projectRoot),
+            bindingRef,
           ], {
             trigger: { event: 'click' },
+            constraints: {
+              requiredParams: [],
+              guards: [],
+              roles: [],
+              uiAtoms,
+              evidence: [bindingRef],
+            },
           });
         }
       }
@@ -579,7 +878,13 @@ export class NavigationGraphBuilder {
             ? { componentId: compId, methodName: event.handlerName }
             : undefined;
 
-        const triggerRef: TriggerRef = { event: event.eventType };
+        // effectGroupId links trigger edges to their effect edges (CCS/CNR)
+        const effectGroupId: string | undefined =
+          event.handlerName !== undefined
+            ? `${compId}::${event.handlerName}`
+            : undefined;
+
+        const triggerRef: TriggerRef = { event: event.rawEventName ?? event.eventType };
 
         const edgeRefs: SourceRef[] = event.handlerOrigin !== undefined
           ? [toRef(event.handlerOrigin, projectRoot)]
@@ -588,13 +893,37 @@ export class NavigationGraphBuilder {
             : [];
 
         if (edgeRefs.length > 0) {
+          // Build widget UI atoms for the constraint surface
+          const wUI = widgetUIById.get(widget.id);
+          const widgetRef = toRef(widget.origin, projectRoot);
+          const uiAtoms: Atom[] = wUI !== undefined
+            ? [...buildWidgetAtoms(widget.id, wUI, widgetRef)]
+            : [];
+          // §7.2: FormValid atom for form submission edges
+          if (isSubmit) {
+            uiAtoms.push(buildFormAtom(widget.id, widgetRef));
+          }
+          // §7.3: InputConstraint atoms
+          if (wUI !== undefined) {
+            uiAtoms.push(...buildInputConstraintAtoms(widget.id, wUI, widgetRef));
+          }
+
           addEdge(triggerKind, widget.id, compId, edgeRefs, {
             trigger: triggerRef,
             ...(handlerRef !== undefined ? { handler: handlerRef } : {}),
+            ...(effectGroupId !== undefined ? { effectGroupId } : {}),
+            constraints: {
+              requiredParams: [],
+              guards: [],
+              roles: [],
+              uiAtoms,
+              evidence: [...edgeRefs],
+            },
           });
         }
 
-        // Process call contexts from the handler
+        // Process call contexts from the handler, passing effectGroupId
+        let callsiteOrdinal = 0;
         for (const ctx of event.callContexts) {
           this._processCallContext(
             ctx,
@@ -606,6 +935,9 @@ export class NavigationGraphBuilder {
             getOrCreateExternal,
             nodeIds,
             addEdge,
+            compByClassName,
+            effectGroupId,
+            ctx.kind === 'ServiceCall' ? callsiteOrdinal++ : undefined,
           );
         }
       }
@@ -635,12 +967,69 @@ export class NavigationGraphBuilder {
       return a.id.localeCompare(b.id);
     });
 
+    // Fail-fast invariants: effectGroupId/callsiteOrdinal consistency
+    for (const e of edges) {
+      if (e.kind === 'COMPONENT_CALLS_SERVICE') {
+        if (e.effectGroupId === undefined) {
+          throw new Error(`Invariant: CCS edge ${e.id} missing effectGroupId`);
+        }
+        if (e.callsiteOrdinal === undefined) {
+          throw new Error(`Invariant: CCS edge ${e.id} missing callsiteOrdinal`);
+        }
+      }
+      if (e.kind === 'COMPONENT_NAVIGATES_ROUTE' && e.effectGroupId === undefined) {
+        throw new Error(`Invariant: CNR edge ${e.id} missing effectGroupId`);
+      }
+      if ((e.kind === 'WIDGET_TRIGGERS_HANDLER' || e.kind === 'WIDGET_SUBMITS_FORM')
+          && e.handler !== undefined && e.effectGroupId === undefined) {
+        throw new Error(`Invariant: ${e.kind} edge ${e.id} with handler missing effectGroupId`);
+      }
+    }
+
     this._log.debug('Multigraph built', {
       nodes: nodes.length,
       edges: edges.length,
       structural: edges.filter((e) => STRUCTURAL_EDGE_KINDS.has(e.kind)).length,
       executable: edges.filter((e) => !STRUCTURAL_EDGE_KINDS.has(e.kind)).length,
     });
+
+    // Log WidgetUIProps and atom emission stats
+    const widgetNodes = nodes.filter((n) => n.kind === 'Widget');
+    const widgetsWithUI = widgetNodes.filter((n) => {
+      const meta = n.meta as WidgetNode['meta'];
+      return meta.ui.visibleLiteral !== undefined
+        || meta.ui.visibleExprText !== undefined
+        || meta.ui.enabledLiteral !== undefined
+        || meta.ui.enabledExprText !== undefined
+        || meta.ui.requiredLiteral !== undefined
+        || meta.ui.requiredExprText !== undefined;
+    });
+    const edgesWithAtoms = edges.filter((e) => e.constraints.uiAtoms.length > 0);
+    const totalAtoms = edges.reduce((sum, e) => sum + e.constraints.uiAtoms.length, 0);
+    const edgesWithEvidence = edges.filter((e) => e.constraints.evidence.length > 0);
+
+    this._log.debug('WidgetUIProps stats', {
+      totalWidgets: widgetNodes.length,
+      widgetsWithUIConstraints: widgetsWithUI.length,
+    });
+    this._log.debug('Atom emission stats', {
+      edgesWithAtoms: edgesWithAtoms.length,
+      totalAtoms,
+      edgesWithEvidence: edgesWithEvidence.length,
+    });
+
+    // Log individual widget UI details at debug level
+    for (const wn of widgetsWithUI) {
+      const meta = wn.meta as WidgetNode['meta'];
+      const uiFields: Record<string, unknown> = {};
+      if (meta.ui.visibleLiteral !== undefined) uiFields['visibleLiteral'] = meta.ui.visibleLiteral;
+      if (meta.ui.visibleExprText !== undefined) uiFields['visibleExprText'] = meta.ui.visibleExprText;
+      if (meta.ui.enabledLiteral !== undefined) uiFields['enabledLiteral'] = meta.ui.enabledLiteral;
+      if (meta.ui.enabledExprText !== undefined) uiFields['enabledExprText'] = meta.ui.enabledExprText;
+      if (meta.ui.requiredLiteral !== undefined) uiFields['requiredLiteral'] = meta.ui.requiredLiteral;
+      if (meta.ui.requiredExprText !== undefined) uiFields['requiredExprText'] = meta.ui.requiredExprText;
+      this._log.debug(`  widget UI: ${wn.id}`, uiFields);
+    }
 
     return { nodes, edges };
   }
@@ -669,15 +1058,20 @@ export class NavigationGraphBuilder {
       }
     }
 
-    // Follow redirect chains from entry routes
+    // Follow redirect chains from entry routes.
+    // Check both RedirectRoute routes and non-RedirectRoute routes with preserved
+    // redirect info from dedup (§5 redirect preservation).
     let changed = true;
     while (changed) {
       changed = false;
       for (const route of routes) {
-        if (route.kind !== 'RedirectRoute') continue;
         if (!entryIds.has(route.id)) continue;
-        const redirect = route as RedirectRoute;
-        const targetId = pathToRouteId.get(redirect.redirectToFullPath);
+        const redirectToFullPath: string | undefined =
+          route.kind === 'RedirectRoute'
+            ? (route as RedirectRoute).redirectToFullPath
+            : (route as unknown as { redirectToFullPath?: string }).redirectToFullPath;
+        if (redirectToFullPath === undefined) continue;
+        const targetId = pathToRouteId.get(redirectToFullPath);
         if (targetId !== undefined && !entryIds.has(targetId)) {
           entryIds.add(targetId);
           changed = true;
@@ -702,18 +1096,25 @@ export class NavigationGraphBuilder {
     getOrCreateExternal: (url: string, origin: Origin) => string,
     nodeIds: Set<string>,
     addEdge: (kind: EdgeKind, from: string, to: string | null, refs: SourceRef[], extras?: Partial<Edge>) => void,
+    compByClassName: Map<string, ComponentInfo>,
+    effectGroupId?: string,
+    callsiteOrdinal?: number,
   ): void {
     if (ctx.kind === 'Navigate' && ctx.target?.route !== undefined) {
       // COMPONENT_NAVIGATES_ROUTE
       const resolved = this._resolveNavigatePath(ctx.target.route, pathToRouteId);
       const targetRoute = resolved !== undefined ? routeById.get(resolved) : undefined;
+      const ctxRef = toRef(ctx.origin, projectRoot);
+      const compNavCS = this._buildNavConstraints(targetRoute);
+      compNavCS.evidence = [ctxRef];
 
       addEdge('COMPONENT_NAVIGATES_ROUTE', compId, resolved ?? null, [
-        toRef(ctx.origin, projectRoot),
+        ctxRef,
       ], {
         targetRouteId: resolved ?? null,
         ...(resolved === undefined ? { targetText: ctx.target.route } : {}),
-        constraints: this._buildNavConstraints(targetRoute),
+        constraints: compNavCS,
+        ...(effectGroupId !== undefined ? { effectGroupId } : {}),
       });
     } else if (ctx.kind === 'ServiceCall' && ctx.target?.serviceMethod !== undefined) {
       // COMPONENT_CALLS_SERVICE
@@ -730,11 +1131,21 @@ export class NavigationGraphBuilder {
       if (serviceId !== undefined && nodeIds.has(serviceId)) {
         addEdge('COMPONENT_CALLS_SERVICE', compId, serviceId, [
           toRef(ctx.origin, projectRoot),
-        ]);
-      } else {
-        // Emit as self-referencing service call (component → component) as fallback
-        // when service node not resolved
-        addEdge('COMPONENT_CALLS_SERVICE', compId, compId, [
+        ], {
+          ...(effectGroupId !== undefined ? { effectGroupId } : {}),
+          ...(callsiteOrdinal !== undefined ? { callsiteOrdinal } : {}),
+        });
+      }
+      // When service node cannot be resolved, the call is an internal method
+      // call (e.g. this.someHelper.doWork()) — not a service call. Drop it.
+    } else if (ctx.kind === 'DialogOpen' && ctx.target?.componentClassName !== undefined) {
+      // COMPONENT_COMPOSES_COMPONENT (dynamic composition via dialog)
+      // Resolve component class name to a ComponentNode
+      const dialogCompId = this._resolveDialogComponent(
+        ctx.target.componentClassName, compByClassName, nodeIds,
+      );
+      if (dialogCompId !== undefined && dialogCompId !== compId) {
+        addEdge('COMPONENT_COMPOSES_COMPONENT', compId, dialogCompId, [
           toRef(ctx.origin, projectRoot),
         ]);
       }
@@ -811,6 +1222,89 @@ export class NavigationGraphBuilder {
     if (stripped.startsWith('/')) return stripped;
     if (stripped.startsWith('./') || stripped.startsWith('../')) return null;
     return `/${stripped}`;
+  }
+
+  /**
+   * Resolve relative routerLink values against the parent route's fullPath.
+   * A relative path is one that doesn't start with '/' after stripping quotes.
+   * Resolution: parentFullPath + '/' + relativePath, then match against route table.
+   * Deterministic tie-breaking: fewest path segments, then lex smallest fullPath.
+   */
+  private _resolveRelativeNavigation(
+    rawValue: string,
+    componentId: string,
+    componentToRouteFullPaths: Map<string, string[]>,
+    pathToRouteId: Map<string, string>,
+  ): string | undefined {
+    // Strip quotes and array brackets
+    let stripped = rawValue.replace(/^['"]|['"]$/g, '').trim();
+    if (stripped.startsWith('[')) {
+      stripped = stripped.replace(/^\[|\]$/g, '').split(',')[0]?.trim().replace(/^['"]|['"]$/g, '') ?? '';
+    }
+    // Only resolve truly relative paths (not starting with /)
+    if (stripped.startsWith('/') || stripped === '' || stripped.includes('{{')) return undefined;
+    // Strip ./ prefix if present
+    if (stripped.startsWith('./')) stripped = stripped.slice(2);
+    // Skip ../ paths (complex resolution not supported)
+    if (stripped.startsWith('../')) return undefined;
+
+    const parentPaths = componentToRouteFullPaths.get(componentId);
+    if (parentPaths === undefined || parentPaths.length === 0) return undefined;
+
+    // Try resolving against each parent route
+    const candidates: Array<{ routeId: string; fullPath: string }> = [];
+    for (const parentPath of parentPaths) {
+      const resolved = parentPath === '/'
+        ? `/${stripped}`
+        : `${parentPath}/${stripped}`;
+
+      // Direct match
+      const routeId = pathToRouteId.get(resolved);
+      if (routeId !== undefined) {
+        candidates.push({ routeId, fullPath: resolved });
+        continue;
+      }
+
+      // Try matching with :param segments in the resolved path
+      for (const [routeFullPath, rId] of pathToRouteId) {
+        if (this._pathMatchesTemplate(resolved, routeFullPath)) {
+          candidates.push({ routeId: rId, fullPath: routeFullPath });
+        }
+      }
+    }
+
+    if (candidates.length === 0) return undefined;
+    if (candidates.length === 1) return candidates[0]!.routeId;
+
+    // Deterministic tie-breaking: fewest segments, then lex smallest fullPath
+    candidates.sort((a, b) => {
+      const segA = a.fullPath.split('/').length;
+      const segB = b.fullPath.split('/').length;
+      if (segA !== segB) return segA - segB;
+      return a.fullPath.localeCompare(b.fullPath);
+    });
+    return candidates[0]!.routeId;
+  }
+
+  /** Resolve a component class name to a node ID for dialog composition. */
+  private _resolveDialogComponent(
+    className: string,
+    compByClassName: Map<string, ComponentInfo>,
+    nodeIds: Set<string>,
+  ): string | undefined {
+    const comp = compByClassName.get(className);
+    if (comp !== undefined && nodeIds.has(comp.id)) return comp.id;
+    return undefined;
+  }
+
+  /** Check if a resolved path matches a route template (e.g., /projects/123 matches /projects/:id). */
+  private _pathMatchesTemplate(resolvedPath: string, routeTemplate: string): boolean {
+    const resolvedSegs = resolvedPath.split('/').filter(s => s.length > 0);
+    const templateSegs = routeTemplate.split('/').filter(s => s.length > 0);
+    if (resolvedSegs.length !== templateSegs.length) return false;
+    return templateSegs.every((tSeg, i) =>
+      tSeg.startsWith(':') || tSeg === resolvedSegs[i],
+    );
   }
 
   /**

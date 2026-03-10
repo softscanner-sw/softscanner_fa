@@ -21,6 +21,8 @@ export interface StructuralDirectiveResult {
   directive: 'ngIf' | 'ngSwitchCase' | string;
   expr: string;
   span?: { start: number; end: number };
+  /** Span of the host element (structural node), for containment matching. */
+  elementSpan?: { start: number; end: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -87,6 +89,9 @@ export class TemplateAstUtils {
    */
   static extractStructuralDirectives(ast: TemplateAstNode[]): StructuralDirectiveResult[] {
     const results: StructuralDirectiveResult[] = [];
+    // Track spans already added from structural nodes to avoid duplicates:
+    // children of structural nodes are also visited as standalone attrs.
+    const seenSpans = new Set<string>();
 
     TemplateAstUtils.walk(ast, (n) => {
       // Structural directives appear as:
@@ -102,7 +107,11 @@ export class TemplateAstUtils {
                 directive,
                 expr: TsAstUtils.truncateDeterministically(child.value?.trim() ?? '', 200),
               };
-              if (child.span !== undefined) item.span = child.span;
+              if (child.span !== undefined) {
+                item.span = child.span;
+                seenSpans.add(`${child.span.start}:${child.span.end}`);
+              }
+              if (n.span !== undefined) item.elementSpan = n.span;
               results.push(item);
             }
           }
@@ -112,6 +121,8 @@ export class TemplateAstUtils {
       if ((n.kind === 'attr' || n.kind === 'boundAttr') && n.name !== undefined) {
         const directive = TemplateAstUtils._normalizeStructuralName(n.name);
         if (directive !== null && n.value !== undefined) {
+          // Skip if already extracted from a structural parent
+          if (n.span !== undefined && seenSpans.has(`${n.span.start}:${n.span.end}`)) return;
           const item: StructuralDirectiveResult = {
             directive,
             expr: TsAstUtils.truncateDeterministically(n.value.trim(), 200),

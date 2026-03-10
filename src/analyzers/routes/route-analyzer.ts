@@ -289,6 +289,24 @@ export class RouteAnalyzer {
     }
     canonical.childrenIds = [...allChildIds].sort();
 
+    // Preserve redirect info from any RedirectRoute member (§5 redirect preservation).
+    // If the canonical is not a RedirectRoute but a group member is, carry
+    // the redirect target onto the canonical so the builder can emit
+    // ROUTE_REDIRECTS_TO_ROUTE edges.
+    if (canonical.kind !== 'RedirectRoute') {
+      for (const member of sorted) {
+        if (member.kind === 'RedirectRoute') {
+          const redirect = member as RedirectRoute;
+          (canonical as unknown as { redirectTo: string }).redirectTo = redirect.redirectTo;
+          (canonical as unknown as { redirectToFullPath: string }).redirectToFullPath = redirect.redirectToFullPath;
+          if (redirect.pathMatch !== undefined) {
+            (canonical as unknown as { pathMatch: string }).pathMatch = redirect.pathMatch;
+          }
+          break; // Take the first (highest-scored) redirect
+        }
+      }
+    }
+
     return canonical;
   }
 
@@ -342,7 +360,10 @@ export class RouteAnalyzer {
           tsConfigPath: '',
         });
         if (records.length > 0) {
-          this._convertRecords(records, parentFullPath, filePath, parentRouteId, out, visited, seenRecordOrigins, componentRegistry);
+          // Pass null as parentId: lazy-loaded routes from forChild() are top-level
+          // within their module scope, not children of the loadChildren placeholder.
+          // Parent–child is established by children:[] arrays, not loadChildren.
+          this._convertRecords(records, parentFullPath, filePath, null, out, visited, seenRecordOrigins, componentRegistry);
         }
         break;
       }

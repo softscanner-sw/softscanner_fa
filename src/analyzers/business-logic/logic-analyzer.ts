@@ -16,16 +16,23 @@
  *   - LLM-based refinement
  */
 
-import type { Project, SourceFile } from 'ts-morph';
+import type { ClassDeclaration, MethodDeclaration, Project, SourceFile } from 'ts-morph';
 import type { ComponentRegistry } from '../../models/components.js';
 import type { RouteMap } from '../../models/routes.js';
 import type { WidgetInfo } from '../../models/widgets.js';
 import type { WidgetEvent, WidgetEventMap } from '../../models/events.js';
 import type { AnalyzerConfig } from '../../models/analyzer-config.js';
 import { TsAstUtils } from '../../parsers/ts/ts-ast-utils.js';
-import { normalizeEventType, extractHandlerName, extractCallContexts, sortWidgetEvents } from './logic-utils.js';
+import { normalizeEventType, extractHandlerName, extractCallContexts, isDiagnosticOnly, sortWidgetEvents } from './logic-utils.js';
 
 const NAV_BINDING_NAMES = new Set(['routerlink', 'href']);
+
+/**
+ * Angular framework-internal event names that are plumbing for two-way data
+ * binding (e.g., [(ngModel)] desugars to (ngModelChange)).  These are NOT
+ * direct user interactions and must not produce WIDGET_TRIGGERS_HANDLER edges.
+ */
+const FRAMEWORK_INTERNAL_EVENTS = new Set(['ngmodelchange', 'valuechange']);
 
 export class LogicAnalyzer {
   private readonly _cfg: AnalyzerConfig;
@@ -114,25 +121,30 @@ export class LogicAnalyzer {
       for (const binding of widget.bindings) {
         const bindingName = binding.name.toLowerCase();
 
-        // Navigation bindings (routerLink, href) → navigation event, no handler method
+        // Navigation bindings (routerLink, href) are handled by the builder
+        // as WIDGET_NAVIGATES_ROUTE/EXTERNAL edges — skip here to avoid
+        // emitting a redundant WIDGET_TRIGGERS_HANDLER edge.
         if (NAV_BINDING_NAMES.has(bindingName)) {
-          events.push({
-            widgetId: widget.id,
-            eventType: 'navigation',
-            callContexts: [],
-          });
+          continue;
+        }
+
+        // Framework-internal events (ngModelChange) are two-way binding
+        // plumbing, not user interactions — skip to avoid spurious WTH edges.
+        if (binding.kind === 'event' && FRAMEWORK_INTERNAL_EVENTS.has(bindingName)) {
           continue;
         }
 
         // Event bindings: (click), (submit), (ngSubmit), etc.
         if (binding.kind === 'event') {
           const eventType = normalizeEventType(binding.name);
+          const rawEventName = binding.name.replace(/[()]/g, '');
           const handlerExpr = binding.value ?? '';
           const handlerName = extractHandlerName(handlerExpr);
 
           const widgetEvent: WidgetEvent = {
             widgetId: widget.id,
             eventType,
+            rawEventName,
             callContexts: [],
           };
           if (handlerName !== undefined) widgetEvent.handlerName = handlerName;
@@ -141,12 +153,18 @@ export class LogicAnalyzer {
           if (handlerName !== undefined && classDecl !== undefined) {
             const methodDecl = TsAstUtils.findMethodDeclaration(classDecl, handlerName);
             if (methodDecl !== null) {
+              // Diagnostic-only handlers (console.* only, no state) emit no
+              // executable edges — suppress the entire WidgetEvent (WTH + CCS/CNR).
+              if (isDiagnosticOnly(methodDecl as MethodDeclaration)) {
+                continue;
+              }
               widgetEvent.handlerOrigin = TsAstUtils.getOrigin(methodDecl, handlerName);
               // Cast: findMethodDeclaration returns Node | null; we need MethodDeclaration
               try {
                 widgetEvent.callContexts = extractCallContexts(
-                  methodDecl as import('ts-morph').MethodDeclaration,
+                  methodDecl as MethodDeclaration,
                   maxLen,
+                  classDecl as ClassDeclaration,
                 );
               } catch {
                 // Non-fatal: leave callContexts empty

@@ -28,6 +28,8 @@ export interface VizNode {
   subtypeKey?: string;
   /** Widget-specific: relevant HTML attributes (e.g., { type: 'submit' }). Empty if not available. */
   attrs?: Record<string, string>;
+  /** Widget-specific: owning component ID. */
+  componentId?: string;
 }
 
 export interface VizEdge {
@@ -38,35 +40,14 @@ export interface VizEdge {
   isSystem?: true;
   uiPreconditionCount: number;
   uiPreconditions: string[];
-}
-
-// ---------------------------------------------------------------------------
-// Path-finding output
-// ---------------------------------------------------------------------------
-
-export interface AggregatedConstraints {
-  uiPreconditions: string[];
-  requiredParams: string[];
-  authRequired: boolean;
-  rolesRequired: string[];
-  featureFlags: string[];
-}
-
-export interface PathStep {
-  nodeId: string;
-  edgeId?: string;
-  constraintsSoFar: AggregatedConstraints;
-}
-
-export type PruningVerdict = 'FEASIBLE' | 'CONDITIONAL' | 'PRUNED';
-
-export interface ExemplarPath {
-  id: string;
-  entryNodeId: string;
-  steps: PathStep[];
-  aggregated: AggregatedConstraints;
-  verdict: PruningVerdict;
-  pruneReason?: string;
+  /** Handler metadata for edges tied to a component method. */
+  handler?: { componentId: string; methodName: string };
+  /** Trigger metadata for widget-origin edges. */
+  trigger?: { event?: string; viaRouterLink?: boolean };
+  /** Raw target expression text for unresolved navigation edges. */
+  targetText?: string;
+  /** Handler-scoped effect group identifier. */
+  effectGroupId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,10 +65,6 @@ export interface VizStats {
   widgetNodes: number;
   serviceNodes: number;
   externalNodes: number;
-  exemplarPaths: number;
-  feasible: number;
-  conditional: number;
-  pruned: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,6 +76,5 @@ export interface VizData {
   nodes: VizNode[];
   edges: VizEdge[];
   entryNodeIds: string[];
-  exemplarPaths: ExemplarPath[];
   stats: VizStats;
 }

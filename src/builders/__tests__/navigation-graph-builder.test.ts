@@ -1240,7 +1240,7 @@ describe('NavigationGraphBuilder', () => {
         },
       };
 
-      const vizData = extractVizData(bundle, []);
+      const vizData = extractVizData(bundle);
       const routeNodes = vizData.nodes.filter((n) => n.type === 'Route');
       expect(routeNodes.length).toBeGreaterThan(0);
 
@@ -1255,6 +1255,220 @@ describe('NavigationGraphBuilder', () => {
       expect(labels).toContain('/owners/:id');
       expect(labels).toContain('/owners/add');
       expect(labels).toContain('/pets/:id/edit');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Trigger shapes on widget-origin edges
+  // -------------------------------------------------------------------------
+
+  describe('Trigger shapes', () => {
+    const widgetIdBase = `${HEADER_COMP_ID}|/project/src/app/header/header.component.html`;
+
+    function makeWidgetForTrigger(suffix: string, kind: WidgetInfo['kind'], bindings: WidgetInfo['bindings']): WidgetInfo {
+      const id = `${widgetIdBase}:${suffix}|${kind}|0`;
+      return {
+        id,
+        componentId: HEADER_COMP_ID,
+        kind,
+        origin: makeOrigin('/project/src/app/header/header.component.html', 10, 0),
+        path: { componentId: HEADER_COMP_ID, path: `HeaderComponent>${kind}` },
+        attributes: {},
+        bindings,
+        visibilityPredicates: [],
+        enablementPredicates: [],
+      };
+    }
+
+    it('(click) → trigger.event = "click"', () => {
+      const widget = makeWidgetForTrigger('10:0', 'Button', [
+        { kind: 'event', name: 'click', value: 'onClick()', origin: makeOrigin('/project/src/app/header/header.component.html', 10, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'click',
+          rawEventName: 'click',
+          handlerName: 'onClick',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 20),
+          callContexts: [],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_TRIGGERS_HANDLER' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.trigger?.event).toBe('click');
+      expect(edge!.trigger?.viaRouterLink).toBeUndefined();
+    });
+
+    it('(ngSubmit) → WIDGET_SUBMITS_FORM with trigger.event = "ngSubmit"', () => {
+      const widget = makeWidgetForTrigger('11:0', 'Form', [
+        { kind: 'event', name: 'ngSubmit', value: 'onSubmit()', origin: makeOrigin('/project/src/app/header/header.component.html', 11, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'submit',
+          rawEventName: 'ngSubmit',
+          handlerName: 'onSubmit',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 25),
+          callContexts: [],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_SUBMITS_FORM' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.trigger?.event).toBe('ngSubmit');
+    });
+
+    it('(input) → trigger.event = "input"', () => {
+      const widget = makeWidgetForTrigger('12:0', 'Input', [
+        { kind: 'event', name: 'input', value: 'onInput($event)', origin: makeOrigin('/project/src/app/header/header.component.html', 12, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'input',
+          rawEventName: 'input',
+          handlerName: 'onInput',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 30),
+          callContexts: [],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_TRIGGERS_HANDLER' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.trigger?.event).toBe('input');
+    });
+
+    it('WTH edge has effectGroupId when handler is present', () => {
+      const widget = makeWidgetForTrigger('15:0', 'Button', [
+        { kind: 'event', name: 'click', value: 'onClick()', origin: makeOrigin('/project/src/app/header/header.component.html', 15, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'click',
+          rawEventName: 'click',
+          handlerName: 'onClick',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 20),
+          callContexts: [],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_TRIGGERS_HANDLER' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.effectGroupId).toBe(`${HEADER_COMP_ID}::onClick`);
+    });
+
+    it('CCS edge has effectGroupId + callsiteOrdinal from handler', () => {
+      const widget = makeWidgetForTrigger('16:0', 'Button', [
+        { kind: 'event', name: 'click', value: 'onSave()', origin: makeOrigin('/project/src/app/header/header.component.html', 16, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const svcId = '/project/src/app/services/user.service.ts#UserService';
+      const svcInfos: ServiceInfo[] = [{
+        id: svcId,
+        name: 'UserService',
+        file: '/project/src/app/services/user.service.ts',
+        origin: makeOrigin('/project/src/app/services/user.service.ts', 5),
+      }];
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'click',
+          rawEventName: 'click',
+          handlerName: 'onSave',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 20),
+          callContexts: [
+            {
+              kind: 'ServiceCall',
+              target: { serviceMethod: 'UserService.create' },
+              origin: makeOrigin('/project/src/app/header/header.component.ts', 22),
+            },
+            {
+              kind: 'ServiceCall',
+              target: { serviceMethod: 'UserService.validate' },
+              origin: makeOrigin('/project/src/app/header/header.component.ts', 23),
+            },
+          ],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId, makeModuleRegistry(), svcInfos);
+
+      const ccsEdges = g.edges
+        .filter((e) => e.kind === 'COMPONENT_CALLS_SERVICE' && e.from === HEADER_COMP_ID)
+        .sort((a, b) => (a.callsiteOrdinal ?? 0) - (b.callsiteOrdinal ?? 0));
+      expect(ccsEdges.length).toBe(2);
+      expect(ccsEdges[0]!.effectGroupId).toBe(`${HEADER_COMP_ID}::onSave`);
+      expect(ccsEdges[0]!.callsiteOrdinal).toBe(0);
+      expect(ccsEdges[1]!.effectGroupId).toBe(`${HEADER_COMP_ID}::onSave`);
+      expect(ccsEdges[1]!.callsiteOrdinal).toBe(1);
+    });
+
+    it('CNR edge has effectGroupId from handler', () => {
+      const widget = makeWidgetForTrigger('17:0', 'Button', [
+        { kind: 'event', name: 'click', value: 'goToUsers()', origin: makeOrigin('/project/src/app/header/header.component.html', 17, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const wem: WidgetEventMap[] = [{
+        componentId: HEADER_COMP_ID,
+        events: [{
+          widgetId: widget.id,
+          eventType: 'click',
+          rawEventName: 'click',
+          handlerName: 'goToUsers',
+          handlerOrigin: makeOrigin('/project/src/app/header/header.component.ts', 20),
+          callContexts: [
+            {
+              kind: 'Navigate',
+              target: { route: '/users' },
+              origin: makeOrigin('/project/src/app/header/header.component.ts', 21),
+            },
+          ],
+        }],
+      }];
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), wem, widgetsByComponentId);
+
+      const cnrEdge = g.edges.find(
+        (e) => e.kind === 'COMPONENT_NAVIGATES_ROUTE' && e.from === HEADER_COMP_ID,
+      );
+      expect(cnrEdge).toBeDefined();
+      expect(cnrEdge!.effectGroupId).toBe(`${HEADER_COMP_ID}::goToUsers`);
+      expect(cnrEdge!.callsiteOrdinal).toBeUndefined();
+    });
+
+    it('[routerLink] → trigger.viaRouterLink = true, no event field', () => {
+      const widget = makeWidgetForTrigger('13:0', 'Link', [
+        { kind: 'boundAttr', name: 'routerLink', value: '/posts', origin: makeOrigin('/project/src/app/header/header.component.html', 13, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), [], widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_NAVIGATES_ROUTE' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.trigger?.viaRouterLink).toBe(true);
+      expect(edge!.trigger?.event).toBeUndefined();
+    });
+
+    it('static href → trigger.event = "click"', () => {
+      const extUrl = 'https://docs.example.com';
+      const widget = makeWidgetForTrigger('14:0', 'Link', [
+        { kind: 'attr', name: 'href', value: extUrl, origin: makeOrigin('/project/src/app/header/header.component.html', 14, 5) },
+      ]);
+      const widgetsByComponentId = new Map([[HEADER_COMP_ID, [widget]]]);
+      const g = buildGraph(makeRouteMap(), makeComponentRegistry(), [], widgetsByComponentId);
+      const edge = g.edges.find((e) => e.kind === 'WIDGET_NAVIGATES_EXTERNAL' && e.from === widget.id);
+      expect(edge).toBeDefined();
+      expect(edge!.trigger?.event).toBe('click');
     });
   });
 });

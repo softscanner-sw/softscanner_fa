@@ -21,6 +21,11 @@ const TAG_TO_KIND: Record<string, WidgetKind> = {
   form: 'Form',
   'mat-menu-item': 'MenuItem',
   'p-menuitem': 'MenuItem',
+  // Angular Material form controls
+  'mat-select': 'Select',
+  'mat-radio-button': 'Radio',
+  'mat-checkbox': 'Checkbox',
+  'mat-slide-toggle': 'Checkbox',
 };
 
 const INPUT_TYPE_TO_KIND: Record<string, WidgetKind> = {
@@ -34,8 +39,17 @@ const INPUT_TYPE_TO_KIND: Record<string, WidgetKind> = {
 /**
  * Classify a template element node into a WidgetKind.
  * Returns null for non-interactive elements.
+ *
+ * @param node              - Template AST element node.
+ * @param componentSelectors - Optional set of known project component selectors
+ *   (lower-cased).  When provided, component selector tags are excluded from
+ *   the event-binding fallback — their event bindings are @Output() emitters,
+ *   not direct user interactions (spec: "No Inputs/Outputs extraction").
  */
-export function classifyWidget(node: TemplateAstNode): WidgetKind | null {
+export function classifyWidget(
+  node: TemplateAstNode,
+  componentSelectors?: ReadonlySet<string>,
+): WidgetKind | null {
   if (node.kind !== 'element' || node.name === undefined) return null;
 
   const tag = node.name.toLowerCase();
@@ -61,7 +75,28 @@ export function classifyWidget(node: TemplateAstNode): WidgetKind | null {
   // Elements with routerLink / href qualify as Links
   if (hasNavBinding(node)) return 'Link';
 
+  // Event-binding fallback: any element with an event binding qualifies as
+  // an interactive widget (G2 fix).  However, project component selectors
+  // (e.g., <app-hero-detail (save)="...">) must be excluded — their event
+  // bindings are @Output() emitters, not user-facing triggers.
+  if (hasEventBinding(node)) {
+    if (componentSelectors !== undefined && componentSelectors.has(tag)) {
+      return null;  // @Output() binding on component selector — not a widget
+    }
+    return 'Unknown';
+  }
+
   return null;
+}
+
+/**
+ * True if the node carries at least one event binding (e.g., (click)="...", (ngSubmit)="...").
+ */
+export function hasEventBinding(node: TemplateAstNode): boolean {
+  for (const child of node.children ?? []) {
+    if (child.kind === 'event') return true;
+  }
+  return false;
 }
 
 /**

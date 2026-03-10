@@ -77,6 +77,8 @@ export interface WidgetInfo {
   /** Stable id from (componentId + origin span + kind + stableIndex). */
   id: string;
   componentId: string;
+  /** ID of the parent widget if this widget is nested inside another (e.g. input inside form). */
+  parentWidgetId?: string;
   kind: WidgetKind;
   /** DOM tag name from the template element (e.g. 'button', 'a', 'form'). */
   tagName?: string;

@@ -10,7 +10,6 @@ import type {
   VizNode,
   VizEdge,
   VizStats,
-  ExemplarPath,
 } from './types.js';
 
 /**
@@ -33,10 +32,7 @@ function _widgetDisplayLabel(
 /**
  * Extract VizData from a Phase1Bundle.
  */
-export function extractVizData(
-  bundle: Phase1Bundle,
-  exemplarPaths: ExemplarPath[],
-): VizData {
+export function extractVizData(bundle: Phase1Bundle): VizData {
   const { multigraph, stats } = bundle;
 
   // ── Nodes ─────────────────────────────────────────────────────────────────
@@ -77,6 +73,7 @@ export function extractVizData(
           ...(tagName !== undefined ? { tagName } : {}),
           subtypeKey,
           attrs,
+          componentId: n.meta.componentId,
         };
       }
 
@@ -94,7 +91,14 @@ export function extractVizData(
       kind: e.kind,
       ...(e.isSystem === true ? { isSystem: true as const } : {}),
       uiPreconditionCount: e.constraints.uiAtoms.length,
-      uiPreconditions: e.constraints.uiAtoms.map((a) => a.args.join(', ')),
+      uiPreconditions: e.constraints.uiAtoms.map((a) => `${a.kind}: ${a.args.join(', ')}`),
+      ...(e.handler !== undefined ? { handler: { componentId: e.handler.componentId, methodName: e.handler.methodName } } : {}),
+      ...(e.trigger !== undefined ? { trigger: {
+        ...(e.trigger.event !== undefined ? { event: e.trigger.event } : {}),
+        ...(e.trigger.viaRouterLink !== undefined ? { viaRouterLink: e.trigger.viaRouterLink } : {}),
+      } } : {}),
+      ...(e.targetText !== undefined ? { targetText: e.targetText } : {}),
+      ...(e.effectGroupId !== undefined ? { effectGroupId: e.effectGroupId } : {}),
     }))
     .sort((a, b) => a.id.localeCompare(b.id));
 
@@ -118,10 +122,6 @@ export function extractVizData(
     }
   }
 
-  const feasible = exemplarPaths.filter((p) => p.verdict === 'FEASIBLE').length;
-  const conditional = exemplarPaths.filter((p) => p.verdict === 'CONDITIONAL').length;
-  const pruned = exemplarPaths.filter((p) => p.verdict === 'PRUNED').length;
-
   const vizStats: VizStats = {
     nodeCount: stats.nodeCount,
     edgeCount: stats.edgeCount,
@@ -133,10 +133,6 @@ export function extractVizData(
     widgetNodes,
     serviceNodes,
     externalNodes,
-    exemplarPaths: exemplarPaths.length,
-    feasible,
-    conditional,
-    pruned,
   };
 
   // ── Entry node IDs ────────────────────────────────────────────────────────
@@ -153,7 +149,6 @@ export function extractVizData(
     nodes,
     edges,
     entryNodeIds,
-    exemplarPaths,
     stats: vizStats,
   };
 }

@@ -62,7 +62,7 @@ export type EdgeKind =
   | 'ROUTE_HAS_CHILD'
   | 'ROUTE_ACTIVATES_COMPONENT'
   | 'COMPONENT_CONTAINS_WIDGET'
-  | 'WIDGET_COMPOSES_WIDGET'
+  | 'WIDGET_CONTAINS_WIDGET'
   | 'COMPONENT_COMPOSES_COMPONENT'
   | 'MODULE_PROVIDES_SERVICE'
   | 'COMPONENT_PROVIDES_SERVICE'
@@ -84,7 +84,7 @@ export const STRUCTURAL_EDGE_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKind>([
   'ROUTE_HAS_CHILD',
   'ROUTE_ACTIVATES_COMPONENT',
   'COMPONENT_CONTAINS_WIDGET',
-  'WIDGET_COMPOSES_WIDGET',
+  'WIDGET_CONTAINS_WIDGET',
   'COMPONENT_COMPOSES_COMPONENT',
   'MODULE_PROVIDES_SERVICE',
   'COMPONENT_PROVIDES_SERVICE',
@@ -94,10 +94,26 @@ export const STRUCTURAL_EDGE_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKind>([
 // Atom (SAT-ready predicate placeholder)
 // ---------------------------------------------------------------------------
 
-/** SAT-ready predicate placeholder. */
+/** Machine-checkable predicate identifier for SAT-ready atoms. */
+export type AtomKind =
+  | 'FormValid'
+  | 'HasSelection'
+  | 'ParamBound'
+  | 'GuardPasses'
+  | 'WidgetVisible'
+  | 'WidgetVisibleExpr'
+  | 'WidgetEnabled'
+  | 'WidgetEnabledExpr'
+  | 'WidgetRequired'
+  | 'WidgetRequiredExpr'
+  | 'InputConstraint'
+  | 'InputConstraintExpr'
+  | 'Other';
+
+/** SAT-ready predicate attached to executable edge constraints. */
 export interface Atom {
-  /** Machine-checkable predicate identifier. */
-  kind: 'FormValid' | 'HasSelection' | 'ParamBound' | 'GuardPasses' | 'Other';
+  /** Predicate identifier. */
+  kind: AtomKind;
   /** Predicate arguments (IDs, names, param keys). */
   args: string[];
   /** Evidence span that justifies this atom. */
@@ -173,6 +189,8 @@ export type RouteNode = NodeBase & {
     roles: string[];
     /** Redirect target (canonical full path) if redirect route, else undefined. */
     redirectTo?: string;
+    /** Route kind classification from the source route record. */
+    routeType: 'ComponentRoute' | 'RedirectRoute' | 'WildcardRoute';
   };
 };
 
@@ -190,6 +208,36 @@ export type ComponentNode = NodeBase & {
     templateFile?: string;
   };
 };
+
+/** UI-relevant widget properties used later for feasibility/pruning (A1 extraction only). */
+export interface WidgetUIProps {
+  /** Literal visibility when determinable without evaluation. True = visible, False = hidden. */
+  visibleLiteral?: boolean;
+  /** Raw expression text when visibility is not literal (e.g., *ngIf="expr", [hidden]="expr"). */
+  visibleExprText?: string;
+  /** Literal enabledness when determinable without evaluation. True = enabled, False = disabled. */
+  enabledLiteral?: boolean;
+  /** Raw expression text when enabledness is not literal (e.g., [disabled]="expr"). */
+  enabledExprText?: string;
+  /** Literal requiredness when determinable without evaluation. */
+  requiredLiteral?: boolean;
+  /** Raw expression text when requiredness is not literal (e.g., [required]="expr"). */
+  requiredExprText?: string;
+  /** Stable binding keys (literal only when applicable). */
+  nameAttr?: string;
+  formControlName?: string;
+  /** Raw expression text for [(ngModel)] when present. */
+  ngModelText?: string;
+  /** Literal-only input shape constraints when present. */
+  inputType?: string;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+  /** Catch-all for any other possibly-relevant attributes/directives as raw text. */
+  rawAttrsText: Record<string, string>;
+}
 
 /** Widget node: an interactive or grouping element instance in a component template. */
 export type WidgetNode = NodeBase & {
@@ -211,6 +259,8 @@ export type WidgetNode = NodeBase & {
     staticHref?: string;
     /** Relevant HTML attributes (type, id, name, etc.) when available. */
     attributes?: Record<string, string>;
+    /** UI-relevant widget properties for feasibility/pruning (A1 extraction only). */
+    ui: WidgetUIProps;
   };
 };
 
@@ -294,6 +344,12 @@ export interface Edge {
 
   /** For unresolved navigation: raw expression text (audit only). */
   targetText?: string;
+
+  /** Links trigger edges to their effect edges (CCS/CNR). Format: componentId::methodName */
+  effectGroupId?: string;
+
+  /** Index of the service call within the handler (0-based, CCS edges only). */
+  callsiteOrdinal?: number;
 }
 
 // ---------------------------------------------------------------------------

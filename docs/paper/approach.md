@@ -1,5 +1,5 @@
 # Approach — Operational Specification (Normative, Frozen)
-### Strategy
+## Strategy
 Freeze a single **UI Interaction Multigraph** with one shared node universe representing what exists in the codebase: **Modules, Routes, Components, Widgets, Services, External targets**. Distinguish “structural” vs “executable” semantics strictly by **edge kinds and edge metadata**, not by introducing separate node sets.
 
 Then:
@@ -7,7 +7,7 @@ Then:
 1. Freeze the schema (types + invariants).
 2. Refactor A1 extraction to populate exactly this schema deterministically.
 3. Re-run extraction across all validation subjects until artifacts are structurally faithful and auditable.
-4. Only then finalize A2 (candidate workflow construction) and A3 (constraint satisfiability pruning) against this frozen A1 contract.
+4. Only then finalize A2 against this frozen A1 contract.
 
 A1 is the semantic substrate. Any ambiguity here multiplies downstream churn.
 
@@ -114,6 +114,38 @@ For each widget, extract:
 * routerLink expression text if present
 * static href if present
 
+Additionally, extract a deterministic UI-properties surface `ui` for later feasibility/pruning:
+
+**UI properties (normative, A1):**
+A1 must capture UI-relevant attributes without evaluation. For each property:
+- if the value is a literal → store as the typed literal
+- if the value is expression-bound → store the raw expression text in the `*ExprText` field
+- never evaluate expressions
+
+Minimum required UI properties:
+
+* visibility:
+  * `visibleLiteral?: boolean` derived only from literal `hidden` / `[hidden]` / `*ngIf`
+  * `visibleExprText?: string` for expression-based `hidden`/`*ngIf`/`[hidden]`
+* enabled/disabled:
+  * `enabledLiteral?: boolean` derived only from literal `disabled` / `[disabled]`
+  * `enabledExprText?: string` for expression-based `[disabled]`
+* required:
+  * `requiredLiteral?: boolean` from literal `required` / `[required]`
+  * `requiredExprText?: string` for expression-based `[required]`
+* identity/binding keys (used to connect constraints across steps later):
+  * `nameAttr?: string` (literal only)
+  * `formControlName?: string` (literal only)
+  * `ngModelText?: string` (raw expression text for `[(ngModel)]`)
+* input shape constraints (literal only where present):
+  * `inputType?: string` (e.g., `type="email"`)
+  * `minLength?: number`, `maxLength?: number`
+  * `min?: number`, `max?: number`
+  * `pattern?: string`
+
+**Extensibility (normative):**
+Also capture `rawAttrsText: Record<string,string>` consisting of any other statically observed attributes/directives that may later matter (e.g., `autocomplete`, `readonly`, `aria-*`, class tokens), stored only as raw text (no evaluation).
+
 ### 2) Widget composition (required)
 Widgets can contain widgets. This is required structurally.
 Extract parent-child widget containment edges:
@@ -139,6 +171,10 @@ No Inputs/Outputs extraction.
 
 ## D. Handler body analysis (executable effects)
 For each handler referenced from templates:
+
+**Diagnostic-only handler filtering (normative):**
+Handlers whose body contains exclusively diagnostic calls (`console.log`, `console.warn`, `console.error`, `console.debug`, `console.info`) and no assignments to external state (`this.<prop> = ...`) produce no call contexts and emit no executable edges.
+
 Detect router navigation calls:
 
 * `router.navigate(...)`
@@ -149,6 +185,26 @@ Detect service calls:
 * `this.<serviceMember>.<method>(...)`
 * constructor-injected service members used in calls
 * minimal support for `inject(Service)` to identify the service instance
+
+Detect dialog/modal open calls:
+
+* `this.<dialogService>.open(ComponentClass)` where the first argument is a PascalCase identifier resolving to a known component class
+* Emit `COMPONENT_COMPOSES_COMPONENT(handler.component → dialogComponent)` edge with evidence from the call site
+* This makes the dialog component's widgets reachable in the active-widget computation
+
+**Bounded same-class transitive call following (normative):**
+When analyzing a handler body, if a call expression matches `this.<methodName>(…)` where `<methodName>` resolves to a method declared in the **same component class**, recursively inspect that callee method's body for additional service calls, router navigation calls, and dialog/modal open calls. Constraints:
+
+* Maximum transitive depth: **1** (handler → helper → effect; no deeper chaining).
+* Same-class only: do not follow calls to methods on injected services, superclass methods not overridden in the current class, or free functions.
+* Cycle-safe: if recursion would revisit a method already seen in the current call chain, stop.
+* Deterministic: callee methods are resolved by name lookup within the same `ClassDeclaration`; iteration order follows the existing `getDescendantsOfKind(CallExpression)` traversal.
+* A single-dot `this.<name>(…)` expression (no second dot before the method parens) is the trigger for transitive following. Multi-dot expressions like `this.service.method(…)` continue to be classified as ServiceCall, Navigate, or DialogOpen directly.
+
+This bounded rule applies to service call extraction, router navigation extraction, and dialog/modal open detection. It does **not** apply to StateUpdate detection.
+
+**Service name resolution (normative):**
+When resolving a `ServiceCall` context's member name to a known `ServiceNode`, the implementation must attempt resolution using both the constructor parameter field name and the **TypeScript type** of the constructor parameter. Specifically: if `capitalize(fieldName)` does not match any `ServiceNode.meta.name`, inspect the constructor parameter's declared type annotation and match that type name against `ServiceNode.meta.name`. This handles cases where developers abbreviate field names (e.g., `authenticateService: AuthenticationServiceService`).
 
 No window/document navigation.
 No UI-effects modeling unless it is already a stable detector in your codebase; otherwise omit.
@@ -208,7 +264,7 @@ Required structural edges:
 5. `ROUTE_HAS_CHILD` : `Route → Route`
 6. `ROUTE_ACTIVATES_COMPONENT` : `Route → Component`
 7. `COMPONENT_CONTAINS_WIDGET` : `Component → Widget`
-8. `WIDGET_COMPOSES_WIDGET` : `Widget → Widget`
+8. `WIDGET_CONTAINS_WIDGET` : `Widget → Widget`
 9. `COMPONENT_COMPOSES_COMPONENT` : `Component → Component`
 10. `MODULE_PROVIDES_SERVICE` : `Module → Service`
 11. `COMPONENT_PROVIDES_SERVICE` : `Component → Service`
@@ -256,6 +312,26 @@ Entry contexts are Route nodes where `meta.isEntry === true`.
   * root `path: ""`
   * reachable via redirect chain from root (follow `ROUTE_REDIRECTS_TO_ROUTE`)
 
+### Lazy-loaded module routes
+When A1 recursively extracts routes from a lazy-loaded module (via `loadChildren`), the resulting routes must be treated as top-level within their own feature module scope. Specifically:
+
+* Routes registered via `RouterModule.forChild([...])` inside a lazy-loaded module must NOT inherit a `parentId` from the lazy-load discovery call site.
+* The parent–child relationship in the Angular route tree is established by `children: [...]` arrays, not by the `loadChildren` discovery mechanism.
+* A lazy-loaded route with `parentId === undefined` (no `children` parent) is top-level and therefore an entry candidate.
+
+Rationale: Angular merges lazy-loaded routes into the global router at their mount point, but these routes are independently navigable URL-level endpoints. Treating them as children of the lazy-load placeholder would incorrectly suppress their entry status.
+
+No ENTRY node.
+
+### Route deduplication and redirect preservation
+When A1 encounters multiple route records sharing the same canonical `fullPath` (e.g., a lazy-load placeholder from the root module and the actual component route from the feature module), it must deduplicate them into a single Route node. During deduplication:
+
+* If any member of the group is a `RedirectRoute`, the redirect target (`redirectTo`) must be preserved on the canonical route, even if the canonical is a `ComponentRoute`.
+* The canonical route carries the most specific component binding (preferring resolved component over `__unknown__`).
+* Guards and children are merged from all group members.
+
+Rationale: without redirect preservation, an entry route `/` that redirects to `/projects` loses its redirect edge when a lazy-loaded `ComponentRoute` at `/` wins deduplication. This breaks redirect chain closure and suppresses workflows downstream.
+
 No ENTRY node.
 
 ## Terminal context
@@ -286,7 +362,7 @@ Resolution policy:
      - Treat each string literal element as a literal segment.
      - Treat each non-literal (identifier, expression, interpolation) as a dynamic segment.
      - Do not evaluate expressions.
-     - Do not resolve relative navigation (relativeTo not modeled in Phase A).
+     - For array navigation, do not resolve relative navigation (relativeTo not modeled in Phase A).
   2. Normalize candidate route templates:
      - Split `RouteNode.meta.fullPath` by `/`.
      - Remove leading empty segment.
@@ -312,16 +388,71 @@ Resolution policy:
      - Set `to = null`.
      - Populate `targetText` with raw expression.
 
+* **relative routerLink resolution (normative):**
+  Relative `routerLink` values (not prefixed with `/`) are resolved against the `fullPath` of the nearest ancestor route that activates the component owning the widget. Resolution steps:
+  1. For each parent route fullPath that activates the owning component, join `parentFullPath + "/" + relativeValue`.
+  2. Match the joined path against the route table using the same template-matching rules as static string navigation (including `:param` segments).
+  3. If exactly one route matches → resolve. If zero or more than one → unresolved.
+
 ---
 
 # 7) Constraint model (edge payload, frozen semantics)
 Constraints are attached to executable edges (structural edges use empty surfaces).
 A guard implies **CONDITIONAL** later, not PRUNED.
-PRUNED is reserved for contradictions discovered later by SAT/pruning logic (A3), not for missing credentials/seed data.
+PRUNED is reserved for contradictions discovered later by SAT/pruning logic (A2), not for missing credentials/seed data.
 Redirect edges can carry constraints but remain system edges (`isSystem=true`).
 
+## UI precondition atoms (A1 emission rules; frozen)
+A1 must materialize UI feasibility as SAT-ready atoms attached to executable edges.
+These atoms are purely declarative and never evaluated in A1.
+
+### 7.1 Widget-origin action-site atoms (required)
+For each executable edge `e` whose origin is a Widget node:
+
+* `WIDGET_TRIGGERS_HANDLER`
+* `WIDGET_SUBMITS_FORM`
+* `WIDGET_NAVIGATES_ROUTE`
+* `WIDGET_NAVIGATES_EXTERNAL`
+
+A1 must append UI atoms derived from the source widget `w = e.from`:
+
+**Visibility**
+* If `w.meta.ui.visibleLiteral === false`, emit:
+  * `Atom(kind="WidgetVisible", args=[w.id, "false"], source=<evidence span of hidden/ngIf>)`
+* Else if `w.meta.ui.visibleExprText` is present, emit:
+  * `Atom(kind="WidgetVisibleExpr", args=[w.id, w.meta.ui.visibleExprText], source=<evidence span>)`
+
+**Enabledness**
+* If `w.meta.ui.enabledLiteral === false`, emit:
+  * `Atom(kind="WidgetEnabled", args=[w.id, "false"], source=<evidence span of disabled>)`
+* Else if `w.meta.ui.enabledExprText` is present, emit:
+  * `Atom(kind="WidgetEnabledExpr", args=[w.id, w.meta.ui.enabledExprText], source=<evidence span>)`
+
+**Requiredness (action-site relevant only)**
+* If `w.meta.ui.requiredLiteral === true`, emit:
+  * `Atom(kind="WidgetRequired", args=[w.id, "true"], source=<evidence span>)`
+* Else if `w.meta.ui.requiredExprText` is present, emit:
+  * `Atom(kind="WidgetRequiredExpr", args=[w.id, w.meta.ui.requiredExprText], source=<evidence span>)`
+
+### 7.2 Form submission validity atom (required)
+For each `WIDGET_SUBMITS_FORM` edge with source widget `w`:
+
+* Always emit:
+  * `Atom(kind="FormValid", args=[w.id], source=<submit binding span>)`
+
+No attempt is made in Phase A to prove validity; this atom only signals that validity is a runtime gate.
+
+### 7.3 Input shape atoms (optional but deterministic when present)
+If the source widget of an executable edge has any literal input constraints in `w.meta.ui` (`minLength`, `maxLength`, `min`, `max`, `pattern`, `inputType`), A1 may emit:
+
+* `Atom(kind="InputConstraint", args=[w.id, "<key>", "<value>"], source=<attribute span>)`
+
+Expression-bound shape constraints are not typed; if present only as expression text in `rawAttrsText`, A1 may emit:
+
+* `Atom(kind="InputConstraintExpr", args=[w.id, "<attrName>", "<exprText>"], source=<attribute span>)`
+
 ## RequiredParams provenance (frozen)
-`ConstraintSurface.requiredParams` is **edge-local** and must be populated by A1 extraction only. A3 never derives or infers required params from route templates.
+`ConstraintSurface.requiredParams` is **edge-local** and must be populated by A1 extraction only. A2 never derives or infers required params from route templates.
 A1 population rule for executable navigation edges:
 
 * For `WIDGET_NAVIGATES_ROUTE`, `COMPONENT_NAVIGATES_ROUTE`, and `ROUTE_REDIRECTS_TO_ROUTE`:
@@ -339,7 +470,7 @@ This multigraph is sufficient to derive workflows later because:
 * it exposes the concrete interactive surfaces (widgets + events) so workflows do not collapse into “route-only” traces
 * it attaches audit evidence to every step and preserves unresolved ambiguity explicitly
 
-A2 and A3 can be defined purely as graph algorithms on top of this structure.
+A2 can be defined purely as graph algorithms on top of this structure.
 
 ---
 
@@ -379,6 +510,42 @@ export type WidgetKind =
   | "TextArea"
   | "OtherInteractive";
 
+/** UI-relevant widget properties used later for feasibility/pruning (A1 extraction only). */
+export interface WidgetUIProps {
+  /** Literal visibility when determinable without evaluation. True = visible, False = hidden. */
+  visibleLiteral?: boolean;
+  /** Raw expression text when visibility is not literal (e.g., *ngIf="expr", [hidden]="expr"). */
+  visibleExprText?: string;
+
+  /** Literal enabledness when determinable without evaluation. True = enabled, False = disabled. */
+  enabledLiteral?: boolean;
+  /** Raw expression text when enabledness is not literal (e.g., [disabled]="expr"). */
+  enabledExprText?: string;
+
+  /** Literal requiredness when determinable without evaluation. */
+  requiredLiteral?: boolean;
+  /** Raw expression text when requiredness is not literal (e.g., [required]="expr"). */
+  requiredExprText?: string;
+
+  /** Stable binding keys (literal only when applicable). */
+  nameAttr?: string;
+  formControlName?: string;
+
+  /** Raw expression text for [(ngModel)] when present. */
+  ngModelText?: string;
+
+  /** Literal-only input shape constraints when present. */
+  inputType?: string;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+
+  /** Catch-all for any other possibly-relevant attributes/directives as raw text. */
+  rawAttrsText: Record<string, string>;
+}
+
 /** All supported edge kinds; structural vs executable is implied by kind. */
 export type EdgeKind =
   // Structural
@@ -389,7 +556,7 @@ export type EdgeKind =
   | "ROUTE_HAS_CHILD"
   | "ROUTE_ACTIVATES_COMPONENT"
   | "COMPONENT_CONTAINS_WIDGET"
-  | "WIDGET_COMPOSES_WIDGET"
+  | "WIDGET_CONTAINS_WIDGET"
   | "COMPONENT_COMPOSES_COMPONENT"
   | "MODULE_PROVIDES_SERVICE"
   | "COMPONENT_PROVIDES_SERVICE"
@@ -404,8 +571,21 @@ export type EdgeKind =
 
 /** SAT-ready predicate placeholder. No prose. */
 export interface Atom {
-  /** Machine-checkable predicate identifier. */
-  kind: "FormValid" | "HasSelection" | "ParamBound" | "GuardPasses" | "Other";
+  /** Machine-checkable predicate identifier (A1 emits; A2 consumes with frozen rules). */
+  kind:
+  | "FormValid"
+  | "HasSelection"
+  | "ParamBound"
+  | "GuardPasses"
+  | "WidgetVisible"
+  | "WidgetVisibleExpr"
+  | "WidgetEnabled"
+  | "WidgetEnabledExpr"
+  | "WidgetRequired"
+  | "WidgetRequiredExpr"
+  | "InputConstraint"
+  | "InputConstraintExpr"
+  | "Other";
   /** Predicate arguments (IDs, names, param keys). */
   args: string[];
   /** Evidence span that justifies this atom. */
@@ -473,6 +653,8 @@ export type RouteNode = NodeBase & {
     roles: string[];
     /** Redirect target (canonical full path) if redirect route, else undefined. */
     redirectTo?: string;
+    /** Route kind classification from the source route record. */
+    routeType: "ComponentRoute" | "RedirectRoute" | "WildcardRoute";
   };
 };
 
@@ -497,8 +679,10 @@ export type WidgetNode = NodeBase & {
   meta: {
     /** Owning component node ID. */
     componentId: string;
+    
     /** Widget kind classification. */
     widgetKind: WidgetKind;
+    
     /** DOM tag name if available (e.g., 'button', 'a', 'form'). */
     tagName?: string;
 
@@ -513,6 +697,9 @@ export type WidgetNode = NodeBase & {
 
     /** Static href if present and resolvable at extract time. */
     staticHref?: string;
+
+    /** UI-relevant widget properties for feasibility/pruning (A1 extraction only). */
+    ui: WidgetUIProps;
   };
 };
 
@@ -592,6 +779,12 @@ export interface Edge {
 
   /** For unresolved navigation: raw expression text (audit only). */
   targetText?: string;
+
+  /** Shared group ID linking a trigger edge to its handler-scoped effect edges (CCS, CNR). */
+  effectGroupId?: string;
+
+  /** Ordinal position of a CCS edge within its effect group (for deterministic ordering). */
+  callsiteOrdinal?: number;
 }
 
 /** Multigraph container: single shared node universe + mixed edge set. */
@@ -648,6 +841,11 @@ A1 must enforce these invariants at build time (fail-fast):
 * If a module decorator lists an exported module `M2`, emit exactly one `MODULE_EXPORTS_MODULE(M1 → M2)` edge.
 * These edges must have non-empty `refs` pointing to the decorator span.
 
+## Widget UI invariants
+* Every Widget node must include `meta.ui` with `rawAttrsText` present (may be empty object).
+* A1 must never evaluate UI expressions; expression-bound values must be stored only in `*ExprText`/`ngModelText` as raw strings.
+* Typed literal fields (`minLength`, `maxLength`, `min`, `max`) must be populated only when the extracted value is a numeric literal.
+
 ## Ordering invariants
 * `nodes` sorted by `id`
 * `edges` sorted by a deterministic composite key (example):
@@ -669,79 +867,64 @@ A1 must enforce these invariants at build time (fail-fast):
 
 ---
 
-This is the elaborate version aligned with the earlier drafts, while incorporating the decisions you locked:
-
-* modules restored as nodes + minimal edges
-* widget-to-widget composition required
-* component-to-component composition required
-* services are first-class nodes; service calls are `Component → Service`, not self-loops
-* all template events captured (including custom)
-* entry/terminal contexts are properties of real nodes
-* redirect is system edge, never a user step
-* unresolved navigation is explicit, never dropped
-* schema is closed, typed, commented, and designed to remove ambiguity
-
-## Phase A2/A3 Spec — Closed Workflow Space Construction (Rigorous, Frozen)
+## Phase A2 — TaskWorkflow Enumeration + Classification (Final)
 ### Strategy
-Treat A2 and A3 as graph algorithms over the **frozen A1 multigraph**. Preserve perfect auditability by representing workflows as **ordered lists of Edge IDs from the original multigraph** (no synthetic nodes/edges in outputs). Enforce correctness with an explicit **route-context discipline** that determines which executable edges are enabled at each step.
+Treat A2 as graph algorithms over the frozen A1 multigraph.
+Preserve auditability by representing workflows as ordered lists of original A1 Edge IDs.
+A2 has two internal stages:
 
-Phase A2 enumerates a **finite candidate workflow space** `W_raw` under structural bounds.
-Phase A3 performs **deterministic feasibility classification** by aggregating constraints and pruning only provable contradictions, producing the final space `W`.
+* A2.1 TaskWorkflow enumeration (trigger-centric, deterministic effect closure)
+* A2.2 Constraint merge + classification (deterministic, rule-based)
 
----
-
-# A2 — Bounded Candidate Workflow Enumeration
-## 1) Objective
-Given `Phase1Bundle.multigraph` from A1, enumerate a finite set of **candidate workflows** that are:
-
-* **context-valid** (all user actions occur in an active route context),
-* **bounded** (finite by construction),
-* **auditable** (each step is an original A1 edge with evidence).
-
-A2 produces `W_raw` (candidate workflows), with **no pruning** beyond boundedness and context-validity.
+A2 emits the final workflow space as `phaseA2-taskworkflows.final.json`, a single stable artifact.
 
 ---
 
-## 2) Traversable Edge Set (Executable Only)
-A2 traverses only executable edges from A1:
+# A2.1 — TaskWorkflow Enumeration
+A2.1 produces exactly one TaskWorkflow per enabled trigger edge, by collecting handler-scoped effects and applying deterministic redirect closure. No combinatorial enumeration occurs.
 
-### A. Progress edges (count toward length bound `k`)
+## 1) Edge Classification
 
-* `WIDGET_TRIGGERS_HANDLER`
-* `WIDGET_SUBMITS_FORM`
-* `WIDGET_NAVIGATES_ROUTE`
-* `WIDGET_NAVIGATES_EXTERNAL`
-* `COMPONENT_CALLS_SERVICE`
-* `COMPONENT_NAVIGATES_ROUTE`
+### A. Trigger edges (widget-origin executable edges)
+The following edge kinds serve as trigger sites for TaskWorkflow creation:
 
-**Micro-sequence gating rule (required):**
-`COMPONENT_CALLS_SERVICE` and `COMPONENT_NAVIGATES_ROUTE` are traversable only while `pendingEffect` is defined (effect-burst active), as specified in §3.3 (S1).
+* `WIDGET_TRIGGERS_HANDLER` (WTH)
+* `WIDGET_SUBMITS_FORM` (WSF)
+* `WIDGET_NAVIGATES_ROUTE` (WNR)
+* `WIDGET_NAVIGATES_EXTERNAL` (WNE)
 
-### B. System edges (do not count toward `k`)
+### B. Effect edges (handler-scoped)
+When a trigger edge has an `effectGroupId`, the following edges are collected as handler-scoped effects:
+
+* `COMPONENT_CALLS_SERVICE` (CCS) — zero or more per handler, sorted by `callsiteOrdinal`
+* `COMPONENT_NAVIGATES_ROUTE` (CNR) — at most one per handler
+
+Effect edges share the same `effectGroupId` as their trigger edge in the A1 multigraph.
+
+### C. System edges (redirect closure)
 * `ROUTE_REDIRECTS_TO_ROUTE` where `edge.isSystem === true`
 
-Structural edges are never traversed as workflow steps; they are used only to compute enabledness.
+System edges are applied during redirect closure only. They do not count as trigger or effect edges.
+
+Structural edges are never traversed as workflow steps; they are used only to compute enabledness (active components and widgets).
 
 ---
 
-## 3) Route-Context Discipline (Enabledness Semantics)
-A2 enumerates workflows while maintaining a mutable state:
+## 2) Route-Context Discipline (Enabledness Semantics)
+A2 evaluates trigger edge enabledness relative to a route context.
 
-* `currentRouteId: string` (must always be defined after initialization)
-* `activeComponentIds: Set<string>` derived from `currentRouteId`
-* `activeWidgetIds: Set<string>` derived from `activeComponentIds`
+For each route `r`, compute:
 
-Additionally, to respect A1 composite-event semantics, maintain an **internal effect cursor**:
+* `activeComponentIds(r): Set<string>` derived from `r`
+* `activeWidgetIds(r): Set<string>` derived from `activeComponentIds(r)`
 
-* `pendingEffect?: { componentId: string; methodName?: string; kind: "Handler" | "Submit" }`
-
-This internal state is not emitted as a node/edge; it only controls enabledness.
-
-### 3.1 Active component closure
-* `seed := { c | ROUTE_ACTIVATES_COMPONENT(r -> c) }`
+### 2.1 Active component closure
+* `seed := { c | ROUTE_ACTIVATES_COMPONENT(r -> c) }` ∪ `{ c | ROUTE_ACTIVATES_COMPONENT(a -> c) for each ancestor a of r via ROUTE_HAS_CHILD }` ∪ `bootstrapComponents`
 * `activeComponentIds(r) := transitiveClosure(seed, COMPONENT_COMPOSES_COMPONENT)` (include seed; follow `COMPONENT_COMPOSES_COMPONENT (c -> c2)` zero or more times)
 
-### 3.2 Active widget definition
+Parent-route ancestry: when route `p` has a `ROUTE_HAS_CHILD` edge to route `c`, `p` is an ancestor of `c`. Components activated by ancestor routes are included because Angular co-renders parent and child route components via `<router-outlet>`.
+
+### 2.2 Active widget definition
 A widget `w` is **active** iff:
 
 * its owning component is active, and
@@ -751,223 +934,171 @@ So:
 
 * `activeWidgetIds(r) = { w | ∃c∈activeComponentIds(r) such that edge.kind = COMPONENT_CONTAINS_WIDGET and edge.from=c and edge.to=w }`
 
-### 3.3 Enabled edge predicate
-At any enumeration state `(currentRouteId=r)`:
+### 2.3 Trigger edge enabledness
+A trigger edge `e` with `e.from = widgetId` is enabled at route `r` iff **all** hold:
 
-**Enabled widget-origin edges**
-* An edge `e` with `e.from = widgetId` is enabled iff `widgetId ∈ activeWidgetIds(r)`.
+1. **Route activation gate:** `widgetId ∈ activeWidgetIds(r)`.
+2. **Not statically hidden:** let `w = Node(widgetId)` (must be `Widget`). Then:
 
-This covers:
+   * if `w.meta.ui.visibleLiteral === false` → **not enabled**
+   * otherwise → pass (including `visibleLiteral === true` or `visibleExprText` present or unset)
+3. **Not statically disabled:** let `w = Node(widgetId)` (must be `Widget`). Then:
 
-* `WIDGET_TRIGGERS_HANDLER`
-* `WIDGET_SUBMITS_FORM`
-* `WIDGET_NAVIGATES_ROUTE`
-* `WIDGET_NAVIGATES_EXTERNAL`
+   * if `w.meta.ui.enabledLiteral === false` → **not enabled**
+   * otherwise → pass (including `enabledLiteral === true` or `enabledExprText` present or unset)
 
-When a widget-origin trigger/submit edge is taken:
+**Expression-based visibility/enabledness (CONDITIONAL-enabled semantics; frozen)**
+If `w.meta.ui.visibleExprText` and/or `w.meta.ui.enabledExprText` is present, the edge remains enabled under the rules above (unless blocked by a literal `false`). A1 already attaches the corresponding `WidgetVisibleExpr` / `WidgetEnabledExpr` atoms to the executable edge constraints, and A2.2 classification consumes those atoms.
 
-* If `e.kind === WIDGET_TRIGGERS_HANDLER` and `e.handler` is present, set
-  `pendingEffect := { kind: "Handler", componentId: e.handler.componentId, methodName: e.handler.methodName }`.
-* If `e.kind === WIDGET_SUBMITS_FORM` and `e.handler` is present, set
-  `pendingEffect := { kind: "Submit", componentId: e.handler.componentId, methodName: e.handler.methodName }`.
-* Otherwise, set `pendingEffect := undefined`.
-
-**Enabled component-origin edges (gated; not free-floating)**
-A component-origin edge is enabled iff **both**:
-
-1. `pendingEffect` is defined and `pendingEffect.componentId ∈ activeComponentIds(r)`, and
-2. the edge’s origin matches the pending component: `e.from === pendingEffect.componentId`
-
-Component-origin edges are enabled only while an effect-burst is active; once the burst ends (`pendingEffect := undefined`) no component-origin edges are enabled until a new widget trigger/submit sets `pendingEffect` again.
-
-This covers:
-
-* `COMPONENT_CALLS_SERVICE`
-* `COMPONENT_NAVIGATES_ROUTE`
-
-* **Effect-burst semantics (S1, required):** once `pendingEffect` is set by a widget trigger/submit, the enumerator may traverse a bounded “burst” of component-origin effects from `pendingEffect.componentId`:
-  1. **Zero or more** `COMPONENT_CALLS_SERVICE` edges whose `from === pendingEffect.componentId`, followed by
-  2. **At most one** `COMPONENT_NAVIGATES_ROUTE` edge whose `from === pendingEffect.componentId`, after which
-  3. `pendingEffect := undefined` (burst ends).
-* **Immediate clearing:** if a widget-origin step is taken that does **not** set `pendingEffect` (e.g., `WIDGET_NAVIGATES_ROUTE`, `WIDGET_NAVIGATES_EXTERNAL`, trigger with no handler), then `pendingEffect := undefined`.
-* **No cross-trigger carryover:** starting a new widget trigger/submit overwrites any existing `pendingEffect` (begins a new burst).
-
-**Enabled route-origin system edges**
-* `ROUTE_REDIRECTS_TO_ROUTE` is enabled iff `e.from === currentRouteId`.
-
-### 3.4 Route updates (state transitions)
-
-When traversing a step edge `e`:
-
-* If `e.kind ∈ { WIDGET_NAVIGATES_ROUTE, COMPONENT_NAVIGATES_ROUTE, ROUTE_REDIRECTS_TO_ROUTE }`:
-  * If `e.targetRouteId` is a concrete route id, set `currentRouteId := e.targetRouteId` and set `pendingEffect := undefined`.
-  * Else (unresolved targetRouteId):
-    * record `unresolvedTargets` for this workflow (see §7)
-    * terminate the workflow at the **current Route** context (terminalNodeId remains `currentRouteId`)
-    * set `pendingEffect := undefined`
-    * `e.to` is null for this step by A1 invariant.
-* If `e.kind === WIDGET_NAVIGATES_EXTERNAL`:
-  * terminate workflow at the `External` node `e.to`
-  * set `pendingEffect := undefined`
-* Otherwise (`WIDGET_TRIGGERS_HANDLER`, `WIDGET_SUBMITS_FORM`, `COMPONENT_CALLS_SERVICE`):
-  * `currentRouteId` is unchanged
+Literal hidden/disabled detection is defined exclusively by A1 extraction into `WidgetUIProps.visibleLiteral` and `WidgetUIProps.enabledLiteral` (including literal `*ngIf="false"` / `[hidden]="true"` → `visibleLiteral=false`, and literal `disabled` / `[disabled]="true"` → `enabledLiteral=false`).
 
 ---
 
-## 4) Start Set (Entry Routes)
-Entry routes are exactly those with `r.meta.isEntry === true` (computed by A1).
+## 3) Enumerable Routes
+A2 enumerates TaskWorkflows for all **component-bearing routes**: routes that activate at least one component (i.e., routes with at least one `ROUTE_ACTIVATES_COMPONENT` edge in the A1 multigraph). This includes both entry routes (`r.meta.isEntry === true`) and non-entry child routes that activate components.
 
-A2 uses entry routes as initial contexts for enumeration.
-Initialization per entry route:
-
-* `currentRouteId := entryRouteId`
-* `pendingEffect := undefined`
-* `visitCountByRouteId := { [entryRouteId]: 1 }`
-* apply **zero or more enabled redirect edges** greedily before user edges (see §6.2)
+A2 iterates over component-bearing routes sorted by id. For each route, it computes the active widget set (including parent route components via ROUTE_HAS_CHILD ancestry) and collects enabled trigger edges.
 
 ---
 
-## 5) Terminal Set (Terminal Contexts)
-Terminal contexts are real nodes; no synthetic exit nodes.
-A workflow is terminal if either:
+## 4) TaskWorkflow Enumeration Algorithm
 
-### 5.1 External terminal
-The last step is `WIDGET_NAVIGATES_EXTERNAL` (reaches an `External` node).
+For each component-bearing route `r` (sorted by id):
 
-### 5.2 Route terminal (no enabled progress edges)
-**Terminality is evaluated only after redirect closure completes** (stabilized or loop-detected) per §6.2.
+1. **Redirect closure at entry:** Apply redirect closure (A2.1 §6) from `r` to get resolved route `r'`.
+   - If redirect closure fails with an unresolved target, skip this route.
 
-At a stabilized state with `currentRouteId=r`, define enabled progress edges `EnabledProgress(r)` as all enabled edges whose kind is in §2.A.
+2. **Compute enabledness:** Compute `activeComponentIds(r')` and `activeWidgetIds(r')`.
+   Active components include those from parent routes (via ROUTE_HAS_CHILD ancestry), since Angular co-renders parent and child route components via `<router-outlet>`.
 
-`r` is terminal iff:
+3. **Collect trigger edges:** For each active widget (sorted by id), collect all enabled trigger edges (kinds in §1.A). Sort trigger edges by edge id.
 
-* `EnabledProgress(r)` is empty
+4. **For each trigger edge `t`:**
 
-System redirect edges do not prevent terminality (they are handled separately as system closure).
+   a. **Initialize steps:** Start with redirect edges from step 1 (if any), then the trigger step.
 
-#### 5.3 Unresolved-target terminal
-A workflow is terminal if it terminates due to an unresolved navigation target as defined in §3.4:
+   b. **Resolve by trigger kind:**
+      - **WNE** (`WIDGET_NAVIGATES_EXTERNAL`): Terminal node = `t.to` (External node). No further steps.
+      - **WNR** (`WIDGET_NAVIGATES_ROUTE`):
+        - If `t.targetRouteId` is null (unresolved): record unresolved target evidence. Terminal = current route `r'`.
+        - Otherwise: apply redirect closure at `t.targetRouteId`. Terminal = resolved route. Append redirect steps.
+      - **WTH / WSF** (`WIDGET_TRIGGERS_HANDLER` / `WIDGET_SUBMITS_FORM`):
+        - Collect handler-scoped effect edges (A2.1 §5).
+        - Append CCS steps (sorted by callsiteOrdinal).
+        - If CNR exists: append CNR step.
+          - If CNR `targetRouteId` is null: record unresolved target. Terminal = current route `r'`.
+          - Otherwise: apply redirect closure at CNR target. Terminal = resolved route. Append redirect steps.
+        - If no CNR: terminal = current route `r'`.
 
-* When an unresolved navigation edge is taken, the workflow terminates immediately.
-* `terminalNodeId` remains the current route context (`terminalNodeId === currentRouteId`).
+   c. **Record meta:** `unresolvedTargets`, `redirectLoop`, `redirectClosureStabilized`.
+
+5. **Route aggregation:** If the same trigger edge `t.id` is active from multiple routes, aggregate into a single TaskWorkflow with `startRouteIds` containing all route IDs (sorted). Steps, terminal, and meta are computed from the first encounter (they are deterministic given the same trigger edge and graph index).
 
 ---
 
-## 6) Enumeration Bounds (Finiteness Guarantees)
-A2 must be finite on any finite multigraph.
-Enumeration uses **DFS** with a stack (LIFO). When expanding a state, push successor states onto the stack in **reverse** of §10.1 order so that the next pop follows §10.1 order. Deduplicate workflows only by `CandidateWorkflow.id` at emission-time, not during expansion.
-Enumeration state is defined as the tuple `(currentRouteId, pendingEffect, visitCountByRouteId, steps, userStepCount, meta)`.
+## 5) Effect Closure (Handler-Scoped)
 
-### 6.1 Maximum workflow length `k`
-`k` counts **progress edges only** (edge kinds in §2.A).
-System edges (`ROUTE_REDIRECTS_TO_ROUTE`) do not count toward `k`.
+When a trigger edge `t` has `t.effectGroupId` defined:
 
-Default:
+1. Collect all edges in the A1 multigraph with matching `effectGroupId`.
+2. Partition by kind:
+   - **CCS** (`COMPONENT_CALLS_SERVICE`): zero or more. Sort by `callsiteOrdinal` ascending, then by `edge.id` ascending for determinism.
+   - **CNR** (`COMPONENT_NAVIGATES_ROUTE`): at most one. If multiple exist, select the one with lexicographically smallest `edge.id`.
+3. Step order within a task: `[trigger, ...CCS(sorted), CNR?]`.
 
-* `k = 12` (configurable)
+When `t.effectGroupId` is undefined, no effect edges are collected. Steps = `[trigger]` only.
 
-### 6.2 System-closure rule for redirects
-Whenever `currentRouteId` is set or updated (including initialization), A2 applies enabled redirects **deterministically**:
+The effectGroupId index lookup produces identical handler-scoped effect sequences deterministically.
 
-* A redirect-closure invocation begins each time §6.2 is entered (i.e., after any update to `currentRouteId`, including initialization and navigation).
+---
+
+## 6) Redirect Closure
+
+Whenever a route context needs resolution (entry route initialization, WNR target, CNR target), A2 applies redirect closure:
+
+* A redirect-closure invocation begins for a given route `startRouteId`.
 * Maintain, for the current invocation:
-  * `redirectClosureSeenRoutes: Set<RouteId>`, initialized with the route id at which closure started.
-  * `redirectClosureEdgeIds: string[]`, initialized as empty, capturing applied redirect edge ids in order.
+  * `redirectClosureSeenRoutes: Set<RouteId>`, initialized with `startRouteId`.
+  * `redirectClosureEdgeIds: string[]`, initialized as empty.
+  * `visitCount: Map<RouteId, number>`, initialized with `{ [startRouteId]: 1 }`.
 
-* While there exists an enabled redirect edge from `currentRouteId`:
-  * take exactly one redirect edge `e` according to a deterministic selection rule (§10.2)
-  * Let `nextRouteId := e.targetRouteId` (the redirect’s resolved target; redirects in A1 should always be resolvable; if not, treat as unresolved target per §3.4 termination rule).
+* While there exists an enabled redirect edge (`ROUTE_REDIRECTS_TO_ROUTE` with `isSystem=true`) from `currentRouteId`:
+  * Select one redirect edge `e` by deterministic selection (A2.1 §8.2).
+  * Let `nextRouteId := e.targetRouteId`.
+  * If `nextRouteId` is null (unresolved redirect): record unresolved target, terminate closure, `stabilized := false`.
   * **Route-visit cap check (required):**
-    * Compute `nextCount := (visitCountByRouteId[nextRouteId] ?? 0) + 1`.
-    * If `nextCount > routeVisitCap`:
+    * Compute `nextCount := (visitCount[nextRouteId] ?? 0) + 1`.
+    * If `nextCount > routeVisitCap` (default 2):
       * **do not apply** the redirect (keep `currentRouteId` unchanged),
-      * **terminate redirect closure immediately**, and
-      * record `meta.redirectLoop` evidence for this workflow with:
-        * `routeId: currentRouteId` (the route whose redirect could not be applied under the cap), and
-        * `edgeIds: [e.id]` (the blocking redirect edge id).
-      * set `meta.redirectClosureStabilized := false`
-      * stop redirect closure (no further redirects attempted).
+      * record `redirectLoop` evidence with `routeId: currentRouteId, edgeIds: [e.id]`.
+      * `stabilized := false`. Stop closure.
     * Else:
-      * apply the redirect:
-        * set `currentRouteId := nextRouteId`,
-        * append redirect edge `e.id` to `steps`,
-        * append `e.id` to `redirectClosureEdgeIds`,
-        * do not increment progress length,
-        * set `visitCountByRouteId[nextRouteId] := nextCount`.
+      * Apply: set `currentRouteId := nextRouteId`, append `e.id` to `redirectClosureEdgeIds`, set `visitCount[nextRouteId] := nextCount`.
   * **Cycle detection (required, closure-local):**
     * After applying a redirect, if `currentRouteId ∈ redirectClosureSeenRoutes`:
-      * terminate redirect closure and record `meta.redirectLoop` with:
-        * `routeId: currentRouteId`,
-        * `edgeIds: redirectClosureEdgeIds` (must include the last-applied redirect edge id),
-      * set `meta.redirectClosureStabilized := false`,
-      * stop redirect closure (no further redirects attempted).
-    * Otherwise add `currentRouteId` to `redirectClosureSeenRoutes` and continue the while-loop.
+      * record `redirectLoop` with `routeId: currentRouteId, edgeIds: redirectClosureEdgeIds`.
+      * `stabilized := false`. Stop closure.
+    * Otherwise add `currentRouteId` to `redirectClosureSeenRoutes`.
 
-Redirect closure does not itself classify workflows; it only records evidence consumed by A3.
-`meta.redirectClosureStabilized` is initialized to `true` when the workflow starts and remains `false` permanently once any redirect closure terminates due to a detected cycle or a routeVisitCap block.
+* Return `{ finalRouteId, redirectEdgeIds, redirectLoop?, stabilized }`.
 
-
-### 6.3 Route revisit cap (cycle control)
-Maintain `visitCountByRouteId: Map<RouteId, number>` for route contexts visited during enumeration (including via redirects).
-
-Bound rule (Option C3):
-
-* A workflow may visit the same `RouteId` at most `routeVisitCap` times.
-
-Default:
-
-* `routeVisitCap = 2` (configurable)
-
-This bound applies to route visits created by:
-
-* `WIDGET_NAVIGATES_ROUTE`
-* `COMPONENT_NAVIGATES_ROUTE`
-* `ROUTE_REDIRECTS_TO_ROUTE`
+`redirectClosureStabilized` on the TaskWorkflow is initialized to `true` and set to `false` permanently if any redirect closure invocation (entry, WNR target, CNR target) fails to stabilize.
 
 ---
 
-## 7) Candidate Workflow Shape (Edge-ID Trace)
-A candidate workflow is represented as:
+## 7) Terminal Node Resolution
 
-* `startRouteId`
-* `terminalNodeId` (Route or External)
-* `steps: string[]` where each element is an A1 `Edge.id`
-* `userStepCount` counts progress edges only (excludes system redirects)
-* `meta` (workflow-local evidence needed by A3; no synthetic nodes/edges):
+The terminal node of a TaskWorkflow is determined by the trigger kind and effect closure:
+
+| Trigger Kind | Has CNR? | Terminal Rule |
+|---|---|---|
+| WNE | — | `t.to` (External node) |
+| WNR (resolved) | — | Redirect-closure-resolved route at `t.targetRouteId` |
+| WNR (unresolved) | — | Current route context `r'` |
+| WTH / WSF | Yes (resolved) | Redirect-closure-resolved route at CNR target |
+| WTH / WSF | Yes (unresolved) | Current route context `r'` |
+| WTH / WSF | No | Current route context `r'` |
+
+---
+
+## 8) Deterministic Ordering
+
+### 8.1 Trigger edge enumeration order
+Entry routes: sorted by id ascending.
+Active widgets within a route: sorted by id ascending.
+Trigger edges from a widget: sorted by edge.id ascending.
+
+### 8.2 Redirect closure selection
+If multiple redirect edges are enabled from the same route, select by:
+
+* `(edge.to asc, edge.id asc)` — deterministic tie-breaking.
+
+---
+
+## 9) TaskWorkflow Shape
+A TaskWorkflow represents a single user interaction task:
+
+* `id`: trigger edge ID (unique per trigger site)
+* `triggerEdgeId`: same as `id`
+* `startRouteIds: string[]`: sorted entry route IDs where this trigger is enabled
+* `steps: TaskStep[]`: ordered steps, each `{ edgeId: string, kind: EdgeKind }`
+  * Order: `[redirect-at-entry*, trigger, CCS*, CNR?, redirect-at-target*]`
+* `terminalNodeId: string`: terminal node (Route or External)
+* `effectGroupId?: string`: links trigger to handler-scoped effects
+* `cw: ConstraintSurface`: merged constraint surface (computed by A2.2)
+* `verdict: WorkflowVerdict`: feasibility verdict (computed by A2.2)
+* `explanation: WorkflowExplanation`: machine-readable explanation
+* `meta`: workflow-level evidence:
   * `unresolvedTargets?: [{ edgeId, targetText? }]`
   * `redirectLoop?: { routeId, edgeIds }`
-  * `redirectClosureStabilized: boolean`
+  * `redirectClosureStabilized?: boolean`
 
 No node sequences are stored; node reconstruction is done by edge endpoints.
 
 ---
 
-## 8) A2 Output Artifact
-`phaseA2-workflows.raw.json` contains:
-
-* the A1 multigraph reference hash/metadata
-* `W_raw`: candidate workflows
-* enumeration configuration used (`k`, `routeVisitCap`)
-* stats
-
----
-
-# A3 — Constraint Aggregation + Deterministic Pruning/Classification
-## 1) Objective
-Transform `W_raw` into a final workflow space `W` by:
-
-1. Aggregating constraints mechanically across steps into `C(w)`
-2. Classifying each workflow as:
-   * `FEASIBLE`
-   * `CONDITIONAL`
-   * `PRUNED`
-3. Pruning only on **provable contradictions** under a deterministic rule set (no full SAT solver).
-
-A3 never invents constraints beyond what exists in A1 edge payloads; it may only *interpret* them using fixed rules.
-
----
-
-## 2) Constraint Merge Operator (Mechanical)
+# A2.2 — Constraint Solving + Classification (deterministic)
+## 1) Constraint Merge Operator (Mechanical)
 Given a workflow `w` with steps `e1..en`, define:
 
 `C(w) = merge( constraints(e1), constraints(e2), ..., constraints(en) )`
@@ -980,15 +1111,15 @@ Where merge is:
 * `uiAtoms`: concatenation preserving order.
 * `evidence`: concatenation of all `constraints.evidence` plus all `edge.refs` (dedup by `(file,start,end)`)
 
-A3 treats `requiredParams` as edge-local input from A1 and performs only set-union; it does not infer params from visited routes.
-No boolean simplification is performed in A3. Meaning comes only from classification rules.
+A2.2 treats `requiredParams` as edge-local input from A1 and performs only set-union; it does not infer params from visited routes.
+No boolean simplification is performed in A2.2. Meaning comes only from classification rules.
 
 ---
 
-## 3) Deterministic Feasibility Rules (No Full SAT)
-A3 uses a rule-based classifier. Only explicit contradictions yield `PRUNED`.
+## 2) Deterministic Feasibility Rules (No Full SAT)
+A2.2 uses a rule-based classifier. Only explicit contradictions yield `PRUNED`.
 
-### 3.1 Base verdicts
+### 2.1 Base verdicts
 Start with:
 
 * `verdict = FEASIBLE`
@@ -1001,43 +1132,119 @@ Then apply upgrades/downgrades in this strict order:
 
 ---
 
-## 4) PRUNED Rules (Provable Contradictions Only)
-### 4.1 Explicit exclusivity atoms (future-proof now)
-A workflow is `PRUNED` if its aggregated `uiAtoms` contain a contradictory pair under any of the following **explicit** patterns:
-
-* `Atom(kind="Other", args=["ExclusiveRoleGroup", groupId, roleA])`
-  and
-  `Atom(kind="Other", args=["ExclusiveRoleGroup", groupId, roleB])`
-  with `roleA != roleB`
-
-* `Atom(kind="Other", args=["MutuallyExclusive", key, valueA])`
-  and
-  `Atom(kind="Other", args=["MutuallyExclusive", key, valueB])`
-  with `valueA != valueB`
-
-No other atom semantics are assumed.
-
-### 4.2 Redirect-closure failure contradiction
-If workflow `meta.redirectClosureStabilized === false`, then:
-
-* classify `PRUNED` **only if** the workflow contains **zero** progress edges (i.e., `userStepCount === 0`), making no user action reachable.
-* otherwise classify `CONDITIONAL`.
-
-This rule is grounded in A2-recorded `meta.redirectClosureStabilized` and the existing `userStepCount` evidence.
+## 3) PRUNED Rules (Provable Literal Contradictions Only)
+A workflow is `PRUNED` **only if a literal, non-expression contradiction is provable from aggregated atoms.**
+No inference beyond explicit atom comparison is allowed.
+PRUNED rules are applied in this strict order.
 
 ---
 
-## 5) CONDITIONAL Rules (Unresolved or Requires Runtime Assignment)
+### 3.1 Explicit Mutex Contradictions
+If `C(w).uiAtoms` contains:
+
+```
+Atom(kind="Other", args=["Mutex", key, valueA])
+Atom(kind="Other", args=["Mutex", key, valueB])
+```
+
+with `valueA !== valueB` → PRUNED.
+
+No semantic meaning is assumed beyond literal equality comparison.
+
+---
+
+### 3.2 Exclusive Role Group Contradiction
+If `C(w).uiAtoms` contains:
+
+```
+Atom(kind="Other", args=["ExclusiveRoleGroup", groupId, roleA])
+Atom(kind="Other", args=["ExclusiveRoleGroup", groupId, roleB])
+```
+
+with `roleA !== roleB` → PRUNED.
+
+Default role accumulation is conjunctive and never contradictory unless this atom form exists.
+
+---
+
+### 3.3 Literal UI Impossibility
+If `C(w).uiAtoms` contains:
+
+```
+Atom(kind="WidgetVisible", args=[widgetId, "false"])
+```
+
+OR
+
+```
+Atom(kind="WidgetEnabled", args=[widgetId, "false"])
+```
+
+→ PRUNED.
+
+These represent statically impossible interaction sites.
+Expression-based atoms (`WidgetVisibleExpr`, `WidgetEnabledExpr`) are never grounds for PRUNED.
+
+---
+
+### 3.4 Literal Form Constraint Contradictions
+Only literal numeric contradictions are considered.
+If both atoms exist:
+
+```
+Atom(kind="InputConstraint", args=[k, "minLength", a])
+Atom(kind="InputConstraint", args=[k, "maxLength", b])
+```
+
+and `Number(a) > Number(b)` → PRUNED.
+
+If both atoms exist:
+
+```
+Atom(kind="InputConstraint", args=[k, "min", a])
+Atom(kind="InputConstraint", args=[k, "max", b])
+```
+
+and `Number(a) > Number(b)` → PRUNED.
+
+No other input constraint combinations are interpreted.
+Pattern-based contradictions are never evaluated.
+
+---
+
+### 3.5 Redirect Closure Deadlock
+If:
+
+```
+meta.redirectClosureStabilized === false
+AND
+userStepCount === 0
+```
+
+→ PRUNED.
+
+`userStepCount` is the count of non-redirect steps (all steps except `ROUTE_REDIRECTS_TO_ROUTE`).
+Otherwise redirect instability yields CONDITIONAL (handled later).
+
+---
+
+### 3.6 No Other PRUNED Conditions Exist
+If none of the above hold, the workflow cannot be PRUNED.
+Missing params, guards, roles, expression gates, unresolved targets → never PRUNED.
+
+---
+
+## 4) CONDITIONAL Rules (Unresolved or Requires Runtime Assignment)
 A workflow is `CONDITIONAL` if any holds:
 
-### 5.1 Unresolved navigation target encountered
+### 4.1 Unresolved navigation target encountered
 If workflow `meta.unresolvedTargets` is non-empty, mark `CONDITIONAL`.
 
 Attach to explanation:
 
 * `unresolvedTargets: [{ edgeId, targetText }]`
 
-### 5.2 Required params exist (assignment needed)
+### 4.2 Required params exist (assignment needed)
 If `C(w).requiredParams.length > 0`, mark `CONDITIONAL` unless there is explicit evidence of binding (future Atom kind `ParamBound`).
 
 For now:
@@ -1048,14 +1255,14 @@ Attach:
 
 * `missingParams: requiredParams`
 
-### 5.3 Guards exist (assignment needed)
+### 4.3 Guards exist (assignment needed)
 If `C(w).guards.length > 0`, mark `CONDITIONAL`.
 
 Attach:
 
 * `requiredGuards: guards`
 
-### 5.4 Role policy R1 (non-exclusive requirements)
+### 4.4 Role policy R1 (non-exclusive requirements)
 Roles accumulate conjunctively but are **not contradictory** by default.
 So:
 
@@ -1066,9 +1273,38 @@ Attach:
 
 * `requiredRoles: roles`
 
+### 4.5 Expression-bound UI gating
+A workflow is CONDITIONAL if `C(w).uiAtoms` contains any of:
+
+* `WidgetVisibleExpr`
+* `WidgetEnabledExpr`
+* `WidgetRequiredExpr`
+* `InputConstraintExpr`
+
+Attach to explanation:
+
+* `uiGates: uiAtomsFilteredToExprKinds` (machine-readable list)
+
+### 4.6 Form validity gate
+A workflow is CONDITIONAL if `C(w).uiAtoms` contains:
+
+* `Atom(kind="FormValid", ...)`
+
+Attach:
+
+* `requiresFormValid: true`
+
+### 4.7 Redirect instability (non-deadlock)
+If `meta.redirectClosureStabilized === false` and the workflow was not already PRUNED by §3.5:
+
+Attach:
+
+* `redirectClosureStabilized: false`
+* `redirectLoop` evidence if present
+
 ---
 
-## 6) FEASIBLE (Strong) Condition
+## 5) FEASIBLE (Strong) Condition
 A workflow is `FEASIBLE` only if:
 
 * no PRUNED rule triggered
@@ -1086,63 +1322,38 @@ This is intentionally strict and conservative.
 
 ---
 
-## 7) A3 Output Artifact
-`phaseA3-workflows.final.json` contains:
+# A2 Output Artifact (single stable contract)
+`phaseA2-taskworkflows.final.json` contains:
 
-* `W`: workflows with:
-  * `cw: ConstraintSurface` (merged)
-  * `verdict`
-  * `explanation` (typed, machine-readable)
-* `prunedWorkflows`: optionally separated list for debugging (same schema, just filtered)
-* stats broken down by verdict counts
+* reference to the A1 multigraph hash/metadata
+* config `{ mode: "task" }`
+* TaskWorkflows (classified)
+* partitions and stats
 
 ---
 
-# Determinism + Invariants (A2/A3 Must Enforce)
-## A2 invariants
-* Every `steps[i]` is an existing `Edge.id` in the A1 multigraph.
-* Every step is of a traversable executable kind (§2).
-* Each step must satisfy the enabledness predicate given the current route context (§3), including micro-sequence gating for component-origin edges (§3.3).
-* `userStepCount` equals the number of progress edges (§2.A) in `steps`.
-* Enumeration ordering is deterministic (§10).
-* `meta.unresolvedTargets` is present iff any unresolved navigation edge was taken.
+# Determinism + Invariants (A2 must enforce)
+## A2.1 invariants
+* Every `steps[i].edgeId` is an existing `Edge.id` in the A1 multigraph.
+* Every step is of a traversable executable kind (§1).
+* Each trigger edge must be enabled at the route context where it was collected (§2.3).
+* Effect edges must match the trigger's `effectGroupId` (§5).
+* CCS edges are sorted by `callsiteOrdinal` ascending (§5).
+* At most one CNR edge per handler (§5).
+* Entry route aggregation produces sorted `startRouteIds` (§4 step 5).
+* `meta.unresolvedTargets` is present iff any unresolved navigation edge was encountered.
 * `meta.redirectLoop` is present iff redirect closure loop was detected.
-* `meta.redirectClosureStabilized` is always present and is set to `false` iff any redirect closure failed to stabilize due to cycle detection or routeVisitCap block.
+* `meta.redirectClosureStabilized` is `false` iff any redirect closure failed to stabilize.
+* Workflows are sorted by `id` ascending.
 
-## A3 invariants
-* `cw` is exactly the merge of step constraints (§2).
-* `verdict` is produced by the ordered rule application (§3).
+## A2.2 invariants
+* `cw` is exactly the merge of step constraints (§1).
+* `verdict` is produced by the ordered rule application (§2–§5).
 * `explanation` fields are present iff relevant.
 
 ---
 
-# Ordering and Selection Rules (Deterministic Enumeration)
-## 10.1 Enabled edge enumeration order
-When expanding a state, enumerate enabled edges in this stable order:
-
-1. By `edge.kind` in a fixed kind priority list:
-   1. `WIDGET_NAVIGATES_EXTERNAL`
-   2. `WIDGET_NAVIGATES_ROUTE`
-   3. `WIDGET_SUBMITS_FORM`
-   4. `WIDGET_TRIGGERS_HANDLER`
-   5. `COMPONENT_CALLS_SERVICE` (only if enabled under pendingEffect gating)
-   6. `COMPONENT_NAVIGATES_ROUTE` (only if enabled under pendingEffect gating)
-   7. `ROUTE_REDIRECTS_TO_ROUTE` (only during redirect closure, not in normal expansion)
-2. Within same kind, sort by:
-   * `edge.from` (string asc)
-   * `edge.to` (string asc)
-   * `edge.id` (string asc)
-
-## 10.2 Redirect closure selection
-If multiple redirects are enabled from the same route, choose the first by:
-
-* `(edge.to asc, edge.id asc)` under the same deterministic ordering.
-
-This prevents nondeterministic redirect outcomes.
-
----
-
-# Typed Schemas for A2/A3 Artifacts (Complete, Commented)
+# Typed Schemas for A2 Artifacts (Complete, Commented)
 
 ```ts
 /** A reference to an A1 bundle used to produce workflows (for audit reproducibility). */
@@ -1153,68 +1364,7 @@ export interface PhaseAInputRef {
   multigraphHash: string;
 }
 
-/** Enumeration configuration for A2. */
-export interface A2Config {
-  /** Max number of progress edges per workflow. System redirect edges do not count. */
-  maxProgressEdges: number; // k
-  /** Maximum number of visits to the same Route context within a workflow. */
-  routeVisitCap: number; // default 2
-}
-
-/** Workflow-local evidence recorded in A2 for A3 classification and audit. */
-export interface CandidateWorkflowMeta {
-  /** Unresolved navigation targets encountered during traversal. */
-  unresolvedTargets?: Array<{
-    edgeId: string;
-    targetText?: string;
-  }>;
-  /** Redirect loop evidence if detected during redirect closure. */
-  redirectLoop?: {
-    /** Route id where redirect closure failed to stabilize. */
-    routeId: string;
-    /** Edge ids participating in the loop (if captured). */
-    edgeIds: string[];
-  };
-  /** True iff redirect closure stabilized (terminated without cycle/cap-block failure) at every point it was applied. */
-  redirectClosureStabilized: boolean;
-}
-
-/** A candidate workflow produced by A2 as an edge-id trace over the A1 multigraph. */
-export interface CandidateWorkflow {
-  /** Deterministic ID for the workflow (e.g., hash of step edge IDs). */
-  id: string;
-  /** Entry route context for the workflow. Must be a Route node id from A1. */
-  startRouteId: string;
-  /** Terminal node id. Either a Route node id or an External node id from A1. */
-  terminalNodeId: string;
-  /** Ordered list of A1 edge IDs representing the workflow trace. */
-  steps: string[];
-  /** Number of user progress steps (excludes redirects with isSystem=true). */
-  userStepCount: number;
-  /** Workflow-local evidence recorded by A2. */
-  meta: CandidateWorkflowMeta;
-}
-
-/** Output artifact of A2: bounded candidate workflows. */
-export interface PhaseA2Bundle {
-  /** Reference to the A1 input used. */
-  input: PhaseAInputRef;
-  /** Enumeration configuration used for reproducibility. */
-  config: A2Config;
-  /** Candidate workflow set prior to any feasibility classification. */
-  workflows: CandidateWorkflow[];
-  /** Summary stats for audit and regression checks. */
-  stats: {
-    workflowCount: number;
-    minUserStepCount: number;
-    maxUserStepCount: number;
-    avgUserStepCount: number;
-    /** Count of states expanded during enumeration. */
-    statesExpanded: number;
-  };
-}
-
-/** Feasibility verdict computed in A3. */
+/** Feasibility verdict computed in A2.2. */
 export type WorkflowVerdict = "FEASIBLE" | "CONDITIONAL" | "PRUNED";
 
 /** Explanation payload for non-trivial verdicts. */
@@ -1232,6 +1382,10 @@ export interface WorkflowExplanation {
   }>;
   /** Contradictory atoms that caused pruning (only when provable). */
   contradictions?: Atom[];
+  /** UI-gate atoms. */
+  uiGates?: Atom[];
+  /** Requires a form to be valid. */
+  requiresFormValid?: boolean;
   /** Redirect loop evidence if detected. */
   redirectLoop?: {
     /** Route id where redirect closure failed to stabilize. */
@@ -1239,45 +1393,73 @@ export interface WorkflowExplanation {
     /** Edge ids participating in the loop (captured during redirect closure). */
     edgeIds: string[];
   };
+  /** True iff redirect closure stabilized (terminated without cycle/cap-block failure) at every point it was applied. */
+  redirectClosureStabilized?: boolean;
 }
 
-/** Final workflow record after A3 classification. */
-export interface ClassifiedWorkflow extends CandidateWorkflow {
-  /** Merged constraints accumulated over all step edges. */
+/** A step within a TaskWorkflow, carrying the edge ID and its kind for audit. */
+export interface TaskStep {
+  edgeId: string;
+  kind: EdgeKind;
+}
+
+/** A task workflow: one trigger edge + deterministic effect closure. */
+export interface TaskWorkflow {
+  /** ID = trigger edge ID (unique per trigger site). */
+  id: string;
+  /** The trigger edge ID that initiates this task. */
+  triggerEdgeId: string;
+  /** Entry route IDs where this trigger is active (sorted, aggregated across entries). */
+  startRouteIds: string[];
+  /** Ordered steps: [redirect-at-entry*, trigger, CCS*, CNR?, redirect-at-target*]. */
+  steps: TaskStep[];
+  /** Terminal node ID (route or external). */
+  terminalNodeId: string;
+  /** effectGroupId linking trigger to its CCS/CNR effects. */
+  effectGroupId?: string;
+  /** Merged constraint surface across all step edges. */
   cw: ConstraintSurface;
   /** Feasibility verdict. */
   verdict: WorkflowVerdict;
-  /** Machine-readable explanation for CONDITIONAL/PRUNED or notable FEASIBLE. */
+  /** Machine-readable explanation for verdict. */
   explanation: WorkflowExplanation;
+  /** Workflow-level metadata. */
+  meta: {
+    unresolvedTargets?: Array<{ edgeId: string; targetText?: string }>;
+    redirectLoop?: { routeId: string; edgeIds: string[] };
+    redirectClosureStabilized?: boolean;
+  };
 }
 
-/** Output artifact of A3: classified and pruned workflow space. */
-export interface PhaseA3Bundle {
+/** Output artifact for A2. */
+export interface TaskWorkflowBundle {
   /** Reference to the A1 input used. */
   input: PhaseAInputRef;
-  /** The same enumeration config used in A2 (copied for single-file consumption). */
-  config: A2Config;
-  /** The final workflow space (including CONDITIONAL unless explicitly filtered). */
-  workflows: ClassifiedWorkflow[];
-  /** Convenience subsets for debugging/visualization. */
+  /** Configuration. */
+  config: { mode: "task" };
+  /** All task workflows, sorted by id. */
+  workflows: TaskWorkflow[];
+  /** Convenience partitions. */
   partitions: {
     feasibleIds: string[];
     conditionalIds: string[];
     prunedIds: string[];
   };
-  /** Summary stats for audit and regression checks. */
+  /** Summary stats. */
   stats: {
     workflowCount: number;
     feasibleCount: number;
     conditionalCount: number;
     prunedCount: number;
+    triggerEdgeCount: number;
+    enumeratedRouteCount: number;
   };
 }
 ```
 
 ---
 
-# What A2/A3 Explicitly Do Not Do
+# What A2 Explicitly Do Not Do
 * No new nodes or edges beyond those already in the A1 multigraph.
 * No full SAT solving.
 * No semantic interpretation of guards/roles beyond the fixed deterministic rules above.

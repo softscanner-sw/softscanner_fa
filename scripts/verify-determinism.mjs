@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * verify-determinism.mjs
- * Runs Phase 1 extraction twice on the same target and diffs the JSON output.
- * Exits 0 if both runs produce identical output; exits 1 on any difference.
+ * Runs Phase 1 extraction twice AND Phase 2 (task mode) enumeration twice
+ * on the same target and diffs all JSON outputs byte-for-byte.
+ * Exits 0 if all runs produce identical output; exits 1 on any difference.
  *
  * Usage:
  *   node scripts/verify-determinism.mjs <projectRoot> <tsConfigPath>
@@ -11,12 +12,14 @@
  *   npm install && npm run build   (or: npx tsx src/cli.ts directly)
  */
 
-import { execFileSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-const [, , projectRoot, rawTsConfigPath] = process.argv;
+const rawArgs = process.argv.slice(2);
+const positional = rawArgs.filter((a) => !a.startsWith('--'));
+const [projectRoot, rawTsConfigPath] = positional;
 
 if (!projectRoot || !rawTsConfigPath) {
   console.error('Usage: node scripts/verify-determinism.mjs <projectRoot> <tsConfigPath>');
@@ -48,6 +51,43 @@ function resolveTsconfigPath(subjectRoot, tsconfigField) {
   process.exit(1);
 }
 
+/**
+ * Compare two files byte-for-byte.
+ * Returns true if identical, false otherwise (prints first diff line).
+ */
+function compareFiles(path1, path2, label) {
+  if (!fs.existsSync(path1)) {
+    console.error(`  ${label}: MISSING from Run 1 (${path1})`);
+    return false;
+  }
+  if (!fs.existsSync(path2)) {
+    console.error(`  ${label}: MISSING from Run 2 (${path2})`);
+    return false;
+  }
+
+  const content1 = fs.readFileSync(path1, 'utf8');
+  const content2 = fs.readFileSync(path2, 'utf8');
+
+  if (content1 === content2) {
+    console.log(`  ${label}: PASS`);
+    return true;
+  }
+
+  console.error(`  ${label}: FAIL`);
+  const lines1 = content1.split('\n');
+  const lines2 = content2.split('\n');
+  const maxLines = Math.max(lines1.length, lines2.length);
+  for (let i = 0; i < maxLines; i++) {
+    if (lines1[i] !== lines2[i]) {
+      console.error(`    First difference at line ${i + 1}:`);
+      console.error(`      Run1: ${lines1[i] ?? '<missing>'}`);
+      console.error(`      Run2: ${lines2[i] ?? '<missing>'}`);
+      break;
+    }
+  }
+  return false;
+}
+
 const tsConfigPath = resolveTsconfigPath(projectRoot, rawTsConfigPath);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'softscanner-det-'));
@@ -57,59 +97,87 @@ fs.mkdirSync(out1);
 fs.mkdirSync(out2);
 
 const cliPath = path.resolve('src/cli.ts');
+const a2CliPath = path.resolve('src/a2-cli.ts');
 const tsxJsPath = path.resolve('node_modules/tsx/dist/cli.mjs');
 
-function runExtraction(outputDir, runLabel) {
-  console.log(`Running ${runLabel}…`);
+// ── A1 Determinism ─────────────────────────────────────────────────────────
+
+function runA1(outputDir, runLabel) {
+  console.log(`Running A1 ${runLabel}\u2026`);
   const result = spawnSync(
     process.execPath,
     [tsxJsPath, cliPath, projectRoot, tsConfigPath, outputDir],
     { encoding: 'utf8', stdio: 'pipe' },
   );
   if (result.status !== 0) {
-    console.error(`${runLabel} failed:`);
+    console.error(`A1 ${runLabel} failed:`);
     console.error(result.stderr || result.stdout);
     process.exit(1);
   }
-  console.log(`  ${runLabel} OK`);
+  console.log(`  A1 ${runLabel} OK`);
 }
 
-runExtraction(out1, 'Run 1');
-runExtraction(out2, 'Run 2');
+console.log('--- A1 Determinism Check ---');
+runA1(out1, 'Run 1');
+runA1(out2, 'Run 2');
 
-// Compare the two bundle files (cli.ts writes to json/ subdirectory)
 const bundle1Path = path.join(out1, 'json', 'phase1-bundle.json');
 const bundle2Path = path.join(out2, 'json', 'phase1-bundle.json');
 
-const bundle1 = fs.readFileSync(bundle1Path, 'utf8');
-const bundle2 = fs.readFileSync(bundle2Path, 'utf8');
+const a1Pass = compareFiles(bundle1Path, bundle2Path, 'phase1-bundle.json');
 
-if (bundle1 === bundle2) {
-  console.log('');
-  console.log('✓ Determinism check PASSED — both runs produced identical JSON output.');
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  process.exit(0);
-} else {
+if (!a1Pass) {
   console.error('');
-  console.error('✗ Determinism check FAILED — runs produced different output.');
-  console.error(`  Run 1: ${bundle1Path}`);
-  console.error(`  Run 2: ${bundle2Path}`);
-  console.error('');
-
-  // Find the first differing line for a quick hint
-  const lines1 = bundle1.split('\n');
-  const lines2 = bundle2.split('\n');
-  const maxLines = Math.max(lines1.length, lines2.length);
-  for (let i = 0; i < maxLines; i++) {
-    if (lines1[i] !== lines2[i]) {
-      console.error(`  First difference at line ${i + 1}:`);
-      console.error(`    Run1: ${lines1[i] ?? '<missing>'}`);
-      console.error(`    Run2: ${lines2[i] ?? '<missing>'}`);
-      break;
-    }
-  }
-
-  console.error('');
+  console.error('\u2717 A1 determinism check FAILED');
   console.error(`  Temp files kept at: ${tmpDir}`);
   process.exit(1);
 }
+
+// ── A2 Task-mode Determinism ─────────────────────────────────────────────
+
+console.log('');
+console.log('--- A2 Task-mode Determinism Check ---');
+
+const taskOut1 = path.join(tmpDir, 'task-run1');
+const taskOut2 = path.join(tmpDir, 'task-run2');
+fs.mkdirSync(taskOut1);
+fs.mkdirSync(taskOut2);
+
+function runA2(inputBundle, outputDir, runLabel) {
+  console.log(`Running A2 ${runLabel}\u2026`);
+  const result = spawnSync(
+    process.execPath,
+    [tsxJsPath, a2CliPath, inputBundle, outputDir],
+    { encoding: 'utf8', stdio: 'pipe' },
+  );
+  if (result.status !== 0) {
+    console.error(`A2 ${runLabel} failed:`);
+    console.error(result.stderr || result.stdout);
+    process.exit(1);
+  }
+  console.log(`  A2 ${runLabel} OK`);
+}
+
+runA2(bundle1Path, taskOut1, 'Run 1');
+runA2(bundle1Path, taskOut2, 'Run 2');
+
+const taskFile = 'phaseA2-taskworkflows.final.json';
+const taskPass = compareFiles(
+  path.join(taskOut1, taskFile),
+  path.join(taskOut2, taskFile),
+  taskFile,
+);
+
+if (!taskPass) {
+  console.error('');
+  console.error('\u2717 A2 (task) determinism check FAILED');
+  console.error(`  Temp files kept at: ${tmpDir}`);
+  process.exit(1);
+}
+
+// ── All passed ──────────────────────────────────────────────────────────────
+
+console.log('');
+console.log('\u2713 A1 + A2 (task) determinism check PASSED \u2014 all runs produced identical output.');
+fs.rmSync(tmpDir, { recursive: true, force: true });
+process.exit(0);

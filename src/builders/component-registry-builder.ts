@@ -53,10 +53,22 @@ export class ComponentRegistryBuilder {
     // Collect all @Component classes, sorted by file then class name
     const candidates = this._collectComponents(project);
 
+    // Pre-pass: collect all component selectors so widget extraction can
+    // exclude component selector tags from the event-binding fallback.
+    // Event bindings on component selectors are @Output() emitters, not
+    // user-facing triggers (spec: "No Inputs/Outputs extraction").
+    const componentSelectors = new Set<string>();
+    for (const { decorator } of candidates) {
+      const meta = DecoratorParser.extractComponentMeta(decorator, this._cfg);
+      if (meta.selector !== null && meta.selector.trim() !== '') {
+        componentSelectors.add(meta.selector.trim().toLowerCase());
+      }
+    }
+
     const componentInfos: ComponentInfo[] = [];
 
     for (const { classDecl, decorator, filePath } of candidates) {
-      const info = this._buildComponentInfo(classDecl, decorator, filePath);
+      const info = this._buildComponentInfo(classDecl, decorator, filePath, componentSelectors);
       if (info !== null) componentInfos.push(info);
     }
 
@@ -125,6 +137,7 @@ export class ComponentRegistryBuilder {
     classDecl: ClassDeclaration,
     decorator: import('ts-morph').Decorator,
     filePath: string,
+    componentSelectors: ReadonlySet<string>,
   ): ComponentInfo | null {
     const className = classDecl.getName() ?? 'Unknown';
     const canonicalName = `${filePath}#${className}`;
@@ -172,7 +185,7 @@ export class ComponentRegistryBuilder {
 
     // Extract widgets
     const rawWidgets = templateText !== null
-      ? new WidgetProcessor(canonicalName, templateFile, templateText, this._cfg).process(ast)
+      ? new WidgetProcessor(canonicalName, templateFile, templateText, this._cfg, componentSelectors).process(ast)
       : [];
 
     this._log.debug('Component processed', {

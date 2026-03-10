@@ -1,0 +1,711 @@
+{
+  "version": "1",
+  "generatedDate": "2026-03-09",
+  "methodology": "Manual source-code audit of templates, handlers, routing, and service calls per subject. GT reflects 'what a user can do' — actual user-visible interaction sites, not framework-internal bindings.",
+  "subjects": {
+    "posts-users-ui-ng": {
+      "gt": [
+        {
+          "gtId": "GT-01",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 139, "end": 196 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Posts" },
+            "handler": null,
+            "routerLinkOrHref": "/posts"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/posts" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav. HeaderComponent composed by AppComponent (root), not route-activated."
+        },
+        {
+          "gtId": "GT-02",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 202, "end": 271 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Add a New Post" },
+            "handler": null,
+            "routerLinkOrHref": "/new-post"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/new-post" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav."
+        },
+        {
+          "gtId": "GT-03",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 277, "end": 334 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Users" },
+            "handler": null,
+            "routerLinkOrHref": "/users"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/users" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav."
+        },
+        {
+          "gtId": "GT-04",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 340, "end": 409 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Add a New User" },
+            "handler": null,
+            "routerLinkOrHref": "/new-user"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/new-user" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav."
+        },
+        {
+          "gtId": "GT-05",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 415, "end": 485 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Search Users" },
+            "handler": null,
+            "routerLinkOrHref": "/user-search"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/user-search" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav."
+        },
+        {
+          "gtId": "GT-06",
+          "startRoutes": ["/posts", "/new-post", "/users", "/users/:id", "/new-user", "/user-search", "/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/header/header.component.ts",
+            "componentClass": "HeaderComponent",
+            "templateFile": "src/app/header/header.component.html",
+            "templateSpan": { "start": 491, "end": 585 },
+            "widgetTag": "button",
+            "event": "routerLink",
+            "labelEvidence": { "text": "Schedule Availability" },
+            "handler": null,
+            "routerLinkOrHref": "/user-availability-schedule"
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "routerLink", "target": "/user-availability-schedule" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "App-shell nav."
+        },
+        {
+          "gtId": "GT-07",
+          "startRoutes": ["/posts"],
+          "trigger": {
+            "componentFile": "src/app/post-list-item/post-list-item.component.ts",
+            "componentClass": "PostListItemComponent",
+            "templateFile": "src/app/post-list-item/post-list-item.component.html",
+            "templateSpan": { "start": 617, "end": 779 },
+            "widgetTag": "button",
+            "event": "click",
+            "labelEvidence": { "text": "Love this post!", "icon": "thumb_up" },
+            "handler": { "method": "onLoveIt" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [{ "serviceClass": "PostService", "method": "likePost" }],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Like button."
+        },
+        {
+          "gtId": "GT-08",
+          "startRoutes": ["/posts"],
+          "trigger": {
+            "componentFile": "src/app/post-list-item/post-list-item.component.ts",
+            "componentClass": "PostListItemComponent",
+            "templateFile": "src/app/post-list-item/post-list-item.component.html",
+            "templateSpan": { "start": 789, "end": 962 },
+            "widgetTag": "button",
+            "event": "click",
+            "labelEvidence": { "text": "Not a fan of this post", "icon": "thumb_down" },
+            "handler": { "method": "onNotLoveIt" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [{ "serviceClass": "PostService", "method": "dislikePost" }],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Dislike button."
+        },
+        {
+          "gtId": "GT-09",
+          "startRoutes": ["/posts"],
+          "trigger": {
+            "componentFile": "src/app/post-list-item/post-list-item.component.ts",
+            "componentClass": "PostListItemComponent",
+            "templateFile": "src/app/post-list-item/post-list-item.component.html",
+            "templateSpan": { "start": 972, "end": 1134 },
+            "widgetTag": "button",
+            "event": "click",
+            "labelEvidence": { "text": "Delete this post", "icon": "delete" },
+            "handler": { "method": "onDelete" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [
+              { "serviceClass": "PostService", "method": "deletePost" },
+              { "serviceClass": "PostService", "method": "getPosts" }
+            ],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Delete post."
+        },
+        {
+          "gtId": "GT-10",
+          "startRoutes": ["/new-post"],
+          "trigger": {
+            "componentFile": "src/app/new-post/new-post.component.ts",
+            "componentClass": "NewPostComponent",
+            "templateFile": "src/app/new-post/new-post.component.html",
+            "templateSpan": { "start": 197, "end": 1530 },
+            "widgetTag": "form",
+            "event": "submit",
+            "labelEvidence": { "text": "Publish Post", "icon": "send" },
+            "handler": { "method": "onSavePost" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [
+              { "serviceClass": "PostService", "method": "addPost" },
+              { "serviceClass": "PostService", "method": "getPosts" }
+            ],
+            "navigation": { "kind": "router.navigate", "target": "/posts" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [{ "kind": "enabledLiteral", "exprOrLiteral": "postForm.invalid" }], "guards": [], "roles": [], "requiredParams": [], "formValid": true },
+          "notes": "Publish post form."
+        },
+        {
+          "gtId": "GT-11",
+          "startRoutes": ["/new-user"],
+          "trigger": {
+            "componentFile": "src/app/new-user/new-user.component.ts",
+            "componentClass": "NewUserComponent",
+            "templateFile": "src/app/new-user/new-user.component.html",
+            "templateSpan": { "start": 4995, "end": 5065 },
+            "widgetTag": "input",
+            "event": "change",
+            "labelEvidence": { "text": "Upload Avatar" },
+            "handler": { "method": "onFileSelected" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Upload avatar (local FileReader effect)."
+        },
+        {
+          "gtId": "GT-12",
+          "startRoutes": ["/new-user"],
+          "trigger": {
+            "componentFile": "src/app/new-user/new-user.component.ts",
+            "componentClass": "NewUserComponent",
+            "templateFile": "src/app/new-user/new-user.component.html",
+            "templateSpan": { "start": 149, "end": 5665 },
+            "widgetTag": "form",
+            "event": "submit",
+            "labelEvidence": { "text": "Create User", "icon": "person_add" },
+            "handler": { "method": "onSaveUser" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [
+              { "serviceClass": "UserService", "method": "addUser" },
+              { "serviceClass": "UserService", "method": "getUsers" }
+            ],
+            "navigation": { "kind": "router.navigate", "target": "/users/:id" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [{ "kind": "enabledLiteral", "exprOrLiteral": "userForm.invalid" }], "guards": [], "roles": [], "requiredParams": ["id"], "formValid": true },
+          "notes": "Create user form."
+        },
+        {
+          "gtId": "GT-13",
+          "startRoutes": ["/users", "/user-search"],
+          "trigger": {
+            "componentFile": "src/app/user-list-item/user-list-item.component.ts",
+            "componentClass": "UserListItemComponent",
+            "templateFile": "src/app/user-list-item/user-list-item.component.html",
+            "templateSpan": { "start": 0, "end": 475 },
+            "widgetTag": "mat-card",
+            "event": "click",
+            "labelEvidence": { "text": "user card" },
+            "handler": { "method": "navigateToUserProfile" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "router.navigate", "target": "/users/:id" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": ["id"], "formValid": false },
+          "notes": "User card nav. Composed into UserListComponent and UserSearchComponent."
+        },
+        {
+          "gtId": "GT-14",
+          "startRoutes": ["/users/:id"],
+          "trigger": {
+            "componentFile": "src/app/user-profile/user-profile.component.ts",
+            "componentClass": "UserProfileComponent",
+            "templateFile": "src/app/user-profile/user-profile.component.html",
+            "templateSpan": { "start": 1604, "end": 1775 },
+            "widgetTag": "button",
+            "event": "click",
+            "labelEvidence": { "text": "Read More / Read Less" },
+            "handler": { "method": "toggleBio" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [{ "kind": "visibleExpr", "exprOrLiteral": "user.bio.length > 150" }], "guards": [], "roles": [], "requiredParams": ["id"], "formValid": false },
+          "notes": "Pure UI toggle (Read More/Less)."
+        },
+        {
+          "gtId": "GT-15",
+          "startRoutes": ["/user-search"],
+          "trigger": {
+            "componentFile": "src/app/user-search/user-search.component.ts",
+            "componentClass": "UserSearchComponent",
+            "templateFile": "src/app/user-search/user-search.component.html",
+            "templateSpan": { "start": 331, "end": 422 },
+            "widgetTag": "input",
+            "event": "input",
+            "labelEvidence": { "text": "Search for Users by Email" },
+            "handler": { "method": "onUsersSearchChange" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [{ "serviceClass": "UserService", "method": "searchUsersByEmail" }],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Search users by email."
+        },
+        {
+          "gtId": "GT-16",
+          "startRoutes": ["/user-search"],
+          "trigger": {
+            "componentFile": "src/app/user-search/user-search.component.ts",
+            "componentClass": "UserSearchComponent",
+            "templateFile": "src/app/user-search/user-search.component.html",
+            "templateSpan": { "start": 430, "end": 561 },
+            "widgetTag": "button",
+            "event": "click",
+            "labelEvidence": { "icon": "clear" },
+            "handler": { "method": "clearSearch" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [{ "kind": "visibleExpr", "exprOrLiteral": "searchEntry" }], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Clear search button."
+        },
+        {
+          "gtId": "GT-17",
+          "startRoutes": ["/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/user-availability-scheduler/user-availability-scheduler.component.ts",
+            "componentClass": "UserAvailabilitySchedulerComponent",
+            "templateFile": "src/app/user-availability-scheduler/user-availability-scheduler.component.html",
+            "templateSpan": { "start": 297, "end": 435 },
+            "widgetTag": "input",
+            "event": "dateChange",
+            "labelEvidence": { "text": "Select Date" },
+            "handler": { "method": "closeDatepicker" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": false },
+          "notes": "Pure UI datepicker close."
+        },
+        {
+          "gtId": "GT-18",
+          "startRoutes": ["/user-availability-schedule"],
+          "trigger": {
+            "componentFile": "src/app/user-availability-scheduler/user-availability-scheduler.component.ts",
+            "componentClass": "UserAvailabilitySchedulerComponent",
+            "templateFile": "src/app/user-availability-scheduler/user-availability-scheduler.component.html",
+            "templateSpan": { "start": 124, "end": 1216 },
+            "widgetTag": "form",
+            "event": "submit",
+            "labelEvidence": { "text": "Save Availability" },
+            "handler": { "method": "onSubmit" },
+            "routerLinkOrHref": null
+          },
+          "closure": {
+            "serviceCalls": [],
+            "navigation": { "kind": "none" },
+            "redirects": []
+          },
+          "constraints": { "uiGates": [], "guards": [], "roles": [], "requiredParams": [], "formValid": true },
+          "notes": "Save availability (pure local state)."
+        }
+      ],
+      "outOfScope": []
+    },
+    "heroes-angular": {
+      "gt": [
+        { "gtId": "GT-01", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "NavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/heroes" }, "closure": { "navigation": { "kind": "routerLink", "target": "/heroes" } }, "notes": "App-shell nav: Heroes." },
+        { "gtId": "GT-02", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "NavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/villains" }, "closure": { "navigation": { "kind": "routerLink", "target": "/villains" } }, "notes": "App-shell nav: Villains." },
+        { "gtId": "GT-03", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "NavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/about" }, "closure": { "navigation": { "kind": "routerLink", "target": "/about" } }, "notes": "App-shell nav: About." },
+        { "gtId": "GT-04", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "HeaderBarBrandComponent", "widgetTag": "a", "event": "href", "routerLinkOrHref": "https://angular.io/" }, "closure": { "navigation": { "kind": "external", "target": "https://angular.io/" } }, "notes": "Brand link." },
+        { "gtId": "GT-05", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "HeaderBarLinksComponent", "widgetTag": "a", "event": "href", "routerLinkOrHref": "https://github.com/johnpapa/heroes-angular" }, "closure": { "navigation": { "kind": "external" } }, "notes": "GitHub link." },
+        { "gtId": "GT-06", "startRoutes": ["/heroes", "/villains", "/about"], "trigger": { "componentClass": "HeaderBarLinksComponent", "widgetTag": "a", "event": "href", "routerLinkOrHref": "https://twitter.com/john_papa" }, "closure": { "navigation": { "kind": "external" } }, "notes": "Twitter link." },
+        { "gtId": "GT-07", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ListHeaderComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleAdd" }, "labelEvidence": { "ariaLabel": "add", "icon": "fas fa-plus" } }, "closure": { "serviceCalls": [] }, "notes": "Heroes: add mode. Emits add output." },
+        { "gtId": "GT-08", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ListHeaderComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleRefresh" }, "labelEvidence": { "ariaLabel": "refresh", "icon": "fas fa-sync" } }, "closure": { "serviceCalls": [{ "serviceClass": "HeroService", "method": "getAll" }] }, "notes": "Heroes: refresh. Emits refresh output." },
+        { "gtId": "GT-09", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ButtonFooterComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleClick" }, "labelEvidence": { "text": "Delete" } }, "closure": { "serviceCalls": [] }, "notes": "Hero delete button." },
+        { "gtId": "GT-10", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ButtonFooterComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleClick" }, "labelEvidence": { "text": "Edit" } }, "closure": { "serviceCalls": [] }, "notes": "Hero edit button (same A1 trigger as GT-09)." },
+        { "gtId": "GT-11", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ButtonFooterComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleClick" }, "labelEvidence": { "text": "Cancel" } }, "closure": { "serviceCalls": [] }, "notes": "Hero detail cancel." },
+        { "gtId": "GT-12", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ButtonFooterComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleClick" }, "labelEvidence": { "text": "Save" } }, "closure": { "serviceCalls": [{ "serviceClass": "HeroService", "method": "update or add" }] }, "notes": "Hero detail save." },
+        { "gtId": "GT-13", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onNo" }, "labelEvidence": { "text": "No" } }, "closure": { "serviceCalls": [] }, "notes": "Heroes modal: No." },
+        { "gtId": "GT-14", "startRoutes": ["/heroes"], "trigger": { "componentClass": "ModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onYes" }, "labelEvidence": { "text": "Yes" } }, "closure": { "serviceCalls": [{ "serviceClass": "HeroService", "method": "delete" }] }, "notes": "Heroes modal: Yes." },
+        { "gtId": "GT-15", "startRoutes": ["/villains"], "trigger": { "componentClass": "ListHeaderComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleAdd" } }, "closure": { "serviceCalls": [] }, "notes": "Villains add. Shared widget (=GT-07 trigger)." },
+        { "gtId": "GT-16", "startRoutes": ["/villains"], "trigger": { "componentClass": "ListHeaderComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleRefresh" } }, "closure": { "serviceCalls": [{ "serviceClass": "VillainService", "method": "getAll" }] }, "notes": "Villains refresh." },
+        { "gtId": "GT-17", "startRoutes": ["/villains"], "trigger": { "componentClass": "ButtonFooterComponent", "widgetTag": "button", "event": "click", "handler": { "method": "handleClick" } }, "closure": { "serviceCalls": [] }, "notes": "Villain delete/edit/cancel/save buttons (same widget, different output bindings)." },
+        { "gtId": "GT-18", "startRoutes": ["/villains"], "trigger": { "componentClass": "ModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onNo" } }, "closure": { "serviceCalls": [] }, "notes": "Villains modal No." },
+        { "gtId": "GT-19", "startRoutes": ["/villains"], "trigger": { "componentClass": "ModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onYes" } }, "closure": { "serviceCalls": [{ "serviceClass": "VillainService", "method": "delete" }] }, "notes": "Villains modal Yes." },
+        { "gtId": "GT-20", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href", "routerLinkOrHref": "http://twitter.com/john_papa" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 1/8." },
+        { "gtId": "GT-21", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 2/8." },
+        { "gtId": "GT-22", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 3/8." },
+        { "gtId": "GT-23", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 4/8." },
+        { "gtId": "GT-24", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 5/8." },
+        { "gtId": "GT-25", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 6/8." },
+        { "gtId": "GT-26", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 7/8." },
+        { "gtId": "GT-27", "startRoutes": ["/about"], "trigger": { "componentClass": "AboutComponent", "widgetTag": "a", "event": "href" }, "closure": { "navigation": { "kind": "external" } }, "notes": "External link 8/8." }
+      ],
+      "outOfScope": [
+        { "pattern": "[(ngModel)] on HeroDetailComponent/VillainDetailComponent input fields", "reason": "Two-way data binding, not a user-visible trigger. A1 should not emit WTH for ngModel." },
+        { "pattern": "Output event bindings (save/unselect/deleted/selected/add/refresh) on child component tags in HeroesComponent/VillainsComponent templates", "reason": "These are EventEmitter bindings on child component selectors, not user-visible triggers. The actual user trigger is the button inside the child component." },
+        { "pattern": "router-link (plain HTML attribute) on HeaderBarBrandComponent and ListHeaderComponent", "reason": "Not Angular [routerLink] directive. Plain HTML attribute with no Angular routing behavior." }
+      ]
+    },
+    "softscanner-cqa-frontend": {
+      "gt": [
+        { "gtId": "GT-01", "startRoutes": ["/"], "trigger": { "componentClass": "MetadataFormComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onToggle" } }, "closure": { "serviceCalls": [] }, "notes": "Metadata form submit/reset." },
+        { "gtId": "GT-02", "startRoutes": ["/"], "trigger": { "componentClass": "MetadataFormComponent", "widgetTag": "mat-select", "event": "selectionChange", "handler": { "method": "onTypeChange" } }, "closure": { "serviceCalls": [] }, "notes": "Type dropdown change." },
+        { "gtId": "GT-03", "startRoutes": ["/"], "trigger": { "componentClass": "QualityModelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showGoalDetails" }, "labelEvidence": { "text": "View Details (composite)" } }, "closure": { "serviceCalls": [] }, "notes": "Opens GoalDetailsComponent dialog (composite nodes)." },
+        { "gtId": "GT-04", "startRoutes": ["/"], "trigger": { "componentClass": "QualityModelComponent", "widgetTag": "mat-checkbox", "event": "change", "handler": { "method": "toggleGoalSelection" } }, "closure": { "serviceCalls": [] }, "notes": "Goal checkbox toggle (composite nodes)." },
+        { "gtId": "GT-05", "startRoutes": ["/"], "trigger": { "componentClass": "QualityModelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showGoalDetails" }, "labelEvidence": { "text": "View Details (leaf)" } }, "closure": { "serviceCalls": [] }, "notes": "Opens GoalDetailsComponent dialog (leaf nodes)." },
+        { "gtId": "GT-06", "startRoutes": ["/"], "trigger": { "componentClass": "QualityModelComponent", "widgetTag": "mat-checkbox", "event": "change", "handler": { "method": "toggleGoalSelection" } }, "closure": { "serviceCalls": [] }, "notes": "Goal checkbox toggle (leaf nodes)." },
+        { "gtId": "GT-07", "startRoutes": ["/"], "trigger": { "componentClass": "QualityAssessmentComponent", "widgetTag": "button", "event": "click", "handler": { "method": "toggleAssessment" } }, "closure": { "serviceCalls": [{ "serviceClass": "ApiService", "method": "startAssessment" }] }, "notes": "Start/stop assessment button." },
+        { "gtId": "GT-08", "startRoutes": ["/"], "trigger": { "componentClass": "CollapsibleGoalPanelsComponent", "widgetTag": "mat-expansion-panel", "event": "opened", "handler": { "method": "onPanelOpened" } }, "closure": { "serviceCalls": [] }, "notes": "Panel open." },
+        { "gtId": "GT-09", "startRoutes": ["/"], "trigger": { "componentClass": "CollapsibleGoalPanelsComponent", "widgetTag": "mat-expansion-panel", "event": "closed", "handler": { "method": "onPanelClosed" } }, "closure": { "serviceCalls": [] }, "notes": "Panel close." },
+        { "gtId": "GT-10", "startRoutes": ["/"], "trigger": { "componentClass": "MetricsDashboardComponent", "widgetTag": "button", "event": "click", "handler": { "method": "openMetricDetails" } }, "closure": { "serviceCalls": [] }, "notes": "Metric info button." },
+        { "gtId": "GT-11", "startRoutes": ["/"], "trigger": { "componentClass": "MetricsDashboardComponent", "widgetTag": "ngx-charts-line-chart", "event": "select", "handler": { "method": "onLegendClick" } }, "closure": { "serviceCalls": [] }, "notes": "Line chart select." },
+        { "gtId": "GT-12", "startRoutes": ["/"], "trigger": { "componentClass": "MetricsDashboardComponent", "widgetTag": "ngx-charts-bar-vertical", "event": "select", "handler": { "method": "onLegendClick" } }, "closure": { "serviceCalls": [] }, "notes": "Bar chart select." },
+        { "gtId": "GT-13", "startRoutes": ["/"], "trigger": { "componentClass": "GoalAssessmentOverviewComponent", "widgetTag": "ngx-charts-line-chart", "event": "select", "handler": { "method": "onGoalLegendClick" } }, "closure": { "serviceCalls": [] }, "notes": "Goal line chart." },
+        { "gtId": "GT-14", "startRoutes": ["/"], "trigger": { "componentClass": "GoalAssessmentOverviewComponent", "widgetTag": "ngx-charts-bar-horizontal", "event": "select", "handler": { "method": "onMetricLegendClick" } }, "closure": { "serviceCalls": [] }, "notes": "Goal bar chart." },
+        { "gtId": "GT-15", "startRoutes": ["/"], "trigger": { "componentClass": "GoalDetailsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "close" } }, "closure": { "serviceCalls": [] }, "notes": "Dialog close button. Found via COMPONENT_COMPOSES_COMPONENT composition chain from route-activated components." },
+        { "gtId": "GT-16", "startRoutes": ["/"], "trigger": { "componentClass": "MetricDetailsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "close" } }, "closure": { "serviceCalls": [] }, "notes": "Dialog close button. Found via COMPONENT_COMPOSES_COMPONENT composition chain from route-activated components." }
+      ],
+      "outOfScope": [
+        { "pattern": "matTreeNodeToggle directive on QualityModelComponent composite node button", "reason": "CDK directive toggle — no explicit (click) handler, pure CDK internal action." },
+        { "pattern": "[(ngModel)] or reactive form inputs without explicit event handlers in MetadataFormComponent", "reason": "Data binding, not user trigger. A1 should not emit WTH for implicit ngModel/form bindings." },
+        { "pattern": "Output event bindings (metadataSubmitted/goalsSelected) on child component tags in QualityAssessmentComponent", "reason": "EventEmitter output bindings — fired as consequence of child component actions, not independent user triggers." }
+      ]
+    },
+    "airbus-inventory": {
+      "gt": [
+        { "gtId": "GT-01", "startRoutes": ["/login"], "trigger": { "componentClass": "LoginPageComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "login" } }, "closure": { "serviceCalls": [{ "serviceClass": "AuthenticationServiceService", "method": "authenticate" }], "navigation": { "kind": "router.navigate", "target": "/dashboard" } }, "notes": "Login form." },
+        { "gtId": "GT-02", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/productByCategory" }, "closure": { "navigation": { "kind": "routerLink", "target": "/productByCategory" } }, "notes": "Sidenav: Get Products by Category." },
+        { "gtId": "GT-03", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/getAllProducts" }, "closure": { "navigation": { "kind": "routerLink", "target": "/getAllProducts" } }, "notes": "Sidenav: Get All Products." },
+        { "gtId": "GT-04", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/add" }, "closure": { "navigation": { "kind": "routerLink", "target": "/add" } }, "notes": "Sidenav: Add Product." },
+        { "gtId": "GT-05", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "button", "event": "click", "handler": null, "labelEvidence": { "ariaLabel": "Toggle sidenav" } }, "closure": { "serviceCalls": [] }, "notes": "Sidenav toggle. *ngIf=isHandset$|async. Template-ref handler drawer.toggle()." },
+        { "gtId": "GT-06", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "span", "event": "click", "handler": { "method": "logout" }, "routerLinkOrHref": "/login" }, "closure": { "serviceCalls": [], "navigation": { "kind": "routerLink", "target": "/login" } }, "notes": "Logout span (icon)." },
+        { "gtId": "GT-07", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "div", "event": "click", "handler": { "method": "logout" }, "routerLinkOrHref": "/login" }, "closure": { "serviceCalls": [], "navigation": { "kind": "routerLink", "target": "/login" } }, "notes": "Logout div (text). CSS class 'hide' may be display:none." },
+        { "gtId": "GT-08", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "th", "event": "click", "handler": { "method": "sort" }, "labelEvidence": { "text": "ID" } }, "closure": { "serviceCalls": [] }, "notes": "Sort by ID column." },
+        { "gtId": "GT-09", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "th", "event": "click", "handler": { "method": "sort" }, "labelEvidence": { "text": "Product Name" } }, "closure": { "serviceCalls": [] }, "notes": "Sort by Product Name." },
+        { "gtId": "GT-10", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "th", "event": "click", "handler": { "method": "sort" }, "labelEvidence": { "text": "Product Description" } }, "closure": { "serviceCalls": [] }, "notes": "Sort by Description." },
+        { "gtId": "GT-11", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "th", "event": "click", "handler": { "method": "sort" }, "labelEvidence": { "text": "Category" } }, "closure": { "serviceCalls": [] }, "notes": "Sort by Category." },
+        { "gtId": "GT-12", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "th", "event": "click", "handler": { "method": "sort" }, "labelEvidence": { "text": "Units" } }, "closure": { "serviceCalls": [] }, "notes": "Sort by Units." },
+        { "gtId": "GT-13", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "span", "event": "click", "handler": { "method": "updateProduct" } }, "closure": { "serviceCalls": [{ "serviceClass": "SharedServiceService", "method": "setProduct" }], "navigation": { "kind": "router.navigate", "target": "/update" } }, "notes": "Edit product icon." },
+        { "gtId": "GT-14", "startRoutes": ["/dashboard", "/getAllProducts"], "trigger": { "componentClass": "GetAllProductsComponent", "widgetTag": "span", "event": "click", "handler": { "method": "deleteProduct" } }, "closure": { "serviceCalls": [{ "serviceClass": "ProductService", "method": "deleteProduct" }, { "serviceClass": "ProductService", "method": "getAllProducts" }] }, "notes": "Delete product icon." },
+        { "gtId": "GT-15", "startRoutes": ["/productByCategory"], "trigger": { "componentClass": "GetProductByCategoryComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "getProductByCategory" } }, "closure": { "serviceCalls": [{ "serviceClass": "ProductService", "method": "getAllProductsByCategory" }] }, "notes": "Search by category form." },
+        { "gtId": "GT-16", "startRoutes": ["/add"], "trigger": { "componentClass": "AddProductComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "addProduct" } }, "closure": { "serviceCalls": [{ "serviceClass": "ProductService", "method": "addProduct" }] }, "notes": "Add product form." },
+        { "gtId": "GT-17", "startRoutes": ["/update"], "trigger": { "componentClass": "UpdateProductComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "updateProduct" } }, "closure": { "serviceCalls": [{ "serviceClass": "ProductService", "method": "updateProduct" }] }, "notes": "Update product form." },
+        { "gtId": "GT-18", "startRoutes": ["/dashboard", "/getAllProducts", "/update"], "trigger": { "componentClass": "SuccessfulDialogComponent", "widgetTag": "button", "event": "click", "handler": { "method": "refreshPage" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/getAllProducts" } }, "notes": "Dialog close. Found as bootstrap component (not route-activated, not composed, but declared with outgoing widget edges)." },
+        { "gtId": "GT-19", "startRoutes": ["/dashboard", "/getAllProducts", "/update"], "trigger": { "componentClass": "UnSuccessfulDialogComponent", "widgetTag": "button", "event": "click", "handler": { "method": "refreshPage" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/getAllProducts" } }, "notes": "Dialog close. Found as bootstrap component (not route-activated, not composed, but declared with outgoing widget edges)." },
+        { "gtId": "GT-20", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "span", "event": "routerLink", "routerLinkOrHref": "/login" }, "closure": { "navigation": { "kind": "routerLink", "target": "/login" } }, "notes": "Logout routerLink on span (dual-trigger with GT-06 click)." },
+        { "gtId": "GT-21", "startRoutes": ["/dashboard", "/getAllProducts", "/productByCategory", "/add", "/update"], "trigger": { "componentClass": "MainNavComponent", "widgetTag": "div", "event": "routerLink", "routerLinkOrHref": "/login" }, "closure": { "navigation": { "kind": "routerLink", "target": "/login" } }, "notes": "Logout routerLink on div (dual-trigger with GT-07 click)." }
+      ],
+      "outOfScope": [
+        { "pattern": "[(ngModel)] on UpdateProductComponent form fields (input, select, textarea)", "reason": "Two-way data binding, not user-visible triggers." }
+      ]
+    },
+    "spring-petclinic-angular": {
+      "gt": [
+        { "gtId": "GT-01", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/welcome" }, "closure": { "navigation": { "kind": "routerLink", "target": "/welcome" } }, "notes": "Navbar: Home." },
+        { "gtId": "GT-02", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Home link." },
+        { "gtId": "GT-03", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Owners dropdown." },
+        { "gtId": "GT-04", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/owners" }, "closure": { "navigation": { "kind": "routerLink", "target": "/owners" } }, "notes": "Navbar: All Owners." },
+        { "gtId": "GT-05", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on All Owners link." },
+        { "gtId": "GT-06", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/owners/add" }, "closure": { "navigation": { "kind": "routerLink", "target": "/owners/add" } }, "notes": "Navbar: Add Owner." },
+        { "gtId": "GT-07", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Add Owner link." },
+        { "gtId": "GT-08", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Vets dropdown." },
+        { "gtId": "GT-09", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/vets" }, "closure": { "navigation": { "kind": "routerLink", "target": "/vets" } }, "notes": "Navbar: All Vets." },
+        { "gtId": "GT-10", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on All Vets link." },
+        { "gtId": "GT-11", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/vets/add" }, "closure": { "navigation": { "kind": "routerLink", "target": "/vets/add" } }, "notes": "Navbar: Add Vet." },
+        { "gtId": "GT-12", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Add Vet link." },
+        { "gtId": "GT-13", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/pettypes" }, "closure": { "navigation": { "kind": "routerLink", "target": "/pettypes" } }, "notes": "Navbar: Pet Types." },
+        { "gtId": "GT-14", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Pet Types link." },
+        { "gtId": "GT-15", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/specialties" }, "closure": { "navigation": { "kind": "routerLink", "target": "/specialties" } }, "notes": "Navbar: Specialties." },
+        { "gtId": "GT-16", "startRoutes": ["(all 21 entry routes)"], "trigger": { "componentClass": "AppComponent", "widgetTag": "a", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG on Specialties link." },
+        { "gtId": "GT-17", "startRoutes": ["/owners/add"], "trigger": { "componentClass": "OwnerAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "OwnerService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/owners" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr"] }, "notes": "Add owner form." },
+        { "gtId": "GT-18", "startRoutes": ["/owners/add"], "trigger": { "componentClass": "OwnerAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnersList" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners" } }, "constraints": { "uiGates": ["enabledExpr"] }, "notes": "Back button." },
+        { "gtId": "GT-19", "startRoutes": ["/owners/add"], "trigger": { "componentClass": "OwnerAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "constraints": { "uiGates": ["enabledExpr"] }, "notes": "S-LOG." },
+        { "gtId": "GT-20", "startRoutes": ["/owners/:id"], "trigger": { "componentClass": "OwnerDetailComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnersList" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners" } }, "notes": "Back to owners list." },
+        { "gtId": "GT-21", "startRoutes": ["/owners/:id"], "trigger": { "componentClass": "OwnerDetailComponent", "widgetTag": "button", "event": "click", "handler": { "method": "editOwner" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id/edit" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Edit owner." },
+        { "gtId": "GT-22", "startRoutes": ["/owners/:id"], "trigger": { "componentClass": "OwnerDetailComponent", "widgetTag": "button", "event": "click", "handler": { "method": "addPet" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id/pets/add" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Add pet." },
+        { "gtId": "GT-23", "startRoutes": ["/owners/:id/edit"], "trigger": { "componentClass": "OwnerEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"], "uiGates": ["enabledExpr"] }, "notes": "Back to detail." },
+        { "gtId": "GT-24", "startRoutes": ["/owners/:id/edit"], "trigger": { "componentClass": "OwnerEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "constraints": { "uiGates": ["enabledExpr"] }, "notes": "S-LOG." },
+        { "gtId": "GT-25", "startRoutes": ["/owners/:id/edit"], "trigger": { "componentClass": "OwnerEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "OwnerService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"], "formValid": true, "uiGates": ["enabledExpr"] }, "notes": "Edit owner form." },
+        { "gtId": "GT-26", "startRoutes": ["/owners"], "trigger": { "componentClass": "OwnerListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "searchByLastName" } }, "closure": { "serviceCalls": [{ "serviceClass": "OwnerService", "method": "search" }] }, "notes": "Search owners." },
+        { "gtId": "GT-27", "startRoutes": ["/owners"], "trigger": { "componentClass": "OwnerListComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/owners/:id" }, "closure": { "navigation": { "kind": "routerLink", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Owner detail link." },
+        { "gtId": "GT-28", "startRoutes": ["/owners"], "trigger": { "componentClass": "OwnerListComponent", "widgetTag": "a", "event": "click", "handler": { "method": "onSelect" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Owner row select." },
+        { "gtId": "GT-29", "startRoutes": ["/owners"], "trigger": { "componentClass": "OwnerListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "addOwner" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/add" } }, "notes": "Add owner button." },
+        { "gtId": "GT-30", "startRoutes": ["/owners/:id/pets/add", "/pets/add"], "trigger": { "componentClass": "PetAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"], "formValid": true }, "notes": "Add pet form." },
+        { "gtId": "GT-31", "startRoutes": ["/owners/:id/pets/add", "/pets/add"], "trigger": { "componentClass": "PetAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Back to owner." },
+        { "gtId": "GT-32", "startRoutes": ["/owners/:id/pets/add", "/pets/add"], "trigger": { "componentClass": "PetAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-33", "startRoutes": ["/owners/:id", "/pets"], "trigger": { "componentClass": "PetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "editPet" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/pets/:id/edit" } }, "constraints": { "requiredParams": ["id"], "uiGates": ["visibleExpr"] }, "notes": "Edit pet (shared component)." },
+        { "gtId": "GT-34", "startRoutes": ["/owners/:id", "/pets"], "trigger": { "componentClass": "PetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deletePet" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetService", "method": "delete" }] }, "constraints": { "uiGates": ["visibleExpr"] }, "notes": "Delete pet." },
+        { "gtId": "GT-35", "startRoutes": ["/owners/:id", "/pets"], "trigger": { "componentClass": "PetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "addVisit" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/pets/:id/visits/add" } }, "constraints": { "requiredParams": ["id"], "uiGates": ["visibleExpr"] }, "notes": "Add visit." },
+        { "gtId": "GT-36", "startRoutes": ["/pettypes/add", "/pettypes"], "trigger": { "componentClass": "PettypeAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetTypeService", "method": "save" }] }, "constraints": { "formValid": true }, "notes": "Add pet type form." },
+        { "gtId": "GT-37", "startRoutes": ["/pettypes/add", "/pettypes"], "trigger": { "componentClass": "PettypeAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-38", "startRoutes": ["/pettypes/:id/edit"], "trigger": { "componentClass": "PettypeEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetTypeService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/pettypes" } }, "constraints": { "formValid": true }, "notes": "Edit pet type form." },
+        { "gtId": "GT-39", "startRoutes": ["/pettypes/:id/edit"], "trigger": { "componentClass": "PettypeEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-40", "startRoutes": ["/pettypes/:id/edit"], "trigger": { "componentClass": "PettypeEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onBack" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/pettypes" } }, "notes": "Back." },
+        { "gtId": "GT-41", "startRoutes": ["/pettypes"], "trigger": { "componentClass": "PettypeListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showEditPettypeComponent" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/pettypes/:id/edit" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Edit pet type." },
+        { "gtId": "GT-42", "startRoutes": ["/pettypes"], "trigger": { "componentClass": "PettypeListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deletePettype" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetTypeService", "method": "delete" }] }, "notes": "Delete pet type." },
+        { "gtId": "GT-43", "startRoutes": ["/pettypes"], "trigger": { "componentClass": "PettypeListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoHome" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/welcome" } }, "notes": "Home." },
+        { "gtId": "GT-44", "startRoutes": ["/pettypes"], "trigger": { "componentClass": "PettypeListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showAddPettypeComponent" } }, "closure": { "serviceCalls": [] }, "notes": "Show add form." },
+        { "gtId": "GT-45", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-46", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "SpecialtyService", "method": "save" }] }, "constraints": { "formValid": true }, "notes": "Add specialty form." },
+        { "gtId": "GT-47", "startRoutes": ["/specialties/:id/edit"], "trigger": { "componentClass": "SpecialtyEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "SpecialtyService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/specialties" } }, "constraints": { "formValid": true }, "notes": "Edit specialty form." },
+        { "gtId": "GT-48", "startRoutes": ["/specialties/:id/edit"], "trigger": { "componentClass": "SpecialtyEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-49", "startRoutes": ["/specialties/:id/edit"], "trigger": { "componentClass": "SpecialtyEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onBack" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/specialties" } }, "notes": "Back." },
+        { "gtId": "GT-50", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showEditSpecialtyComponent" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/specialties/:id/edit" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Edit specialty." },
+        { "gtId": "GT-51", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteSpecialty" } }, "closure": { "serviceCalls": [{ "serviceClass": "SpecialtyService", "method": "delete" }] }, "notes": "Delete specialty." },
+        { "gtId": "GT-52", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoHome" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/welcome" } }, "notes": "Home." },
+        { "gtId": "GT-53", "startRoutes": ["/specialties"], "trigger": { "componentClass": "SpecialtyListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "showAddSpecialtyComponent" } }, "closure": { "serviceCalls": [] }, "notes": "Show add form." },
+        { "gtId": "GT-54", "startRoutes": ["/vets/add"], "trigger": { "componentClass": "VetAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VetService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/vets" } }, "constraints": { "formValid": true }, "notes": "Add vet form." },
+        { "gtId": "GT-55", "startRoutes": ["/vets/add"], "trigger": { "componentClass": "VetAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoVetList" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/vets" } }, "notes": "Back to vet list." },
+        { "gtId": "GT-56", "startRoutes": ["/vets/add"], "trigger": { "componentClass": "VetAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-57", "startRoutes": ["/vets/:id/edit"], "trigger": { "componentClass": "VetEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VetService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/vets" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr"] }, "notes": "Edit vet form." },
+        { "gtId": "GT-58", "startRoutes": ["/vets/:id/edit"], "trigger": { "componentClass": "VetEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoVetList" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/vets" } }, "constraints": { "uiGates": ["enabledExpr"] }, "notes": "Back (false-positive form gate)." },
+        { "gtId": "GT-59", "startRoutes": ["/vets/:id/edit"], "trigger": { "componentClass": "VetEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "constraints": { "uiGates": ["enabledExpr"] }, "notes": "S-LOG." },
+        { "gtId": "GT-60", "startRoutes": ["/vets"], "trigger": { "componentClass": "VetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "editVet" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/vets/:id/edit" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Edit vet." },
+        { "gtId": "GT-61", "startRoutes": ["/vets"], "trigger": { "componentClass": "VetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteVet" } }, "closure": { "serviceCalls": [{ "serviceClass": "VetService", "method": "delete" }] }, "notes": "Delete vet." },
+        { "gtId": "GT-62", "startRoutes": ["/vets"], "trigger": { "componentClass": "VetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoHome" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/welcome" } }, "notes": "Home." },
+        { "gtId": "GT-63", "startRoutes": ["/vets"], "trigger": { "componentClass": "VetListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "addVet" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/vets/add" } }, "notes": "Add vet." },
+        { "gtId": "GT-64", "startRoutes": ["/visits/add"], "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VisitService", "method": "save" }] }, "constraints": { "formValid": true }, "notes": "Add visit form. Missing CNR to /owners/:id (async callback)." },
+        { "gtId": "GT-65", "startRoutes": ["/visits/add"], "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Back to owner." },
+        { "gtId": "GT-66", "startRoutes": ["/visits/add"], "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-67", "startRoutes": ["/visits/:id/edit"], "trigger": { "componentClass": "VisitEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VisitService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"], "formValid": true }, "notes": "Edit visit form." },
+        { "gtId": "GT-68", "startRoutes": ["/visits/:id/edit"], "trigger": { "componentClass": "VisitEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Back to owner." },
+        { "gtId": "GT-69", "startRoutes": ["/visits/:id/edit"], "trigger": { "componentClass": "VisitEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "closure": { "serviceCalls": [] }, "notes": "S-LOG." },
+        { "gtId": "GT-70", "startRoutes": ["/owners/:id", "/pets", "/visits/add", "/visits"], "trigger": { "componentClass": "VisitListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "editVisit" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/visits/:id/edit" } }, "constraints": { "requiredParams": ["id"], "uiGates": ["visibleExpr"] }, "notes": "Edit visit (shared component)." },
+        { "gtId": "GT-71", "startRoutes": ["/owners/:id", "/pets", "/visits/add", "/visits"], "trigger": { "componentClass": "VisitListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteVisit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VisitService", "method": "delete" }] }, "constraints": { "uiGates": ["visibleExpr"] }, "notes": "Delete visit (shared component)." },
+        { "gtId": "GT-72", "startRoutes": ["/pets/:id/edit"], "entryRouteAccessible": false, "trigger": { "componentClass": "PetEditComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "PetService", "method": "save" }], "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"], "formValid": true }, "notes": "Non-entry child route /pets/:id/edit." },
+        { "gtId": "GT-73", "startRoutes": ["/pets/:id/edit"], "entryRouteAccessible": false, "trigger": { "componentClass": "PetEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Non-entry child route /pets/:id/edit." },
+        { "gtId": "GT-74", "startRoutes": ["/pets/:id/edit"], "entryRouteAccessible": false, "trigger": { "componentClass": "PetEditComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "notes": "Non-entry child route /pets/:id/edit. S-LOG." },
+        { "gtId": "GT-75", "startRoutes": ["/pets/:id/visits/add"], "entryRouteAccessible": false, "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "serviceCalls": [{ "serviceClass": "VisitService", "method": "save" }] }, "constraints": { "formValid": true }, "notes": "Non-entry child route /pets/:id/visits/add." },
+        { "gtId": "GT-76", "startRoutes": ["/pets/:id/visits/add"], "entryRouteAccessible": false, "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "gotoOwnerDetail" } }, "closure": { "navigation": { "kind": "router.navigate", "target": "/owners/:id" } }, "constraints": { "requiredParams": ["id"] }, "notes": "Non-entry child route /pets/:id/visits/add." },
+        { "gtId": "GT-77", "startRoutes": ["/pets/:id/visits/add"], "entryRouteAccessible": false, "trigger": { "componentClass": "VisitAddComponent", "widgetTag": "button", "event": "click", "handler": { "method": "log" } }, "notes": "Non-entry child route /pets/:id/visits/add. S-LOG." }
+      ],
+      "outOfScope": [
+        { "pattern": "ngModel and reactive form [formControl] bindings with no explicit handler", "reason": "Form data binding, not user triggers." }
+      ],
+      "knownIssues": [
+        { "gtId": "GT-64", "issue": "VisitAddComponent WSF missing CNR to /owners/:id (navigation in async callback not captured)." },
+        { "note": "S-LOG handlers (log→logToServer) are network telemetry, NOT purely diagnostic. 20 S-LOG entries are genuine GT." }
+      ]
+    },
+    "ever-traduora": {
+      "gt": [
+        { "gtId": "GT-01", "startRoutes": ["/forgot-password"], "trigger": { "componentClass": "ForgotPasswordComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:form/loading"] }, "notes": "Forgot password form." },
+        { "gtId": "GT-02", "startRoutes": ["/forgot-password"], "trigger": { "componentClass": "ForgotPasswordComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/login" }, "closure": { "navigation": { "kind": "routerLink", "target": "/login" } }, "constraints": { "guards": ["NoAuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Back to login." },
+        { "gtId": "GT-03", "startRoutes": ["/login"], "trigger": { "componentClass": "LoginComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/signup" }, "closure": { "navigation": { "kind": "routerLink", "target": "/signup" } }, "constraints": { "guards": ["NoAuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Sign up link." },
+        { "gtId": "GT-04", "startRoutes": ["/login"], "trigger": { "componentClass": "LoginComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/forgot-password" }, "closure": { "navigation": { "kind": "routerLink", "target": "/forgot-password" } }, "constraints": { "guards": ["NoAuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Forgot password link." },
+        { "gtId": "GT-05", "startRoutes": ["/login"], "trigger": { "componentClass": "LoginComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:form/loading"] }, "notes": "Login form." },
+        { "gtId": "GT-06", "startRoutes": ["/reset-password"], "trigger": { "componentClass": "ResetPasswordComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:form/loading"] }, "notes": "Reset password form." },
+        { "gtId": "GT-07", "startRoutes": ["/reset-password"], "trigger": { "componentClass": "ResetPasswordComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/login" }, "closure": { "navigation": { "kind": "routerLink", "target": "/login" } }, "constraints": { "guards": ["NoAuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Back to login." },
+        { "gtId": "GT-08", "startRoutes": ["/login", "/signup"], "trigger": { "componentClass": "SignInWithComponent", "widgetTag": "button", "event": "click", "handler": { "method": "signInWithProvider" } }, "notes": "OAuth sign-in (shared: login, signup)." },
+        { "gtId": "GT-09", "startRoutes": ["/signup"], "trigger": { "componentClass": "SignupComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:inviteOnly"] }, "notes": "Signup form." },
+        { "gtId": "GT-10", "startRoutes": ["/signup"], "trigger": { "componentClass": "SignupComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/login" }, "closure": { "navigation": { "kind": "routerLink", "target": "/login" } }, "constraints": { "guards": ["NoAuthGuard"], "uiGates": ["enabledExpr:inviteOnly"] }, "notes": "Login link." },
+        { "gtId": "GT-11", "startRoutes": ["/user-settings"], "trigger": { "componentClass": "UserSettingsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteAccount" } }, "constraints": { "uiGates": ["enabledExpr:form/valid"] }, "notes": "Delete account." },
+        { "gtId": "GT-12", "startRoutes": ["/user-settings"], "trigger": { "componentClass": "UserSettingsComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "updateUserData" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:form/valid"] }, "notes": "Update user data." },
+        { "gtId": "GT-13", "startRoutes": ["/user-settings"], "trigger": { "componentClass": "UserSettingsComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "changePassword" } }, "constraints": { "formValid": true, "uiGates": ["enabledExpr:form/valid"] }, "notes": "Change password." },
+        { "gtId": "GT-14", "startRoutes": ["/", "/projects"], "trigger": { "componentClass": "NewProjectComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "onSubmit" } }, "closure": { "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"], "formValid": true, "uiGates": ["enabledExpr:form/loading"] }, "notes": "New project (NgbModal)." },
+        { "gtId": "GT-15", "startRoutes": ["/", "/projects"], "trigger": { "componentClass": "NewProjectComponent", "widgetTag": "button", "event": "click" }, "closure": { "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Modal cancel." },
+        { "gtId": "GT-16", "startRoutes": ["/", "/projects"], "trigger": { "componentClass": "NewProjectComponent", "widgetTag": "button", "event": "click" }, "closure": { "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Modal dismiss." },
+        { "gtId": "GT-17", "startRoutes": ["/", "/projects"], "trigger": { "componentClass": "NewProjectComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "closure": { "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"], "uiGates": ["enabledExpr:form/loading"] }, "notes": "Modal open." },
+        { "gtId": "GT-18", "startRoutes": ["/", "/projects"], "trigger": { "componentClass": "ProjectCardComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "[project.id] (unresolved)" }, "closure": { "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"] }, "notes": "Project card nav (dynamic route)." },
+        { "gtId": "GT-19", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "ProjectLocalesComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/:localeCode" }, "closure": { "navigation": { "kind": "routerLink" } }, "constraints": { "requiredParams": ["localeCode", "projectId"] }, "notes": "Locale link." },
+        { "gtId": "GT-20", "startRoutes": ["(all 12 entry routes)"], "trigger": { "componentClass": "AppBarComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/" }, "closure": { "navigation": { "kind": "routerLink", "target": "/" }, "redirects": ["/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"] }, "notes": "Home (app-shell)." },
+        { "gtId": "GT-21", "startRoutes": ["(all 12 entry routes)"], "trigger": { "componentClass": "AppBarComponent", "widgetTag": "button", "event": "routerLink", "routerLinkOrHref": "/user-settings" }, "closure": { "navigation": { "kind": "routerLink", "target": "/user-settings" } }, "constraints": { "guards": ["AuthGuard"] }, "notes": "Settings (app-shell)." },
+        { "gtId": "GT-22", "startRoutes": ["(all 12 entry routes)"], "trigger": { "componentClass": "AppBarComponent", "widgetTag": "button", "event": "click", "handler": { "method": "logout" } }, "notes": "Logout (app-shell)." },
+        { "gtId": "GT-23", "startRoutes": ["(all 12 entry routes)"], "trigger": { "componentClass": "AppBarComponent", "widgetTag": "button", "event": "routerLink", "routerLinkOrHref": "/projects" }, "closure": { "navigation": { "kind": "routerLink", "target": "/projects" } }, "constraints": { "guards": ["AuthGuard"] }, "notes": "Projects (app-shell)." },
+        { "gtId": "GT-24", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "NewLocaleComponent", "widgetTag": "button", "event": "click" }, "constraints": { "uiGates": ["enabledExpr:!isValid()"] }, "notes": "Modal cancel." },
+        { "gtId": "GT-25", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "NewLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "confirmSelection" } }, "constraints": { "uiGates": ["enabledExpr:!isValid()"] }, "notes": "Confirm locale." },
+        { "gtId": "GT-26", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "NewLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "constraints": { "uiGates": ["enabledExpr:!isValid()"] }, "notes": "Modal open." },
+        { "gtId": "GT-27", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "NewLocaleComponent", "widgetTag": "button", "event": "click" }, "constraints": { "uiGates": ["enabledExpr:!isValid()"] }, "notes": "Modal dismiss." },
+        { "gtId": "GT-28", "startRoutes": ["/404", "/**"], "trigger": { "componentClass": "NotFoundComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "/" }, "closure": { "navigation": { "kind": "routerLink", "target": "/" }, "redirects": ["/** -> /404", "/ -> /projects"] }, "constraints": { "guards": ["AuthGuard"] }, "notes": "Home link (404 page)." },
+        { "gtId": "GT-29", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "SearchComponent", "widgetTag": "custom", "event": "click" }, "notes": "Pagination trigger." },
+        { "gtId": "GT-30", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "SearchComponent", "widgetTag": "input", "event": "input" }, "notes": "Search input." },
+        { "gtId": "GT-31", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "SelectLocaleComponent", "widgetTag": "input", "event": "input" }, "notes": "Locale filter." },
+        { "gtId": "GT-32", "startRoutes": ["/projects/:projectId/translations", "/projects/:projectId"], "trigger": { "componentClass": "SelectLocaleComponent", "widgetTag": "custom", "event": "click", "handler": { "method": "select" } }, "notes": "Locale select." },
+        { "gtId": "GT-33", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "button", "event": "click", "handler": { "method": "toggleMenu" } }, "notes": "Sidebar hamburger. Entry route but sidebar triggers may not be extracted (relative routerLink gap)." },
+        { "gtId": "GT-34", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "terms" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-35", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "translations" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-36", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "labels" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-37", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "team" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-38", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "import" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-39", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "export" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-40", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "api" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-41", "startRoutes": ["/projects/:projectId"], "entryRouteAccessible": true, "trigger": { "componentClass": "ProjectContainerComponent", "widgetTag": "a", "event": "routerLink", "routerLinkOrHref": "settings" }, "notes": "Sidebar nav (relative routerLink)." },
+        { "gtId": "GT-42", "startRoutes": ["/projects/:projectId/terms"], "entryRouteAccessible": false, "trigger": { "componentClass": "TermsListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteTerm" } }, "notes": "Child route." },
+        { "gtId": "GT-43", "startRoutes": ["/projects/:projectId/terms"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewTermComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-44", "startRoutes": ["/projects/:projectId/terms"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewTermComponent", "widgetTag": "form", "event": "ngSubmit", "handler": { "method": "onSubmit" } }, "notes": "Child route. New term form." },
+        { "gtId": "GT-45", "startRoutes": ["/projects/:projectId/terms"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewTermComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close." },
+        { "gtId": "GT-46", "startRoutes": ["/projects/:projectId/terms"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewTermComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open." },
+        { "gtId": "GT-47", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "LabelsListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteLabel" } }, "notes": "Child route." },
+        { "gtId": "GT-48", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewLabelComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-49", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewLabelComponent", "widgetTag": "form", "event": "ngSubmit", "handler": { "method": "onSubmit" } }, "notes": "Child route. New label form." },
+        { "gtId": "GT-50", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewLabelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "randomColor" } }, "notes": "Child route." },
+        { "gtId": "GT-51", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewLabelComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close." },
+        { "gtId": "GT-52", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "NewLabelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open." },
+        { "gtId": "GT-53", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditLabelComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-54", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditLabelComponent", "widgetTag": "form", "event": "ngSubmit", "handler": { "method": "onSubmit" } }, "notes": "Child route. Edit label form." },
+        { "gtId": "GT-55", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditLabelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "randomColor" } }, "notes": "Child route." },
+        { "gtId": "GT-56", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditLabelComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close." },
+        { "gtId": "GT-57", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditLabelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open." },
+        { "gtId": "GT-58", "startRoutes": ["/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "LabelComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onRemove" } }, "notes": "Child route. Shared component." },
+        { "gtId": "GT-59", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "TranslationsListComponent", "widgetTag": "input", "event": "change", "handler": { "method": "onFiltersChanged" } }, "notes": "Child route. Hide-translated checkbox." },
+        { "gtId": "GT-60", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "TranslationsListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "deleteProjectLocale" } }, "notes": "Child route. Delete language." },
+        { "gtId": "GT-61", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "TranslationsListComponent", "widgetTag": "button", "event": "click", "handler": { "method": "removeReferenceLocale" } }, "notes": "Child route. Remove reference locale." },
+        { "gtId": "GT-62", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "TranslationsListComponent", "widgetTag": "button", "event": "routerLink", "routerLinkOrHref": "/projects/:projectId/terms" }, "notes": "Child route. Navigate to terms." },
+        { "gtId": "GT-63", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLocaleModalComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-64", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLocaleModalComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close." },
+        { "gtId": "GT-65", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLocaleModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "confirmSelection" } }, "notes": "Child route. Confirm locale." },
+        { "gtId": "GT-66", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLocaleModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open (current locale)." },
+        { "gtId": "GT-67", "startRoutes": ["/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLocaleModalComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open (no current locale)." },
+        { "gtId": "GT-68", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddTeamMemberComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "addTeamMember" } }, "notes": "Child route. Add team member form." },
+        { "gtId": "GT-69", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddTeamMemberComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-70", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddTeamMemberComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close." },
+        { "gtId": "GT-71", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddTeamMemberComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open." },
+        { "gtId": "GT-72", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "TeamMemberComponent", "widgetTag": "button", "event": "click", "handler": { "method": "edit.emit" } }, "notes": "Child route. Edit member role." },
+        { "gtId": "GT-73", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "TeamMemberComponent", "widgetTag": "button", "event": "click", "handler": { "method": "remove.emit" } }, "notes": "Child route. Remove member." },
+        { "gtId": "GT-74", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "TeamInviteComponent", "widgetTag": "button", "event": "click", "handler": { "method": "edit.emit" } }, "notes": "Child route. Edit invite role." },
+        { "gtId": "GT-75", "startRoutes": ["/projects/:projectId/team"], "entryRouteAccessible": false, "trigger": { "componentClass": "TeamInviteComponent", "widgetTag": "button", "event": "click", "handler": { "method": "remove.emit" } }, "notes": "Child route. Revoke invite." },
+        { "gtId": "GT-76", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "reset" } }, "notes": "Child route. Import another file." },
+        { "gtId": "GT-77", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "navigateToImportedLocale" } }, "notes": "Child route. Go to imported locale." },
+        { "gtId": "GT-78", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "removeFile" } }, "notes": "Child route. Remove uploaded file." },
+        { "gtId": "GT-79", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "reset" } }, "notes": "Child route. Cancel import." },
+        { "gtId": "GT-80", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "import" } }, "notes": "Child route. Execute import." },
+        { "gtId": "GT-81", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "div", "event": "drop", "handler": { "method": "dropFiles" } }, "notes": "Child route. File drag-drop." },
+        { "gtId": "GT-82", "startRoutes": ["/projects/:projectId/import"], "entryRouteAccessible": false, "trigger": { "componentClass": "ImportLocaleComponent", "widgetTag": "input", "event": "change", "handler": { "method": "dropFiles" } }, "notes": "Child route. File input." },
+        { "gtId": "GT-83", "startRoutes": ["/projects/:projectId/export"], "entryRouteAccessible": false, "trigger": { "componentClass": "ExportLocaleComponent", "widgetTag": "button", "event": "click", "handler": { "method": "export" } }, "notes": "Child route. Export/download." },
+        { "gtId": "GT-84", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "form", "event": "submit", "handler": { "method": "addApiClient" } }, "notes": "Child route. New API client form." },
+        { "gtId": "GT-85", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal dismiss." },
+        { "gtId": "GT-86", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close (form)." },
+        { "gtId": "GT-87", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "copyToClipboard" } }, "notes": "Child route. Copy client ID." },
+        { "gtId": "GT-88", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "copyToClipboard" } }, "notes": "Child route. Copy client secret." },
+        { "gtId": "GT-89", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click" }, "notes": "Child route. Modal close (secret OK)." },
+        { "gtId": "GT-90", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "AddApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Child route. Modal open." },
+        { "gtId": "GT-91", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "ApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "edit.emit" } }, "notes": "Child route. Edit client role." },
+        { "gtId": "GT-92", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "ApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "remove.emit" } }, "notes": "Child route. Delete client." },
+        { "gtId": "GT-93", "startRoutes": ["/projects/:projectId/api"], "entryRouteAccessible": false, "trigger": { "componentClass": "ApiClientComponent", "widgetTag": "button", "event": "click", "handler": { "method": "copyToClipboard" } }, "notes": "Child route. Copy client ID." },
+        { "gtId": "GT-94", "startRoutes": ["/projects/:projectId/settings"], "entryRouteAccessible": false, "trigger": { "componentClass": "ProjectSettingsComponent", "widgetTag": "form", "event": "ngSubmit", "handler": { "method": "onSubmit" } }, "notes": "Child route. Save project settings." },
+        { "gtId": "GT-95", "startRoutes": ["/projects/:projectId/settings"], "entryRouteAccessible": false, "trigger": { "componentClass": "ProjectSettingsComponent", "widgetTag": "button", "event": "routerLink", "routerLinkOrHref": "/projects/:projectId" }, "notes": "Child route. Cancel (nav back)." },
+        { "gtId": "GT-96", "startRoutes": ["/projects/:projectId/settings"], "entryRouteAccessible": false, "trigger": { "componentClass": "ProjectSettingsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onDelete" } }, "notes": "Child route. Delete project." },
+        { "gtId": "GT-97", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "textarea", "event": "input" }, "notes": "Shared child-route component. Text input." },
+        { "gtId": "GT-98", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "textarea", "event": "click", "handler": { "method": "enterEdit" } }, "notes": "Shared child-route component. Enter edit mode." },
+        { "gtId": "GT-99", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "textarea", "event": "keyup.control.enter", "handler": { "method": "onSave" } }, "notes": "Shared child-route component. Ctrl+Enter save." },
+        { "gtId": "GT-100", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "textarea", "event": "keyup.esc", "handler": { "method": "revert" } }, "notes": "Shared child-route component. Esc cancel." },
+        { "gtId": "GT-101", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "button", "event": "click", "handler": { "method": "onSave" } }, "notes": "Shared child-route component. Save button." },
+        { "gtId": "GT-102", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "EditableTextComponent", "widgetTag": "button", "event": "click", "handler": { "method": "revert" } }, "notes": "Shared child-route component. Cancel button." },
+        { "gtId": "GT-103", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "AssignedLabelsComponent", "widgetTag": "button", "event": "click" }, "notes": "Shared child-route component. Modal dismiss." },
+        { "gtId": "GT-104", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "AssignedLabelsComponent", "widgetTag": "button", "event": "click" }, "notes": "Shared child-route component. Modal close." },
+        { "gtId": "GT-105", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "AssignedLabelsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "confirmSelection" } }, "notes": "Shared child-route component. Confirm label selection." },
+        { "gtId": "GT-106", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode"], "entryRouteAccessible": false, "trigger": { "componentClass": "AssignedLabelsComponent", "widgetTag": "button", "event": "click", "handler": { "method": "open" } }, "notes": "Shared child-route component. Modal open." },
+        { "gtId": "GT-107", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode", "/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLabelComponent", "widgetTag": "input", "event": "keyup", "handler": { "method": "text$.next" } }, "notes": "Shared child-route component. Label search." },
+        { "gtId": "GT-108", "startRoutes": ["/projects/:projectId/terms", "/projects/:projectId/translations/:localeCode", "/projects/:projectId/labels"], "entryRouteAccessible": false, "trigger": { "componentClass": "SelectLabelComponent", "widgetTag": "li", "event": "click", "handler": { "method": "select" } }, "notes": "Shared child-route component. Label select." }
+      ],
+      "outOfScope": [],
+      "knownIssues": [
+        { "gtId": "GT-18", "issue": "Unresolved navigation target (dynamic [project.id] expression)." },
+        { "note": "No CCS or CNR in any reachable trigger's effect closure. All service calls are in unreachable child route components." }
+      ]
+    }
+  }
+}

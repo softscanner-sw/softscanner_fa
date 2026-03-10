@@ -52,6 +52,7 @@ export interface EventHandlerCallContext {
     | 'ServiceCall'
     | 'StateUpdate'
     | 'UIEffect'
+    | 'DialogOpen'
     | 'Unknown';
 
   target?: {
@@ -61,6 +62,8 @@ export interface EventHandlerCallContext {
     serviceMethod?: string;
     /** External URL if navigating outside the SPA. */
     url?: string;
+    /** Component class name opened as a dialog (e.g. "EditUserComponent"). */
+    componentClassName?: string;
   };
 
   /** Raw argument expressions, bounded. */
@@ -81,6 +84,8 @@ export interface WidgetEvent {
   /** WidgetInfo.id of the widget that owns this event binding. */
   widgetId: string;
   eventType: UserEventType;
+  /** Raw event binding name from the template (e.g., 'click', 'ngSubmit'). */
+  rawEventName?: string;
 
   /** Name of the component method bound to handle this event. */
   handlerName?: string;
