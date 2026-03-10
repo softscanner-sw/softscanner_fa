@@ -32,8 +32,10 @@
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "clean": "rimraf dist",
     "phase1": "tsx src/cli.ts",
+    "phase2": "tsx src/a2-cli.ts",
     "viz": "tsx src/viz-cli.ts",
     "verify:determinism": "node scripts/verify-determinism.mjs",
+    "run:all": "node scripts/run-all-subjects.mjs",
     "logs:clean": "rimraf logs"
   },
   "keywords": [

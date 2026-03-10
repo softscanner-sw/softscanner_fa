@@ -1,7 +1,7 @@
-# Phase A1 — Manual Validation Subjects
+# Phase A — Manual Validation Subjects
 
-This document records the three local regression subjects used to validate
-Phase A1 output. All commands are run from the `softscanner_fa` project root.
+This document records the six local regression subjects used to validate
+Phase A1 and A2 output. All commands are run from the `softscanner_fa` project root.
 
 ---
 
@@ -20,6 +20,9 @@ Phase A1 output. All commands are run from the `softscanner_fa` project root.
 | 1 | posts-users-ui-ng | `C:/Users/basha/git/github/posts-users-ui-ng` | Angular 18 |
 | 2 | spring-petclinic-angular | `C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular` | Angular 14 |
 | 3 | heroes-angular | `C:/Users/basha/git/github/heroes-angular` | Angular 14 (NgRx) — use `src/tsconfig.app.json` |
+| 4 | softscanner-cqa-frontend | `C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend` | Angular 17.3 |
+| 5 | ever-traduora | `C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp` | Angular 12.2 |
+| 6 | airbus-inventory | `C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory` | Angular 12.2 |
 
 ---
 
@@ -36,9 +39,30 @@ npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring
 # NOTE: the root tsconfig.json is a solution-style config with "files": [].
 # Use src/tsconfig.app.json to include source files.
 npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular" --debug
+
+# Subject 4 — softscanner-cqa-frontend
+npm run phase1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend" --debug
+
+# Subject 5 — ever-traduora
+npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora" --debug
+
+# Subject 6 — airbus-inventory
+npm run phase1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory" --debug
 ```
 
 ---
+
+## Phase A2 commands
+
+```bash
+npm run phase2 -- output/posts-users-ui-ng/json/phase1-bundle.json output/posts-users-ui-ng/json
+npm run phase2 -- output/spring-petclinic-angular/json/phase1-bundle.json output/spring-petclinic-angular/json
+npm run phase2 -- output/heroes-angular/json/phase1-bundle.json output/heroes-angular/json
+npm run phase2 -- output/softscanner-cqa-frontend/json/phase1-bundle.json output/softscanner-cqa-frontend/json
+npm run phase2 -- output/ever-traduora/json/phase1-bundle.json output/ever-traduora/json
+npm run phase2 -- output/airbus-inventory/json/phase1-bundle.json output/airbus-inventory/json
+
+```
 
 ## Visualization commands
 
@@ -46,13 +70,23 @@ npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git
 npm run viz -- output/posts-users-ui-ng
 npm run viz -- output/spring-petclinic-angular
 npm run viz -- output/heroes-angular
+npm run viz -- output/softscanner-cqa-frontend
+npm run viz -- output/ever-traduora
+npm run viz -- output/airbus-inventory
+```
+
+## Run all subjects (A1 + A2 task + viz)
+
+```bash
+npm run run:all              # A1 + A2 task + viz
+npm run run:all -- --skip-a1 # reuse existing A1 bundles
 ```
 
 ---
 
 ## Expected output files
 
-Each run writes the following files under `<outputDir>/json/`:
+### A1 output (`<outputDir>/json/`)
 
 | File | Contents |
 |------|---------|
@@ -67,14 +101,19 @@ Each run writes the following files under `<outputDir>/json/`:
 
 With `--debug`, a log file is written to `logs/<subject>/<timestamp>/phase1.log`.
 
-The `npm run viz` command writes to `<outputDir>/vis/`:
+### A2 output (`<outputDir>/json/`)
 
 | File | Contents |
-|------|---------|
+|------|----------|
+| `phaseA2-taskworkflows.final.json` | `TaskWorkflowBundle` (single-trigger task workflows, classified) |
+
+### Visualization output (`<outputDir>/vis/`)
+
+| File | Contents |
+|------|----------|
 | `data.js` | `VizData` JSON blob for browser consumption |
 | `a1-graph.html` | Interactive navigation graph (Canvas 2D + force sim) |
-| `a2-mock-workflows.html` | Exemplar workflow cards |
-| `a3-mock-pruning.html` | Pruning decision view |
+| `a2-task-workflows.html` | A2 task workflow explorer (single-trigger tasks with effect closure, route tags, step badges) |
 
 ---
 
@@ -84,12 +123,12 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 58 |
-| edgeCount | 115 |
-| structuralEdgeCount | 68 |
-| executableEdgeCount | 47 |
+| nodeCount | 64 |
+| edgeCount | 131 |
+| structuralEdgeCount | 100 |
+| executableEdgeCount | 31 |
 
-**Node kinds:** `Module: 2, Route: 8, Component: 11, Widget: 35, Service: 2`
+**Node kinds:** `Module: 2, Route: 8, Component: 11, Widget: 41, Service: 2`
 
 **Edge kinds (structural):**
 
@@ -100,7 +139,8 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 | MODULE_IMPORTS_MODULE | 1 |
 | MODULE_PROVIDES_SERVICE | 2 |
 | ROUTE_ACTIVATES_COMPONENT | 7 |
-| COMPONENT_CONTAINS_WIDGET | 35 |
+| COMPONENT_CONTAINS_WIDGET | 41 |
+| WIDGET_CONTAINS_WIDGET | 26 |
 | COMPONENT_COMPOSES_COMPONENT | 4 |
 
 **Edge kinds (executable):**
@@ -109,11 +149,21 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 |------|-------|
 | ROUTE_REDIRECTS_TO_ROUTE | 1 |
 | WIDGET_NAVIGATES_ROUTE | 6 |
-| WIDGET_TRIGGERS_HANDLER | 16 |
-| COMPONENT_CALLS_SERVICE | 22 |
-| COMPONENT_NAVIGATES_ROUTE | 2 |
+| WIDGET_TRIGGERS_HANDLER | 9 |
+| WIDGET_SUBMITS_FORM | 3 |
+| COMPONENT_CALLS_SERVICE | 9 |
+| COMPONENT_NAVIGATES_ROUTE | 3 |
 
-**Viz stats:** 10 exemplar paths (9 feasible, 1 conditional, 0 pruned)
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 18 |
+| FEASIBLE | 12 |
+| CONDITIONAL | 6 |
+| PRUNED | 0 |
+| trigger edges | 18 |
+| enumerated routes | 7 |
 
 ---
 
@@ -121,12 +171,12 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 190 |
-| edgeCount | 371 |
-| structuralEdgeCount | 220 |
-| executableEdgeCount | 151 |
+| nodeCount | 191 |
+| edgeCount | 422 |
+| structuralEdgeCount | 294 |
+| executableEdgeCount | 128 |
 
-**Node kinds:** `Module: 16, Route: 24, Component: 22, Widget: 119, Service: 9`
+**Node kinds:** `Module: 16, Route: 24, Component: 22, Widget: 120, Service: 9`
 
 **Edge kinds (structural):**
 
@@ -138,7 +188,8 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 | MODULE_PROVIDES_SERVICE | 9 |
 | ROUTE_ACTIVATES_COMPONENT | 22 |
 | ROUTE_HAS_CHILD | 2 |
-| COMPONENT_CONTAINS_WIDGET | 119 |
+| COMPONENT_CONTAINS_WIDGET | 120 |
+| WIDGET_CONTAINS_WIDGET | 73 |
 | COMPONENT_COMPOSES_COMPONENT | 5 |
 
 **Edge kinds (executable):**
@@ -147,11 +198,21 @@ The `npm run viz` command writes to `<outputDir>/vis/`:
 |------|-------|
 | ROUTE_REDIRECTS_TO_ROUTE | 1 |
 | WIDGET_NAVIGATES_ROUTE | 8 |
-| WIDGET_TRIGGERS_HANDLER | 75 |
-| COMPONENT_CALLS_SERVICE | 42 |
-| COMPONENT_NAVIGATES_ROUTE | 25 |
+| WIDGET_TRIGGERS_HANDLER | 54 |
+| WIDGET_SUBMITS_FORM | 12 |
+| COMPONENT_CALLS_SERVICE | 19 |
+| COMPONENT_NAVIGATES_ROUTE | 34 |
 
-**Viz stats:** 38 exemplar paths (23 feasible, 15 conditional, 0 pruned)
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 74 |
+| FEASIBLE | 40 |
+| CONDITIONAL | 34 |
+| PRUNED | 0 |
+| trigger edges | 74 |
+| enumerated routes | 22 |
 
 **Note:** The `/**` wildcard route activates `PageNotFoundComponent` via a
 `ROUTE_ACTIVATES_COMPONENT` edge.
@@ -167,9 +228,9 @@ tie-breaking for ambiguous array targets like `['/owners/add']`).
 | Metric | Value |
 |--------|-------|
 | nodeCount | 67 |
-| edgeCount | 105 |
+| edgeCount | 88 |
 | structuralEdgeCount | 68 |
-| executableEdgeCount | 37 |
+| executableEdgeCount | 20 |
 
 **Node kinds:** `Module: 5, Route: 5, Component: 17, Widget: 28, Service: 2, External: 10`
 
@@ -192,10 +253,18 @@ tie-breaking for ambiguous array targets like `['/owners/add']`).
 | ROUTE_REDIRECTS_TO_ROUTE | 1 |
 | WIDGET_NAVIGATES_ROUTE | 3 |
 | WIDGET_NAVIGATES_EXTERNAL | 11 |
-| WIDGET_TRIGGERS_HANDLER | 19 |
-| COMPONENT_CALLS_SERVICE | 3 |
+| WIDGET_TRIGGERS_HANDLER | 5 |
 
-**Viz stats:** 3 exemplar paths (3 feasible, 0 conditional, 0 pruned)
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 19 |
+| FEASIBLE | 19 |
+| CONDITIONAL | 0 |
+| PRUNED | 0 |
+| trigger edges | 19 |
+| enumerated routes | 4 |
 
 **Note:** Run with `src/tsconfig.app.json` (not the root `tsconfig.json`, which is a
 solution-style config with `"files": []` that yields zero source files).
@@ -211,17 +280,178 @@ All 4 component-bearing routes have `ROUTE_ACTIVATES_COMPONENT` edges.
 
 ---
 
-## Change log (stat deltas from previous baseline)
+### Subject 4 — softscanner-cqa-frontend
 
-| Subject | Metric | Old | New | Delta | Reason |
-|---------|--------|-----|-----|-------|--------|
-| posts-users-ui-ng | edgeCount | 114 | 115 | +1 | +1 MODULE_IMPORTS_MODULE (AppModule→MaterialModule) |
-| posts-users-ui-ng | structuralEdgeCount | 67 | 68 | +1 | Same |
-| spring-petclinic-angular | edgeCount | 354 | 371 | +17 | +17 MODULE_IMPORTS_MODULE edges |
-| spring-petclinic-angular | structuralEdgeCount | 203 | 220 | +17 | Same |
-| heroes-angular | nodeCount | 69 | 67 | -2 | Route dedup (removed dup `/heroes`, `/villains`) |
-| heroes-angular | edgeCount | 102 | 105 | +3 | +3 MODULE_IMPORTS_MODULE, +2 MODULE_PROVIDES_SERVICE, +2 ROUTE_ACTIVATES_COMPONENT (dedup retains component), -2 MODULE_DECLARES_ROUTE (dedup), -2 (removed dup routes) |
-| heroes-angular | structuralEdgeCount | 65 | 68 | +3 | Same |
+| Metric | Value |
+|--------|-------|
+| nodeCount | 37 |
+| edgeCount | 74 |
+| structuralEdgeCount | 57 |
+| executableEdgeCount | 17 |
+
+**Node kinds:** `Module: 3, Route: 1, Component: 10, Widget: 21, Service: 2`
+
+**Edge kinds (structural):**
+
+| Kind | Count |
+|------|-------|
+| MODULE_DECLARES_COMPONENT | 10 |
+| MODULE_DECLARES_ROUTE | 1 |
+| MODULE_IMPORTS_MODULE | 2 |
+| MODULE_PROVIDES_SERVICE | 2 |
+| ROUTE_ACTIVATES_COMPONENT | 1 |
+| COMPONENT_CONTAINS_WIDGET | 21 |
+| WIDGET_CONTAINS_WIDGET | 6 |
+| COMPONENT_COMPOSES_COMPONENT | 14 |
+
+**Edge kinds (executable):**
+
+| Kind | Count |
+|------|-------|
+| WIDGET_TRIGGERS_HANDLER | 15 |
+| WIDGET_SUBMITS_FORM | 1 |
+| COMPONENT_CALLS_SERVICE | 1 |
+
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 16 |
+| FEASIBLE | 15 |
+| CONDITIONAL | 1 |
+| PRUNED | 0 |
+| trigger edges | 16 |
+| enumerated routes | 1 |
+
+**Note:** Single entry route (`/`). Angular 17.3 standalone components.
+
+---
+
+### Subject 5 — ever-traduora
+
+| Metric | Value |
+|--------|-------|
+| nodeCount | 247 |
+| edgeCount | 499 |
+| structuralEdgeCount | 384 |
+| executableEdgeCount | 115 |
+
+**Node kinds:** `Module: 4, Route: 20, Component: 45, Widget: 152, Service: 26`
+
+**Edge kinds (structural):**
+
+| Kind | Count |
+|------|-------|
+| MODULE_DECLARES_COMPONENT | 45 |
+| MODULE_DECLARES_ROUTE | 20 |
+| MODULE_IMPORTS_MODULE | 4 |
+| MODULE_PROVIDES_SERVICE | 24 |
+| ROUTE_ACTIVATES_COMPONENT | 18 |
+| ROUTE_HAS_CHILD | 10 |
+| COMPONENT_CONTAINS_WIDGET | 152 |
+| WIDGET_CONTAINS_WIDGET | 51 |
+| COMPONENT_COMPOSES_COMPONENT | 60 |
+
+**Edge kinds (executable):**
+
+| Kind | Count |
+|------|-------|
+| ROUTE_REDIRECTS_TO_ROUTE | 3 |
+| WIDGET_NAVIGATES_ROUTE | 21 |
+| WIDGET_TRIGGERS_HANDLER | 75 |
+| WIDGET_SUBMITS_FORM | 13 |
+| COMPONENT_CALLS_SERVICE | 2 |
+| COMPONENT_NAVIGATES_ROUTE | 1 |
+
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 109 |
+| FEASIBLE | 46 |
+| CONDITIONAL | 63 |
+| PRUNED | 0 |
+| trigger edges | 109 |
+| enumerated routes | 18 |
+
+**Note:** Largest graph (247 nodes, 499 edges). 18 enumerable routes (all component-bearing).
+109 task workflows after child-route enumeration extension (was 41 entry-route-only, then
++9 from parent-route component inclusion, then +68 from non-entry child-route enumeration).
+1 surplus trigger: `(hovered)` on drag-drop area in ImportLocaleComponent (GT policy §0.2 excludes as UI feedback).
+
+---
+
+### Subject 6 — airbus-inventory
+
+| Metric | Value |
+|--------|-------|
+| nodeCount | 59 |
+| edgeCount | 131 |
+| structuralEdgeCount | 90 |
+| executableEdgeCount | 41 |
+
+**Node kinds:** `Module: 1, Route: 7, Component: 10, Widget: 36, Service: 5`
+
+**Edge kinds (structural):**
+
+| Kind | Count |
+|------|-------|
+| MODULE_DECLARES_COMPONENT | 10 |
+| MODULE_DECLARES_ROUTE | 7 |
+| MODULE_PROVIDES_SERVICE | 5 |
+| ROUTE_ACTIVATES_COMPONENT | 6 |
+| COMPONENT_CONTAINS_WIDGET | 36 |
+| COMPONENT_COMPOSES_COMPONENT | 9 |
+| WIDGET_CONTAINS_WIDGET | 17 |
+
+**Edge kinds (executable):**
+
+| Kind | Count |
+|------|-------|
+| ROUTE_REDIRECTS_TO_ROUTE | 1 |
+| WIDGET_NAVIGATES_ROUTE | 5 |
+| WIDGET_TRIGGERS_HANDLER | 12 |
+| WIDGET_SUBMITS_FORM | 4 |
+| COMPONENT_CALLS_SERVICE | 19 |
+
+**A2 stats:**
+
+| Metric | Value |
+|--------|-------|
+| task workflows | 21 |
+| FEASIBLE | 13 |
+| CONDITIONAL | 8 |
+| PRUNED | 0 |
+| trigger edges | 21 |
+| enumerated routes | 6 |
+
+**Note:** 7 entry routes (6 enumerable — `/` redirects to `/dashboard`) (all top-level routes including `/`, `/add`, `/dashboard`,
+`/getAllProducts`, `/login`, `/productByCategory`, `/update`). Single module (flat architecture).
+
+---
+
+## Change log
+
+**Current baseline** — Phase A stabilized. Stats reflect all A1+A2 work: spec alignment,
+gap fixes (GAP A–D), post-audit patches, bounded transitive following, form-gate
+containment fix, *ngIf expression/elementSpan fixes, parent-route component inclusion
+fix, and child-route enumeration extension. All 6 subjects benchmark-stable and
+deterministic. Full-application recall: 256/256 = 100% trigger identity match
+(1 surplus, 1 wrong-constraint). See `docs/analysis/phase-a-stabilization-decision.md`.
+
+---
+
+## A2 Task Workflow Summary (current baseline)
+
+| Subject | Task WFs | FEASIBLE | CONDITIONAL | PRUNED | Triggers | Enum Routes |
+|---------|----------|----------|-------------|--------|----------|-------------|
+| posts-users-ui-ng | 18 | 12 | 6 | 0 | 18 | 7 |
+| spring-petclinic-angular | 74 | 40 | 34 | 0 | 74 | 22 |
+| heroes-angular | 19 | 19 | 0 | 0 | 19 | 4 |
+| softscanner-cqa-frontend | 16 | 15 | 1 | 0 | 16 | 1 |
+| ever-traduora | 109 | 46 | 63 | 0 | 109 | 18 |
+| airbus-inventory | 21 | 13 | 8 | 0 | 21 | 6 |
+
 
 ---
 
@@ -250,10 +480,28 @@ any significant change.
 - [ ] `nodes` array is sorted lexicographically by `id`
 - [ ] `edges` array is sorted by kind, then from, then to
 - [ ] Every node has `id`, `kind`, `label`, and `refs` (non-empty array)
+- [ ] Every Widget node has `meta.ui` with at minimum `rawAttrsText: {}`
 - [ ] Every edge has `id`, `kind`, `from`, `to` (null only for unresolved), `constraints`, `refs`
+- [ ] Widget-origin executable edges have `constraints.uiAtoms` (may be empty array)
+- [ ] Executable edges have `constraints.evidence` (non-empty for widget-origin and navigation edges)
 - [ ] All `from`/`to` in edges reference ids that exist in `nodes`
       (except `to === null` for unresolved navigation)
 - [ ] External node IDs match the pattern `__ext__[0-9a-f]{8}` (FNV-1a hash)
+
+
+### phaseA2-taskworkflows.final.json
+
+- [ ] File is valid JSON (parseable)
+- [ ] Top-level keys: `input`, `config`, `workflows`, `partitions`, `stats`
+- [ ] `config.mode` equals `"task"`
+- [ ] `stats.workflowCount` equals `workflows.length`
+- [ ] `stats.feasibleCount + stats.conditionalCount + stats.prunedCount` equals `stats.workflowCount`
+- [ ] `stats.triggerEdgeCount` equals `stats.workflowCount`
+- [ ] Every workflow has `id`, `triggerEdgeId`, `startRouteIds`, `steps`, `terminalNodeId`, `cw`, `verdict`, `explanation`
+- [ ] `verdict` is one of `FEASIBLE`, `CONDITIONAL`, `PRUNED`
+- [ ] `workflows` array is sorted by `id`
+- [ ] Every workflow `startRouteIds` is a sorted array
+- [ ] Every workflow `steps` is a non-empty array of `{ edgeId, kind }`
 
 ### Module structural edges
 
@@ -267,17 +515,26 @@ any significant change.
 
 ## Re-running validation
 
-After any change to graph-emitting code, re-run all three subjects and compare
+After any change to graph-emitting code, re-run all six subjects and compare
 stats to the expected values above. Differences must be explained before merging.
 
 ```bash
-# Quick re-validation (all three subjects)
+# Quick re-validation (all six subjects: A1 → A2 task → viz)
+npm run run:all
+
+# Or individually:
 npm run phase1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng"
 npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular"
 npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular"
+npm run phase1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend"
+npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora"
+npm run phase1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory"
 
-# Determinism check (run for each subject)
-npm run verify:determinism -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json"
-npm run verify:determinism -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json"
-npm run verify:determinism -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json"
+# Determinism check (A1 + A2 task, run for each subject)
+npm run verify:determinism -- "C:/Users/basha/git/github/posts-users-ui-ng" "tsconfig.json"
+npm run verify:determinism -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "tsconfig.json"
+npm run verify:determinism -- "C:/Users/basha/git/github/heroes-angular" "src/tsconfig.app.json"
+npm run verify:determinism -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "tsconfig.app.json"
+npm run verify:determinism -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "src/tsconfig.app.json"
+npm run verify:determinism -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "tsconfig.app.json"
 ```

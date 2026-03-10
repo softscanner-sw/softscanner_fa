@@ -155,6 +155,20 @@ export class AngularTemplateParser {
   private static _convertAttr(attr: unknown): TemplateAstNode[] {
     if (attr === null || typeof attr !== 'object') return [];
     const a = attr as Record<string, unknown>;
+
+    // If the value is an AST object (e.g., *ngIf expression parsed by
+    // @angular/compiler), treat this as a boundAttr and use _astToString
+    // to recover the expression text.
+    if (typeof a['value'] === 'object' && a['value'] !== null) {
+      const node: TemplateAstNode = { kind: 'boundAttr' };
+      if (typeof a['name'] === 'string') node.name = a['name'];
+      const val = AngularTemplateParser._astToString(a['value']);
+      if (val !== undefined) node.value = val;
+      const span = AngularTemplateParser._extractSpan(a);
+      if (span !== undefined) node.span = span;
+      return [node];
+    }
+
     const node: TemplateAstNode = { kind: 'attr' };
     if (typeof a['name'] === 'string') node.name = a['name'];
     if (typeof a['value'] === 'string') node.value = a['value'];

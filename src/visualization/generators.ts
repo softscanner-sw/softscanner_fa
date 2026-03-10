@@ -1,6 +1,6 @@
 /**
  * generators.ts
- * Three HTML generator functions — each returns a complete self-contained HTML document.
+ * HTML generator functions — each returns a complete self-contained HTML document.
  *
  * Design decisions:
  *   - No external CDN dependencies. All JS is inline.
@@ -590,17 +590,16 @@ ${SHARED_CSS}
 </html>`;
 }
 
+
 // ---------------------------------------------------------------------------
-// A2 — Mock workflows (exemplar paths from path-finder)
+// A2 Task Workflows — single-trigger task visualization
 // ---------------------------------------------------------------------------
 
-export function generateA2WorkflowsHtml(data: VizData): string {
-  const title = 'A2 Exemplar Workflows \u2014 ' + data.generatedFromProject;
+export function generateA2TaskWorkflowsHtml(data: VizData, taskJson: string): string {
+  const title = 'A2 Task Workflows \u2014 ' + data.generatedFromProject;
   const palette = computePalette(data);
-
-  const nodeColorsJson = JSON.stringify(palette.nodeKindColors);
   const edgeColorsJson = JSON.stringify(palette.edgeKindColors);
-  const subtypeColorsJson = JSON.stringify(palette.widgetSubtypeColors);
+  const nodeColorsJson = JSON.stringify(palette.nodeKindColors);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -610,426 +609,469 @@ export function generateA2WorkflowsHtml(data: VizData): string {
 <style>
 ${SHARED_CSS}
   .page { padding: 0 20px 32px; }
-  .workflow { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 20px; align-items: center; border-bottom: 1px solid #1e2438; }
+  .toolbar input { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 5px; padding: 6px 10px; color: #e2e8f0; font-size: 12px; width: 300px; }
+  .toolbar select { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 5px; padding: 6px 8px; color: #e2e8f0; font-size: 11px; }
+  .toolbar .count { font-size: 11px; color: #64748b; }
+  .toolbar button { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 5px; padding: 6px 10px; color: #94a3b8; font-size: 11px; cursor: pointer; }
+  .toolbar button.active { background: #2d3a6a; border-color: #7c85f0; color: #c4b5fd; }
+  .pagination { display: flex; align-items: center; gap: 8px; padding: 8px 20px; border-bottom: 1px solid #1e2438; }
+  .pagination button { background: #1a1d2e; border: 1px solid #2d3148; color: #94a3b8; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+  .pagination button:disabled { opacity: 0.4; cursor: default; }
+  .pagination .page-info { font-size: 11px; color: #64748b; }
+  .workflow { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
   .wf-title { font-size: 12px; font-weight: 600; color: #c4b5fd; margin-bottom: 4px; }
-  .wf-meta { font-size: 10px; color: #64748b; margin-bottom: 12px; }
-  .steps { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0; }
-  .step { display: flex; flex-direction: column; align-items: center; }
-  .step-box { border-radius: 7px; padding: 7px 10px; text-align: center; min-width: 100px; max-width: 150px; cursor: pointer; transition: opacity 0.1s; }
-  .step-box:hover { opacity: 0.85; }
-  .s-type { font-size: 9px; text-transform: uppercase; color: #64748b; }
-  .s-label { font-size: 11px; font-weight: 600; margin: 2px 0; word-break: break-word; }
-  .s-badges { margin-top: 3px; }
-  .badge { display: inline-block; background: #2d3060; border-radius: 3px; padding: 1px 4px; font-size: 9px; color: #a78bfa; margin: 1px; }
-  .badge.auth { color: #f87171; background: #3b1515; }
-  .badge.param { color: #fbbf24; background: #2d1f00; }
-  .badge.pre { color: #93c5fd; }
-  .detail-panel { display: none; background: #242840; border-radius: 5px; padding: 8px 10px; margin-top: 4px; font-size: 10px; width: 100%; max-width: 200px; }
-  .detail-panel.open { display: block; }
-  .drow { margin: 2px 0; }
-  .dk { color: #7c85f0; }
-  .dv { color: #e2e8f0; }
-  .arrow-wrap { display: flex; flex-direction: column; align-items: center; padding: 0 4px; padding-top: 14px; min-width: 55px; }
-  .arr-line { height: 2px; width: 100%; }
-  .arr-kind { font-size: 8px; font-weight: 600; text-transform: uppercase; margin-top: 3px; text-align: center; }
-  .arr-nav { font-size: 8px; color: #64748b; text-align: center; }
+  .wf-meta { font-size: 10px; color: #64748b; margin-bottom: 8px; }
+  .wf-meta .warn { color: #fbbf24; }
+  .wf-meta .err { color: #f87171; }
+  .wf-routes { font-size: 10px; color: #94a3b8; margin-bottom: 6px; }
+  .wf-routes .route-tag { background: #1e2438; border: 1px solid #2d3148; border-radius: 4px; padding: 1px 6px; font-size: 9px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
+  .step { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; padding: 5px 0; border-bottom: 1px solid #151825; font-size: 11px; }
+  .step:last-child { border-bottom: none; }
+  .step-num { color: #475569; font-size: 9px; min-width: 16px; text-align: right; flex-shrink: 0; }
+  .step-chip { border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: 600; flex-shrink: 0; }
+  .step-badge { padding: 1px 5px; border-radius: 3px; font-size: 8px; font-weight: 700; flex-shrink: 0; }
+  .step-badge.system { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed; }
+  .step-badge.trigger { background: #06b6d422; color: #67e8f9; border: 1px solid #06b6d4; }
+  .step-badge.effect { background: #8b5cf622; color: #c4b5fd; border: 1px solid #8b5cf6; }
+  .step-from, .step-to { color: #e2e8f0; }
+  .step-kind { color: #64748b; font-size: 9px; }
+  .step-arrow { color: #475569; flex-shrink: 0; }
+  .step-to.unresolved { color: #fbbf24; font-style: italic; }
+  .step-detail { font-size: 9px; color: #94a3b8; padding-left: 22px; width: 100%; }
   .empty { color: #475569; font-size: 12px; padding: 20px; }
+  .sig-strip { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 20px; border-bottom: 1px solid #1e2438; }
+  .sig-tag { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 5px; padding: 3px 8px; font-size: 10px; color: #94a3b8; cursor: pointer; }
+  .sig-tag:hover { border-color: #7c85f0; }
+  .sig-tag .sig-n { color: #c4b5fd; font-weight: 600; }
+  .sig-group { margin-bottom: 16px; }
+  .sig-header { background: #1e2438; border: 1px solid #2d3148; border-radius: 8px; padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .sig-header:hover { border-color: #7c85f0; }
+  .sig-title { font-size: 11px; color: #7c85f0; font-weight: 600; flex: 1; }
+  .sig-count { font-size: 10px; color: #64748b; }
+  .verdict { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-right: 6px; }
+  .verdict.FEASIBLE { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a; }
+  .verdict.CONDITIONAL { background: #d9770622; color: #fbbf24; border: 1px solid #d97706; }
+  .verdict.PRUNED { background: #dc262622; color: #f87171; border: 1px solid #dc2626; }
+  .wf-explanation { font-size: 9px; color: #94a3b8; padding: 4px 0; }
+  .term-cause { font-size: 10px; color: #94a3b8; font-weight: 400; }
 </style>
 </head>
 <body>
 <header>
   <h1>${title}</h1>
-  <span>${data.exemplarPaths.length} exemplar paths &bull; ${data.stats.feasible} feasible &bull; ${data.stats.conditional} conditional &bull; ${data.stats.pruned} pruned</span>
 </header>
 <div class="note">
-  <strong>Note:</strong> These are <em>exemplar paths for visualization only</em> \u2014 NOT an A2 deliverable.
-  Generated by bounded DFS (max 6 edges, max 2 paths per entry node, simple-path rule, deterministic order).
-  C(W) shows the union of constraint surfaces accumulated along each path.
+  <strong>Phase A2 \u2014 Task Mode</strong>: Single-trigger TaskWorkflows.
+  Each task represents one user trigger edge with its deterministic handler-scoped effect closure
+  (CCS by callsiteOrdinal + CNR + redirect closure). Task count equals trigger edge count exactly.
 </div>
+<div class="stat-strip" id="stats"></div>
+<div class="toolbar">
+  <input id="search" placeholder="Filter by edge kind, route ID, handler, or workflow ID..." />
+  <select id="filter-meta">
+    <option value="">All workflows</option>
+    <option value="feasible">FEASIBLE</option>
+    <option value="conditional">CONDITIONAL</option>
+    <option value="pruned">PRUNED</option>
+    <option value="unresolved">Has unresolved targets</option>
+    <option value="redirect-loop">Has redirect loop</option>
+  </select>
+  <select id="page-size">
+    <option value="50">50/page</option>
+    <option value="100" selected>100/page</option>
+    <option value="200">200/page</option>
+  </select>
+  <button id="sig-toggle">Group by step pattern</button>
+  <span class="count" id="count"></span>
+</div>
+<div id="sig-strip-container"></div>
+<div class="pagination" id="pagination"></div>
 <div class="page">
   <div id="wf-container"></div>
 </div>
 <script src="./data.js"></script>
 <script>
-(function() {
-  var NC = ${nodeColorsJson};
-  var EC = ${edgeColorsJson};
-  var SC = ${subtypeColorsJson};
-  function nodeColor(n) { if (n.type === 'Widget' && n.subtypeKey && SC[n.subtypeKey]) return SC[n.subtypeKey]; return NC[n.type] || '#aaa'; }
-
-  var nodeById = {};
-  VIZ_DATA.nodes.forEach(function(n) { nodeById[n.id] = n; });
-  var edgeById = {};
-  VIZ_DATA.edges.forEach(function(e) { edgeById[e.id] = e; });
-
-  var container = document.getElementById('wf-container');
-
-  if (!VIZ_DATA.exemplarPaths.length) {
-    container.innerHTML = '<div class="empty">No exemplar paths found for this graph.</div>';
-    return;
-  }
-
-  VIZ_DATA.exemplarPaths.forEach(function(path, pi) {
-    var wf = document.createElement('div');
-    wf.className = 'workflow';
-
-    var termNode = nodeById[path.steps[path.steps.length - 1] ? path.steps[path.steps.length - 1].nodeId : ''];
-    var termLabel = termNode ? termNode.label : '?';
-    var title = document.createElement('div');
-    title.className = 'wf-title';
-    title.textContent = 'W' + (pi + 1) + ': ' + path.entryNodeId.split('@')[0] + ' \u2192 \u2026 \u2192 ' + termLabel;
-    wf.appendChild(title);
-
-    var meta = document.createElement('div');
-    meta.className = 'wf-meta';
-    meta.textContent = path.steps.length + ' steps \u00b7 verdict: ' + path.verdict +
-      (path.aggregated.requiredParams.length ? ' \u00b7 params: ' + path.aggregated.requiredParams.join(', ') : '') +
-      (path.aggregated.authRequired ? ' \u00b7 authRequired' : '');
-    wf.appendChild(meta);
-
-    var stepsRow = document.createElement('div');
-    stepsRow.className = 'steps';
-
-    path.steps.forEach(function(step, si) {
-      var node = nodeById[step.nodeId];
-      if (!node) return;
-      var color = nodeColor(node);
-
-      var stepEl = document.createElement('div');
-      stepEl.className = 'step';
-
-      var box = document.createElement('div');
-      box.className = 'step-box';
-      box.style.background = color + '18';
-      box.style.border = '1.5px solid ' + color;
-
-      var typeDiv = document.createElement('div');
-      typeDiv.className = 's-type';
-      typeDiv.textContent = node.type;
-
-      var labelDiv = document.createElement('div');
-      labelDiv.className = 's-label';
-      labelDiv.style.color = color;
-      labelDiv.textContent = node.label;
-
-      var badges = document.createElement('div');
-      badges.className = 's-badges';
-
-      var cs = step.constraintsSoFar;
-      cs.requiredParams.forEach(function(p) {
-        var b = document.createElement('span');
-        b.className = 'badge param';
-        b.textContent = ':' + p;
-        badges.appendChild(b);
-      });
-      if (cs.authRequired) {
-        var ab = document.createElement('span');
-        ab.className = 'badge auth';
-        ab.textContent = 'auth';
-        badges.appendChild(ab);
-      }
-      cs.uiPreconditions.slice(0, 2).forEach(function(p) {
-        var b = document.createElement('span');
-        b.className = 'badge pre';
-        b.textContent = p.length > 15 ? p.slice(0, 13) + '\u2026' : p;
-        badges.appendChild(b);
-      });
-
-      box.appendChild(typeDiv);
-      box.appendChild(labelDiv);
-      box.appendChild(badges);
-
-      // Detail panel
-      var detail = document.createElement('div');
-      detail.className = 'detail-panel';
-      if (step.edgeId) {
-        var edge = edgeById[step.edgeId];
-        if (edge) {
-          detail.innerHTML = '<div class="drow"><span class="dk">edge kind: </span><span class="dv" style="color:' + (EC[edge.kind] || '#aaa') + '">' + edge.kind + '</span></div>' +
-            (edge.isSystem ? '<div class="drow"><span class="dk">system: </span><span class="dv" style="color:#fb923c">true</span></div>' : '') +
-            '<div class="drow"><span class="dk">preconditions: </span><span class="dv">' + edge.uiPreconditionCount + '</span></div>';
-        }
-      } else {
-        detail.innerHTML = '<div class="drow"><span class="dk">role: </span><span class="dv">entry node</span></div>';
-      }
-      box.addEventListener('click', function() { detail.classList.toggle('open'); });
-      stepEl.appendChild(box);
-      stepEl.appendChild(detail);
-      stepsRow.appendChild(stepEl);
-
-      // Arrow between steps
-      if (si < path.steps.length - 1) {
-        var nextStep = path.steps[si + 1];
-        var nextEdge = nextStep && nextStep.edgeId ? edgeById[nextStep.edgeId] : null;
-        var ekind = nextEdge ? nextEdge.kind : 'WIDGET_NAVIGATES_ROUTE';
-        var ecolor = EC[ekind] || '#60a5fa';
-        var arrWrap = document.createElement('div');
-        arrWrap.className = 'arrow-wrap';
-        arrWrap.innerHTML = '<div class="arr-line" style="background:' + ecolor + '"></div>' +
-          '<div class="arr-kind" style="color:' + ecolor + '">' + ekind.split('_').pop() + '</div>';
-        stepsRow.appendChild(arrWrap);
-      }
-    });
-
-    wf.appendChild(stepsRow);
-    container.appendChild(wf);
-  });
-})();
+var TASK_DATA = ${taskJson};
 </script>
-</body>
-</html>`;
-}
-
-// ---------------------------------------------------------------------------
-// A3 — Mock pruning (side-by-side verdict cards + table)
-// ---------------------------------------------------------------------------
-
-export function generateA3PruningHtml(data: VizData): string {
-  const title = 'A3 Mock Pruning \u2014 ' + data.generatedFromProject;
-  const palette = computePalette(data);
-  const nodeColorsJson = JSON.stringify(palette.nodeKindColors);
-  const edgeColorsJson = JSON.stringify(palette.edgeKindColors);
-  const subtypeColorsJson = JSON.stringify(palette.widgetSubtypeColors);
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>${title}</title>
-<style>
-${SHARED_CSS}
-  .page { padding: 0 20px 32px; }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
-  @media (max-width: 700px) { .pair { grid-template-columns: 1fr; } }
-  .wf-card { border-radius: 10px; padding: 14px; border: 1.5px solid; }
-  .wf-card.feasible { background: #0e1f12; border-color: #16a34a; }
-  .wf-card.conditional { background: #1a1608; border-color: #854d0e; }
-  .wf-card.pruned { background: #1f0e0e; border-color: #7f1d1d; }
-  .verdict-bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 5px; margin-bottom: 12px; font-size: 12px; font-weight: 600; }
-  .verdict-bar.ok { background: #166534; color: #bbf7d0; }
-  .verdict-bar.warn { background: #78350f; color: #fde68a; }
-  .verdict-bar.fail { background: #7f1d1d; color: #fecaca; }
-  .wf-title { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
-  .steps-v { display: flex; flex-direction: column; gap: 0; }
-  .sv-row { display: flex; align-items: center; }
-  .sv-block { flex: 1; border-radius: 5px; padding: 6px 8px; margin: 2px 0; }
-  .sv-type { font-size: 8px; text-transform: uppercase; color: #64748b; }
-  .sv-label { font-size: 11px; font-weight: 600; }
-  .sv-c { font-size: 9px; margin-top: 2px; }
-  .c-new { display: inline-block; background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 3px; padding: 0 4px; color: #93c5fd; margin: 1px; }
-  .c-bad { display: inline-block; background: #3b1515; border: 1px solid #ef4444; border-radius: 3px; padding: 0 4px; color: #fca5a5; margin: 1px; }
-  .c-acc { display: inline-block; background: #1e2a4a; border-radius: 3px; padding: 0 4px; color: #7c85f0; margin: 1px; }
-  .arr-v { width: 2px; height: 14px; margin: 0 auto; }
-  .arr-lbl { font-size: 8px; color: #475569; text-align: center; }
-  .sv-side { width: 14px; }
-  .cw-box { background: #1e2438; border-radius: 6px; padding: 8px 10px; margin-top: 10px; font-size: 10px; }
-  .cw-title { color: #7c85f0; font-weight: 600; margin-bottom: 4px; }
-  .crow { display: flex; gap: 6px; margin: 2px 0; }
-  .ck { color: #64748b; min-width: 120px; }
-  .cv { color: #e2e8f0; }
-  .cv.ok { color: #4ade80; }
-  .cv.bad { color: #f87171; }
-  .cv.warn { color: #fbbf24; }
-  .prune-box { background: #250a0a; border: 1px solid #7f1d1d; border-radius: 5px; padding: 7px 9px; margin-top: 8px; font-size: 10px; color: #fca5a5; }
-  .prune-box strong { color: #f87171; }
-  .cond-box { background: #1a1200; border: 1px solid #854d0e; border-radius: 5px; padding: 7px 9px; margin-top: 8px; font-size: 10px; color: #fde68a; }
-  .cond-box strong { color: #facc15; }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  th { background: #1e2438; padding: 7px 10px; text-align: left; border-bottom: 1px solid #2d3148; color: #94a3b8; font-size: 10px; text-transform: uppercase; }
-  td { padding: 7px 10px; border-bottom: 1px solid #1a2030; }
-  .vf { color: #4ade80; font-weight: 600; }
-  .vc { color: #fbbf24; font-weight: 600; }
-  .vp { color: #f87171; font-weight: 600; }
-  .empty { color: #475569; font-size: 12px; padding: 20px; }
-</style>
-</head>
-<body>
-<header>
-  <h1>${title}</h1>
-  <span>${data.stats.feasible} feasible &bull; ${data.stats.conditional} conditional &bull; ${data.stats.pruned} pruned</span>
-</header>
-<div class="note">
-  <strong>Note:</strong> A3 demo policy (visualization only, no SAT): <code>authRequired=true</code> \u2192 PRUNED &bull;
-  <code>requiredParams &gt; 0</code> \u2192 CONDITIONAL &bull; otherwise FEASIBLE.
-  C(W) = union of constraint surfaces along each path.
-</div>
-<div class="page">
-  <div id="pairs-container"></div>
-  <h2>All Exemplar Paths \u2014 Pruning Decision Table</h2>
-  <div id="table-container"></div>
-</div>
-<script src="./data.js"></script>
 <script>
 (function() {
-  var NC = ${nodeColorsJson};
   var EC = ${edgeColorsJson};
-  var SC = ${subtypeColorsJson};
-  function nodeColor(n) { if (n.type === 'Widget' && n.subtypeKey && SC[n.subtypeKey]) return SC[n.subtypeKey]; return NC[n.type] || '#aaa'; }
+  var NC = ${nodeColorsJson};
 
-  var nodeById = {};
-  VIZ_DATA.nodes.forEach(function(n) { nodeById[n.id] = n; });
   var edgeById = {};
   VIZ_DATA.edges.forEach(function(e) { edgeById[e.id] = e; });
 
-  var paths = VIZ_DATA.exemplarPaths;
-  var pairsContainer = document.getElementById('pairs-container');
-  var tableContainer = document.getElementById('table-container');
+  var nodeById = {};
+  VIZ_DATA.nodes.forEach(function(n) { nodeById[n.id] = n; });
 
-  if (!paths.length) {
-    pairsContainer.innerHTML = '<div class="empty">No exemplar paths found.</div>';
-    return;
+  // Stats strip
+  var s = TASK_DATA.stats || {};
+  var statsEl = document.getElementById('stats');
+  function sc(n, l) { return '<div class="stat-card"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>'; }
+  if (s.workflowCount !== undefined) {
+    statsEl.innerHTML =
+      sc(s.workflowCount, 'Task workflows') +
+      sc(s.feasibleCount, 'Feasible') +
+      sc(s.conditionalCount, 'Conditional') +
+      sc(s.prunedCount, 'Pruned') +
+      sc(s.triggerEdgeCount, 'Trigger edges') +
+      sc(s.enumeratedRouteCount, 'Enumerated routes');
   }
 
-  // ── Build pairs ────────────────────────────────────────────────────────────
-  function firstOfVerdict(v) {
-    return paths.find(function(p) { return p.verdict === v; }) || null;
+  // State
+  var currentPage = 0;
+  var pageSize = 100;
+  var groupBySig = false;
+  var filteredWorkflows = [];
+
+  var container = document.getElementById('wf-container');
+  var countEl = document.getElementById('count');
+  var searchEl = document.getElementById('search');
+  var filterEl = document.getElementById('filter-meta');
+  var pageSizeEl = document.getElementById('page-size');
+  var sigToggle = document.getElementById('sig-toggle');
+  var paginationEl = document.getElementById('pagination');
+  var sigStripEl = document.getElementById('sig-strip-container');
+
+  var workflows = (TASK_DATA.workflows || []);
+
+  // \\u2500\\u2500 Filtering \\u2500\\u2500
+  function getFiltered() {
+    var q = searchEl.value.toLowerCase();
+    var mf = filterEl.value;
+    var result = [];
+    for (var i = 0; i < workflows.length; i++) {
+      var w = workflows[i];
+      if (mf === 'feasible' && w.verdict !== 'FEASIBLE') continue;
+      if (mf === 'conditional' && w.verdict !== 'CONDITIONAL') continue;
+      if (mf === 'pruned' && w.verdict !== 'PRUNED') continue;
+      if (mf === 'unresolved' && !(w.meta.unresolvedTargets && w.meta.unresolvedTargets.length)) continue;
+      if (mf === 'redirect-loop' && !w.meta.redirectLoop) continue;
+      if (q) {
+        var text = w.id + ' ' + w.startRouteIds.join(' ') + ' ' + w.terminalNodeId + ' ' + (w.effectGroupId || '');
+        for (var si = 0; si < w.steps.length; si++) {
+          text += ' ' + w.steps[si].edgeId + ' ' + w.steps[si].kind;
+        }
+        if (text.toLowerCase().indexOf(q) === -1) continue;
+      }
+      result.push(w);
+    }
+    return result;
   }
 
-  function renderCard(path) {
-    var v = path.verdict;
-    var vClass = v === 'FEASIBLE' ? 'feasible' : v === 'CONDITIONAL' ? 'conditional' : 'pruned';
-    var vBarClass = v === 'FEASIBLE' ? 'ok' : v === 'CONDITIONAL' ? 'warn' : 'fail';
-    var vIcon = v === 'FEASIBLE' ? '\u2713' : v === 'CONDITIONAL' ? '\u26a0' : '\u2717';
-    var vLabel = v === 'FEASIBLE' ? 'FEASIBLE' : v === 'CONDITIONAL' ? 'CONDITIONAL \u2014 params required' : 'PRUNED \u2014 auth blocked';
+  // \\u2500\\u2500 Signature (step pattern) \\u2500\\u2500
+  function computeSignature(w) {
+    var parts = [];
+    for (var i = 0; i < w.steps.length; i++) {
+      parts.push(w.steps[i].kind);
+    }
+    var term = nodeById[w.terminalNodeId];
+    parts.push(term ? term.type : '?');
+    return parts.join(' > ');
+  }
 
-    var card = document.createElement('div');
-    card.className = 'wf-card ' + vClass;
-
-    var termNode = nodeById[path.steps.length ? path.steps[path.steps.length - 1].nodeId : ''];
-    var termLabel = termNode ? termNode.label : '?';
-
-    card.innerHTML = '<div class="verdict-bar ' + vBarClass + '"><span style="font-size:16px">' + vIcon + '</span>' + vLabel + '</div>' +
-      '<div class="wf-title">' + path.entryNodeId.split('@')[0] + ' \u2192 \u2026 \u2192 ' + termLabel + '</div>';
-
-    var stepsV = document.createElement('div');
-    stepsV.className = 'steps-v';
-
-    path.steps.forEach(function(step, si) {
-      var node = nodeById[step.nodeId];
-      if (!node) return;
-      var color = nodeColor(node);
-      var cs = step.constraintsSoFar;
-      var prevCs = si > 0 && path.steps[si - 1] ? path.steps[si - 1].constraintsSoFar : { requiredParams: [], authRequired: false, uiPreconditions: [] };
-
-      var isPrunedStep = v !== 'FEASIBLE' && si === path.steps.length - 1;
-
-      var block = document.createElement('div');
-      block.className = 'sv-block';
-      block.style.background = color + '15';
-      block.style.border = '1px solid ' + color + (isPrunedStep ? '; opacity:0.4' : '');
-
-      // New constraints at this step
-      var newParams = cs.requiredParams.filter(function(p) { return !(prevCs.requiredParams || []).includes(p); });
-      var newAuth = cs.authRequired && !prevCs.authRequired;
-
-      var cHtml = '';
-      newParams.forEach(function(p) { cHtml += '<span class="c-new">:' + p + '</span>'; });
-      if (newAuth) cHtml += '<span class="c-bad">auth required</span>';
-      if (cs.requiredParams.length && !newParams.length && !newAuth) {
-        cs.requiredParams.forEach(function(p) { cHtml += '<span class="c-acc">:' + p + '</span>'; });
-      }
-      if (cs.authRequired && !newAuth) cHtml += '<span class="c-acc">auth</span>';
-
-      block.innerHTML = '<div class="sv-type">' + node.type + '</div>' +
-        '<div class="sv-label" style="color:' + color + '">' + node.label + '</div>' +
-        (cHtml ? '<div class="sv-c">' + cHtml + '</div>' : '');
-
-      var row = document.createElement('div');
-      row.className = 'sv-row';
-      row.appendChild(block);
-      stepsV.appendChild(row);
-
-      if (si < path.steps.length - 1) {
-        var nextStep = path.steps[si + 1];
-        var edge = nextStep && nextStep.edgeId ? edgeById[nextStep.edgeId] : null;
-        var ekind = edge ? edge.kind : 'WIDGET_NAVIGATES_ROUTE';
-        var ecolor = EC[ekind] || '#60a5fa';
-        var arrRow = document.createElement('div');
-        arrRow.innerHTML = '<div class="arr-v" style="background:' + ecolor + ';margin-left:20px"></div>' +
-          '<div class="arr-lbl" style="margin-left:0">' + ekind.split('_').pop() + '</div>';
-        stepsV.appendChild(arrRow);
-      }
+  function groupBySignature(wfs) {
+    var groups = {};
+    var order = [];
+    for (var i = 0; i < wfs.length; i++) {
+      var sig = computeSignature(wfs[i]);
+      if (!groups[sig]) { groups[sig] = []; order.push(sig); }
+      groups[sig].push(wfs[i]);
+    }
+    order.sort(function(a, b) {
+      if (groups[b].length !== groups[a].length) return groups[b].length - groups[a].length;
+      return a.localeCompare(b);
     });
+    return { groups: groups, order: order };
+  }
 
-    card.appendChild(stepsV);
+  // \\u2500\\u2500 Step rendering \\u2500\\u2500
+  function renderStep(step, index) {
+    var edge = edgeById[step.edgeId];
+    if (!edge) return '<div class="step"><span class="step-num">' + (index + 1) + '</span><span style="color:#f87171">Unknown edge: ' + step.edgeId.substring(0, 40) + '...</span></div>';
 
-    // C(W) box
-    var agg = path.aggregated;
-    var cwHtml = '<div class="cw-box"><div class="cw-title">C(W) \u2014 Aggregated Constraints</div>' +
-      '<div class="crow"><span class="ck">authRequired:</span><span class="cv ' + (agg.authRequired ? 'bad' : 'ok') + '">' + agg.authRequired + '</span></div>' +
-      '<div class="crow"><span class="ck">requiredParams:</span><span class="cv ' + (agg.requiredParams.length ? 'warn' : 'ok') + '">' + (agg.requiredParams.length ? '[' + agg.requiredParams.join(', ') + ']' : '[]') + '</span></div>' +
-      '<div class="crow"><span class="ck">rolesRequired:</span><span class="cv">' + (agg.rolesRequired.length ? '[' + agg.rolesRequired.join(', ') + ']' : '[]') + '</span></div>' +
-      '<div class="crow"><span class="ck">uiPreconditions:</span><span class="cv">' + agg.uiPreconditions.length + ' predicates</span></div>' +
-      '<div class="crow"><span class="ck">SAT result:</span><span class="cv ' + (v === 'FEASIBLE' ? 'ok' : v === 'CONDITIONAL' ? 'warn' : 'bad') + '">' + (v === 'FEASIBLE' ? 'SATISFIABLE \u2713' : v === 'CONDITIONAL' ? 'CONDITIONAL \u26a0' : 'UNSATISFIABLE \u2717') + '</span></div>' +
-      '</div>';
-    card.innerHTML += cwHtml;
+    var fromNode = nodeById[edge.from];
+    var toNode = edge.to ? nodeById[edge.to] : null;
+    var kind = edge.kind;
+    var color = EC[kind] || '#888';
 
-    if (path.pruneReason) {
-      var box = document.createElement('div');
-      box.className = v === 'PRUNED' ? 'prune-box' : 'cond-box';
-      box.innerHTML = '<strong>' + (v === 'PRUNED' ? 'Prune reason: ' : 'Condition: ') + '</strong>' + path.pruneReason;
-      card.appendChild(box);
+    var html = '<div class="step">';
+    html += '<span class="step-num">' + (index + 1) + '</span>';
+    html += '<span class="step-chip" style="background:' + color + '22;border:1px solid ' + color + ';color:' + color + '">' + kind + '</span>';
+
+    if (edge.isSystem) html += '<span class="step-badge system">SYSTEM</span>';
+    if (index === 0) {
+      html += '<span class="step-badge trigger">TRIGGER</span>';
+      // Show widget tag/kind on trigger step
+      if (fromNode && fromNode.tagName) {
+        var wLabel = fromNode.tagName;
+        if (fromNode.widgetKind && fromNode.widgetKind !== 'Unknown') wLabel += ' (' + fromNode.widgetKind + ')';
+        html += '<span style="font-size:9px;color:#67e8f9;margin-left:2px">' + escHtml(wLabel) + '</span>';
+      }
+    }
+    else if (kind === 'COMPONENT_CALLS_SERVICE' || kind === 'COMPONENT_NAVIGATES_ROUTE') html += '<span class="step-badge effect">EFFECT</span>';
+
+    // From node
+    var fromLabel = fromNode ? fromNode.label : edge.from.split('#').pop().split('|')[0];
+    var fromKind = fromNode ? fromNode.type : '?';
+    html += '<span class="step-from">' + escHtml(fromLabel) + ' <span class="step-kind">(' + fromKind + ')</span></span>';
+
+    html += '<span class="step-arrow">\\u2192</span>';
+
+    // To node
+    if (toNode) {
+      var toLabel = toNode.label;
+      html += '<span class="step-to">' + escHtml(toLabel) + ' <span class="step-kind">(' + toNode.type + ')</span></span>';
+    } else if (edge.to === null) {
+      var tt = edge.targetText || 'unknown target';
+      html += '<span class="step-to unresolved">UNRESOLVED: ' + escHtml(tt) + '</span>';
     }
 
-    return card;
+    html += '</div>';
+
+    // Detail line
+    var details = [];
+    if (edge.handler) details.push('handler: ' + escHtml(edge.handler.componentId.split('#').pop() + '.' + edge.handler.methodName));
+    if (edge.trigger) {
+      var trigParts = [];
+      if (edge.trigger.viaRouterLink) trigParts.push('routerLink');
+      else if (edge.trigger.event && edge.trigger.event !== 'unknown') trigParts.push(edge.trigger.event);
+      if (trigParts.length) details.push('trigger: ' + trigParts.join(', '));
+    }
+    if (details.length) {
+      html += '<div class="step-detail">' + details.join(' | ') + '</div>';
+    }
+
+    return html;
   }
 
-  // Find pairs for side-by-side display
-  var showPairs = [
-    ['FEASIBLE', firstOfVerdict('PRUNED') ? 'PRUNED' : 'CONDITIONAL'],
-    ['FEASIBLE', 'CONDITIONAL'],
-  ];
-  var renderedPairs = 0;
-  for (var pi = 0; pi < showPairs.length && renderedPairs < 2; pi++) {
-    var leftVerdict = showPairs[pi][0];
-    var rightVerdict = showPairs[pi][1];
-    var leftPath = firstOfVerdict(leftVerdict);
-    var rightPath = firstOfVerdict(rightVerdict);
-    if (!leftPath || !rightPath || leftPath === rightPath) continue;
-    var pair = document.createElement('div');
-    pair.className = 'pair';
-    var h2 = document.createElement('h2');
-    h2.style.gridColumn = '1/-1';
-    h2.textContent = leftVerdict + ' vs. ' + rightVerdict;
-    var leftCard = renderCard(leftPath);
-    var rightCard = renderCard(rightPath);
-    if (!leftCard || !rightCard) continue;
-    pairsContainer.appendChild(h2);
-    pair.appendChild(leftCard);
-    pair.appendChild(rightCard);
-    pairsContainer.appendChild(pair);
-    renderedPairs++;
-  }
-  // If nothing to compare, show all paths
-  if (!renderedPairs) {
-    paths.slice(0, 3).forEach(function(p) {
-      var card = renderCard(p);
-      if (card) pairsContainer.appendChild(card);
-    });
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // ── Decision table ─────────────────────────────────────────────────────────
-  var tbl = document.createElement('table');
-  tbl.innerHTML = '<thead><tr><th>Path</th><th>Steps</th><th>authRequired</th><th>requiredParams</th><th>uiPreconditions</th><th>Verdict</th></tr></thead>';
-  var tbody = document.createElement('tbody');
-  paths.forEach(function(p, i) {
-    var agg = p.aggregated;
-    var vCls = p.verdict === 'FEASIBLE' ? 'vf' : p.verdict === 'CONDITIONAL' ? 'vc' : 'vp';
-    var termNode = nodeById[p.steps.length ? p.steps[p.steps.length - 1].nodeId : ''];
-    var termLabel = termNode ? termNode.label : '?';
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td style="color:#c4b5fd">W' + (i + 1) + '</td>' +
-      '<td style="color:#94a3b8">' + p.entryNodeId.split('@')[0] + ' \u2192 ' + termLabel + '</td>' +
-      '<td class="' + (agg.authRequired ? 'vp' : 'vf') + '">' + agg.authRequired + '</td>' +
-      '<td class="' + (agg.requiredParams.length ? 'vc' : 'vf') + '">' + (agg.requiredParams.join(', ') || '\u2014') + '</td>' +
-      '<td>' + agg.uiPreconditions.length + '</td>' +
-      '<td class="' + vCls + '">' + p.verdict + '</td>';
-    tbody.appendChild(tr);
+  // \\u2500\\u2500 Workflow card \\u2500\\u2500
+  function deriveTerminationCause(w, termNode) {
+    if (w.meta.redirectLoop) return 'redirect loop';
+    if (w.meta.unresolvedTargets && w.meta.unresolvedTargets.length) return 'unresolved nav';
+    if (termNode && termNode.type === 'External') return 'external navigation';
+    if (w.steps.length === 1) return 'trigger only (no effects)';
+    return 'effect closure complete';
+  }
+
+  function shortId(id) {
+    // Show last meaningful segment of a long ID
+    var parts = id.split('::');
+    if (parts.length > 1) return parts[parts.length - 2].split('#').pop().split('|').pop() + '::' + parts[parts.length - 1];
+    return id.length > 60 ? '...' + id.slice(-50) : id;
+  }
+
+  function renderWorkflowCard(w) {
+    var termNode = nodeById[w.terminalNodeId];
+    var termLabel = termNode ? termNode.label : w.terminalNodeId;
+    var termCause = deriveTerminationCause(w, termNode);
+
+    // Trigger edge label
+    var trigEdge = edgeById[w.triggerEdgeId];
+    var trigLabel = trigEdge ? (trigEdge.kind + ' from ' + escHtml((nodeById[trigEdge.from] || {}).label || trigEdge.from.split('#').pop().split('|')[0])) : shortId(w.triggerEdgeId);
+
+    var html = '<div class="workflow">';
+    html += '<div class="wf-title">' + escHtml(trigLabel) + ' \\u2192 END: ' + escHtml(termLabel) + ' <span class="term-cause">(' + escHtml(termCause) + ')</span></div>';
+
+    // Verdict badge
+    if (w.verdict) {
+      html += '<span class="verdict ' + w.verdict + '">' + w.verdict + '</span>';
+    }
+
+    var metaText = w.steps.length + ' steps';
+    if (w.effectGroupId) {
+      var eg = w.effectGroupId.split('::');
+      metaText += ' \\u00b7 handler: ' + escHtml(eg[eg.length - 1] || w.effectGroupId);
+    }
+    if (w.meta.unresolvedTargets && w.meta.unresolvedTargets.length) metaText += ' \\u00b7 <span class="warn">unresolved: ' + w.meta.unresolvedTargets.length + '</span>';
+    if (w.meta.redirectLoop) metaText += ' \\u00b7 <span class="err">redirect loop at ' + escHtml(w.meta.redirectLoop.routeId) + '</span>';
+    if (w.meta.redirectClosureStabilized === false) metaText += ' \\u00b7 <span class="err">unstabilized</span>';
+    html += '<div class="wf-meta">' + metaText + '</div>';
+
+    // Entry routes
+    html += '<div class="wf-routes">Entry routes: ';
+    for (var ri = 0; ri < w.startRouteIds.length; ri++) {
+      var rNode = nodeById[w.startRouteIds[ri]];
+      var rLabel = rNode ? rNode.label : w.startRouteIds[ri];
+      html += '<span class="route-tag">' + escHtml(rLabel) + '</span>';
+    }
+    html += '</div>';
+
+    // Explanation
+    if (w.explanation) {
+      var expParts = [];
+      if (w.explanation.missingParams && w.explanation.missingParams.length) expParts.push('params: ' + w.explanation.missingParams.join(', '));
+      if (w.explanation.requiredGuards && w.explanation.requiredGuards.length) expParts.push('guards: ' + w.explanation.requiredGuards.join(', '));
+      if (w.explanation.requiredRoles && w.explanation.requiredRoles.length) expParts.push('roles: ' + w.explanation.requiredRoles.join(', '));
+      if (w.explanation.requiresFormValid) expParts.push('requires form valid');
+      if (w.explanation.uiGates && w.explanation.uiGates.length) {
+        var gateStr = w.explanation.uiGates.map(function(g) { return g.kind + ': ' + g.args.join(', '); }).join('; ');
+        expParts.push('UI gates: ' + gateStr);
+      }
+      if (w.explanation.contradictions && w.explanation.contradictions.length) {
+        var cStr = w.explanation.contradictions.map(function(c) { return c.kind + ': ' + c.args.join(', '); }).join('; ');
+        expParts.push('contradictions: ' + cStr);
+      }
+      if (expParts.length) html += '<div class="wf-explanation">' + escHtml(expParts.join(' | ')) + '</div>';
+    }
+
+    // Steps
+    for (var si = 0; si < w.steps.length; si++) {
+      html += renderStep(w.steps[si], si);
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  // \\u2500\\u2500 Pagination \\u2500\\u2500
+  function renderPagination(total) {
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (currentPage >= totalPages) currentPage = totalPages - 1;
+    var start = currentPage * pageSize + 1;
+    var end = Math.min((currentPage + 1) * pageSize, total);
+
+    var html = '';
+    html += '<button id="pg-prev"' + (currentPage === 0 ? ' disabled' : '') + '>Prev</button>';
+    html += '<span class="page-info">Showing ' + (total > 0 ? start + '-' + end : '0') + ' of ' + total + ' (page ' + (currentPage + 1) + ' of ' + totalPages + ')</span>';
+    html += '<button id="pg-next"' + (currentPage >= totalPages - 1 ? ' disabled' : '') + '>Next</button>';
+    paginationEl.innerHTML = html;
+
+    var prev = document.getElementById('pg-prev');
+    var next = document.getElementById('pg-next');
+    if (prev) prev.onclick = function() { if (currentPage > 0) { currentPage--; render(); } };
+    if (next) next.onclick = function() { if (currentPage < totalPages - 1) { currentPage++; render(); } };
+  }
+
+  // \\u2500\\u2500 Signature strip \\u2500\\u2500
+  function renderSigStrip(sigData) {
+    if (!groupBySig || sigData.order.length === 0) {
+      sigStripEl.innerHTML = '';
+      return;
+    }
+    var html = '<div class="sig-strip">';
+    var top = sigData.order.slice(0, 10);
+    for (var i = 0; i < top.length; i++) {
+      var sig = top[i];
+      var cnt = sigData.groups[sig].length;
+      var short = sig.split(' > ').map(function(s) { return s.split('_').pop(); }).join(' > ');
+      html += '<span class="sig-tag" data-sig="' + escHtml(sig) + '"><span class="sig-n">' + cnt + '</span> ' + escHtml(short) + '</span>';
+    }
+    if (sigData.order.length > 10) html += '<span class="sig-tag" style="color:#475569">' + (sigData.order.length - 10) + ' more...</span>';
+    html += '</div>';
+    sigStripEl.innerHTML = html;
+
+    var tags = sigStripEl.querySelectorAll('.sig-tag[data-sig]');
+    for (var t = 0; t < tags.length; t++) {
+      tags[t].addEventListener('click', function(ev) {
+        var sig = ev.currentTarget.getAttribute('data-sig');
+        searchEl.value = sig.split(' > ')[0];
+        currentPage = 0;
+        render();
+      });
+    }
+  }
+
+  // \\u2500\\u2500 Grouped rendering \\u2500\\u2500
+  function renderGrouped(sigData) {
+    var html = '';
+    var pageStart = currentPage * pageSize;
+    var pageEnd = pageStart + pageSize;
+    var itemIndex = 0;
+
+    for (var gi = 0; gi < sigData.order.length; gi++) {
+      var sig = sigData.order[gi];
+      var wfs = sigData.groups[sig];
+      if (itemIndex + wfs.length <= pageStart) { itemIndex += wfs.length; continue; }
+      if (itemIndex >= pageEnd) break;
+
+      var short = sig.split(' > ').map(function(s) { return s.split('_').pop(); }).join(' > ');
+      var groupId = 'sig-group-' + gi;
+      html += '<div class="sig-group" id="' + groupId + '">';
+      html += '<div class="sig-header" data-group="' + groupId + '">';
+      html += '<span class="sig-title">' + escHtml(short) + '</span>';
+      html += '<span class="sig-count">' + wfs.length + ' task' + (wfs.length > 1 ? 's' : '') + '</span>';
+      html += '</div>';
+
+      html += renderWorkflowCard(wfs[0]);
+      if (wfs.length > 1) {
+        html += '<div class="sig-expand" data-group="' + groupId + '-rest">Show all ' + wfs.length + ' tasks</div>';
+        html += '<div id="' + groupId + '-rest" style="display:none">';
+        var limit = Math.min(wfs.length, 50);
+        for (var wi = 1; wi < limit; wi++) {
+          html += renderWorkflowCard(wfs[wi]);
+        }
+        if (wfs.length > 50) html += '<div class="empty">' + (wfs.length - 50) + ' more tasks not shown.</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      itemIndex += wfs.length;
+    }
+
+    container.innerHTML = html || '<div class="empty">No task workflows match the filter.</div>';
+
+    var expands = container.querySelectorAll('.sig-expand');
+    for (var ei = 0; ei < expands.length; ei++) {
+      expands[ei].addEventListener('click', function(ev) {
+        var targetId = ev.currentTarget.getAttribute('data-group');
+        var el = document.getElementById(targetId);
+        if (el) {
+          var show = el.style.display === 'none';
+          el.style.display = show ? 'block' : 'none';
+          ev.currentTarget.textContent = show ? 'Collapse' : 'Show all';
+        }
+      });
+    }
+  }
+
+  // \\u2500\\u2500 Flat rendering \\u2500\\u2500
+  function renderFlat() {
+    var start = currentPage * pageSize;
+    var end = Math.min(start + pageSize, filteredWorkflows.length);
+    var html = '';
+    for (var i = start; i < end; i++) {
+      html += renderWorkflowCard(filteredWorkflows[i]);
+    }
+    container.innerHTML = html || '<div class="empty">No task workflows match the filter.</div>';
+  }
+
+  // \\u2500\\u2500 Main render \\u2500\\u2500
+  function render() {
+    filteredWorkflows = getFiltered();
+    countEl.textContent = filteredWorkflows.length + ' of ' + workflows.length + ' task workflows';
+
+    if (groupBySig) {
+      var sigData = groupBySignature(filteredWorkflows);
+      renderSigStrip(sigData);
+      renderPagination(filteredWorkflows.length);
+      renderGrouped(sigData);
+    } else {
+      sigStripEl.innerHTML = '';
+      renderPagination(filteredWorkflows.length);
+      renderFlat();
+    }
+  }
+
+  // \\u2500\\u2500 Event wiring \\u2500\\u2500
+  searchEl.addEventListener('input', function() { currentPage = 0; render(); });
+  filterEl.addEventListener('change', function() { currentPage = 0; render(); });
+  pageSizeEl.addEventListener('change', function() { pageSize = parseInt(pageSizeEl.value, 10); currentPage = 0; render(); });
+  sigToggle.addEventListener('click', function() {
+    groupBySig = !groupBySig;
+    sigToggle.className = groupBySig ? 'active' : '';
+    currentPage = 0;
+    render();
   });
-  tbl.appendChild(tbody);
-  tableContainer.appendChild(tbl);
+
+  render();
 })();
 </script>
 </body>
 </html>`;
 }
+

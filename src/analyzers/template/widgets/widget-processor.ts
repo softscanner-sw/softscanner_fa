@@ -29,17 +29,20 @@ export class WidgetProcessor {
   private readonly _templateFile: string;
   private readonly _templateText: string;
   private readonly _cfg: AnalyzerConfig;
+  private readonly _componentSelectors: ReadonlySet<string> | undefined;
 
   constructor(
     componentId: string,
     templateFile: string,
     templateText: string,
     cfg: AnalyzerConfig,
+    componentSelectors?: ReadonlySet<string>,
   ) {
     this._componentId = componentId;
     this._templateFile = templateFile;
     this._templateText = templateText;
     this._cfg = cfg;
+    this._componentSelectors = componentSelectors;
   }
 
   /**
@@ -50,7 +53,7 @@ export class WidgetProcessor {
     const widgets: WidgetInfo[] = [];
     const kindCounters = new Map<WidgetKind, number>();
 
-    this._walk(ast, [], widgets, kindCounters);
+    this._walk(ast, [], widgets, kindCounters, undefined);
 
     // Sort by origin position then stableIndex (already in document order from walk)
     widgets.sort((a, b) => {
@@ -73,9 +76,10 @@ export class WidgetProcessor {
     ancestorNames: string[],
     out: WidgetInfo[],
     kindCounters: Map<WidgetKind, number>,
+    parentWidgetId: string | undefined,
   ): void {
     for (const node of nodes) {
-      const kind = classifyWidget(node);
+      const kind = classifyWidget(node, this._componentSelectors);
 
       if (kind !== null) {
         const count = kindCounters.get(kind) ?? 0;
@@ -105,6 +109,7 @@ export class WidgetProcessor {
         const widget: WidgetInfo = {
           id: widgetId,
           componentId: this._componentId,
+          ...(parentWidgetId !== undefined ? { parentWidgetId } : {}),
           kind,
           ...(node.name != null ? { tagName: node.name } : {}),
           origin,
@@ -121,48 +126,59 @@ export class WidgetProcessor {
 
         out.push(widget);
 
-        // Recurse with this element's tag as the new ancestor context
+        // Recurse with this widget as the parent
         this._walk(
           node.children ?? [],
           [...ancestorNames, node.name ?? kind],
           out,
           kindCounters,
+          widgetId,
         );
       } else {
-        // Non-widget element: recurse without adding to ancestors (preserves path brevity)
+        // Non-widget element: recurse, pass through current parent
         this._walk(
           node.children ?? [],
           [...ancestorNames, node.name ?? ''],
           out,
           kindCounters,
+          parentWidgetId,
         );
       }
     }
   }
 
   private _extractBindings(node: TemplateAstNode, _origin: Origin): WidgetBinding[] {
-    const BINDING_NAMES = new Set([
+    const ATTR_BINDING_NAMES = new Set([
       // Navigation attributes
       'routerlink', 'href',
       // Form-model attributes
       'formcontrolname', 'formgroupname', 'ngmodel',
-      // DOM event names captured for handler analysis
-      'click', 'submit', 'ngsubmit', 'change', 'input',
     ]);
     const bindings: WidgetBinding[] = [];
     const maxLen = this._cfg.maxTemplateSnippetLength ?? 200;
 
     for (const child of node.children ?? []) {
-      if (child.kind === 'attr' || child.kind === 'boundAttr' || child.kind === 'event') {
-        const name = child.name ?? '';
-        if (BINDING_NAMES.has(name.toLowerCase())) {
+      const name = child.name ?? '';
+      if (child.kind === 'event') {
+        // Capture ALL event bindings regardless of name (G3 fix)
+        const bindingOrigin = TemplateAstUtils.originFromSpan(
+          this._templateFile,
+          this._templateText,
+          child.span,
+          name,
+        );
+        const binding: WidgetBinding = { kind: 'event', name, origin: bindingOrigin };
+        if (child.value !== undefined) binding.value = child.value.trim().slice(0, maxLen);
+        bindings.push(binding);
+      } else if (child.kind === 'attr' || child.kind === 'boundAttr') {
+        if (ATTR_BINDING_NAMES.has(name.toLowerCase())) {
           const bindingOrigin = TemplateAstUtils.originFromSpan(
             this._templateFile,
             this._templateText,
             child.span,
             name,
           );
-          const binding: WidgetBinding = { kind: child.kind as 'attr' | 'boundAttr' | 'event', name, origin: bindingOrigin };
+          const binding: WidgetBinding = { kind: child.kind, name, origin: bindingOrigin };
           if (child.value !== undefined) binding.value = child.value.trim().slice(0, maxLen);
           bindings.push(binding);
         }

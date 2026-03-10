@@ -63,8 +63,10 @@ export type {
   NodeKind,
   SpecWidgetKind,
   EdgeKind,
+  AtomKind,
   Atom,
   ConstraintSurface,
+  WidgetUIProps,
   NodeBase,
   ModuleNode,
   RouteNode,
@@ -83,3 +85,13 @@ export type {
 export { emptyConstraintSurface, STRUCTURAL_EDGE_KINDS } from './multigraph.js';
 
 export type { A1InternalBundle } from './analysis-bundle.js';
+
+// Spec-compliant A2 workflow types (approach.md — A2 Typed Schemas)
+export type {
+  PhaseAInputRef,
+  WorkflowVerdict,
+  WorkflowExplanation,
+  TaskStep,
+  TaskWorkflow,
+  TaskWorkflowBundle,
+} from './workflow.js';

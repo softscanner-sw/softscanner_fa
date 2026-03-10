@@ -22,7 +22,7 @@ Exit criteria:
 
 ---
 
-## Stage 1 — A1 finalize: implementation + tests + visualization (ACTIVE)
+## Stage 1 — A1 finalize: implementation + tests + visualization (DONE)
 Goal:
 Finalize Phase A1 so it is:
 - spec-aligned,
@@ -35,7 +35,7 @@ Deliverables:
 - Determinism harness and regression fixtures
 - Visualization CLI that consumes A1 outputs and produces:
   - A1 graph view
-  - (optional) A2/A3 “mock” pages clearly labeled as non-deliverables (until real A2/A3 exist)
+  - A2 task workflow explorer (renders real A2 output once Stage 3 is complete).
 
 Blocking acceptance gates:
 - `npm run typecheck`
@@ -81,7 +81,7 @@ Work items (A1):
      - same input bundle → identical `data.js` bytes
      - HTML pages may vary only if they contain nondeterministic formatting; otherwise they must be stable too
      - exceptions must be documented explicitly in README (preferred: no exceptions)
-   - Ensure A2/A3 pages are labeled “mock / visualization only” until real A2/A3 exist.
+   - Ensure A2 visualization pages render from real A2 output (not mock data).
 
 Exit criteria:
 - All acceptance gates pass.
@@ -100,109 +100,55 @@ Ongoing constraint:
 
 ---
 
-## Stage 3 — A2 implement: enumeration + tests + visualization (BLOCKED until Stage 1 DONE)
+## Stage 3 — A2 implement: TaskWorkflow enumeration + classification (DONE)
 Branch:
 - `feat/a2-bounded-workflows`
 
 Goal:
-Implement Phase A2 exactly as `docs/paper/approach.md` defines, consuming only the serialized A1 bundle artifact; A2 must not access AST, source files, or extraction logic.
-No semantic modification to A1 is permitted in this stage. If A2/A3 implementation reveals ambiguity or insufficiency in A1, work must stop and `docs/paper/approach.md` must be reviewed and updated first before pursuing implementation.
+Implement Phase A2 TaskWorkflow mode exactly as `docs/paper/approach.md` defines, consuming only the serialized A1 bundle artifact; A2 must not access AST, source files, or extraction logic.
+
+Isolation constraint (hard requirement):
+A2 must consume exactly and only the serialized Phase1Bundle JSON artifact.
+The Phase1Bundle.multigraph is the single source of truth.
 
 Deliverables:
-- A2 output artifact(s) as specified
+- `phaseA2-taskworkflows.final.json` (stable contract; classified TaskWorkflows + partitions/stats)
 - Determinism verification for A2 outputs
-- Tests covering enabledness, bounds, redirect-closure behavior
-- Visualization updates to render real A2 workflows (replace “mock” where applicable)
-
-Blocking acceptance gates:
-- `npm run typecheck`
-- `npm run typecheck:tests`
-- `npm test`
-- `npm run lint`
-- `npm run verify:determinism`
-
-Blocking validation protocol (non-negotiable):
-- Run **all declared subjects** in `docs/validation/subjects.md` end-to-end:
-  - A1 → A2
-- For each subject:
-  - run A2 twice with identical frozen A1 input
-  - confirm **byte-identical** A2 outputs
-- Any output deltas must be reflected in `docs/validation/subjects.md` with reasons.
-
-Work items:
-1. Implement A2 enumerator (DFS with bounds and deterministic expansion).
-2. Implement redirect closure semantics and loop/cap recording.
-3. Add fixture tests for:
-   - pendingEffect gating and effect-burst semantics
-   - route revisit cap behavior
-   - unresolved-target terminal behavior
-4. Visualization:
-   - Replace exemplar-path “mock” workflows with real A2 workflow rendering.
-   - Keep deterministic ordering and stable IDs in the view layer.
+- Tests covering enabledness, redirect-closure behavior, classification rules, handler-scoped effects
+- Visualization for A1 graph and A2 task workflows
 
 Exit criteria:
-- Gates pass and outputs are deterministic.
-- Fixture-based tests cover each A2 rule family.
-- **All validation subjects** produce stable A2 outputs across repeated runs.
-- Visualization renders real A2 workflows from A2 outputs for **all validation subjects**.
+- All 5 acceptance gates pass.
+- A2 outputs are deterministic across repeated runs.
+- **All 6 validation subjects** produce stable A2 outputs.
+- Visualization renders real A2 task workflows from A2 outputs for all subjects.
 
 ---
 
-## Stage 4 — A3 implement: aggregation + classification + tests + visualization (BLOCKED until Stage 3 DONE)
+## Stage 3b — A1 gap fixes (DONE)
 Branch:
-- `feat/a3-classify-workflows`
+- `feat/a2-bounded-workflows`
 
 Goal:
-Implement Phase A3 exactly as `docs/paper/approach.md` defines.
-No semantic modification to A1 or A2 is permitted in this stage. 
-A3 must operate strictly on the serialized A2 artifact; no recomputation of enabledness or redirect semantics is permitted.
-If classification logic reveals ambiguity or insufficiency in prior phases, work must stop and `docs/paper/approach.md` must be reviewed and updated first before pursuing implementation.
-
-Deliverables:
-- A3 output artifact(s) as specified
-- Determinism verification for A3 outputs
-- Tests for verdict ordering and each rule path
-- Visualization updates to render real A3 classifications (replace “mock” pruning)
-
-Blocking acceptance gates:
-- `npm run typecheck`
-- `npm run typecheck:tests`
-- `npm test`
-- `npm run lint`
-- `npm run verify:determinism`
-
-Blocking validation protocol (non-negotiable):
-- Run **all declared subjects** in `docs/validation/subjects.md` end-to-end:
-  - A1 → A2 → A3
-- For each subject:
-  - run A3 twice with identical frozen A1+A2 inputs
-  - confirm **byte-identical** A3 outputs
-- Any output deltas must be reflected in `docs/validation/subjects.md` with reasons.
+Close remaining A1 extraction gaps identified in the TaskWorkflow canonical report, improving ground-truth alignment. A1 spec sections in approach.md are amended as needed. The A2 TaskWorkflow contract remains frozen.
 
 Work items:
-1. Implement constraint merge operator (union/concat + evidence dedup).
-2. Implement verdict classifier with strict rule order.
-3. Add fixture tests for:
-   - unresolved target → CONDITIONAL
-   - requiredParams/guards/roles → CONDITIONAL
-   - exclusivity atoms → PRUNED
-   - redirectClosureStabilized false with zero progress → PRUNED; otherwise CONDITIONAL
-4. Visualization:
-   - Replace demo pruning policy with real A3 verdict rendering + explanations.
-   - Ensure the UI is a pure view over A3 outputs (no re-derivation of semantics).
+1. GAP B: Add `valuechange` to FRAMEWORK_INTERNAL_EVENTS (S-MAT-SEL)
+2. GAP C: Filter diagnostic-only handlers (S-LOG, console.* only)
+3. GAP A: Relative routerLink resolution (S6, ever-traduora)
+4. GAP D: Modal/dialog detection (S2, MatDialog/NgbModal.open)
 
 Exit criteria:
-- Gates pass and outputs are deterministic.
-- Tests cover all A3 verdict paths.
-- **All validation subjects** produce stable A3 outputs across repeated runs.
-- Visualization renders real A3 verdicts and explanations for **all validation subjects**.
+- All 5 acceptance gates pass after each gap fix.
+- GT alignment improves for affected subjects.
+- No regressions on other subjects.
 
 ---
 
-## Stage 5 — Phase B planning (BLOCKED until Stage 4 DONE)
+## Stage 4 — Phase B planning (BLOCKED until Stage 3 DONE)
 Constraint:
 - Phase B may only consume frozen Phase A artifacts.
 
 Entry criteria:
-- A1/A2/A3 complete, deterministic, and validated across **all declared subjects**.
+- A1/A2 complete, deterministic, and validated across **all declared subjects**.
 - No open “temporary” code paths or compatibility scaffolds remain from Phase A implementation.

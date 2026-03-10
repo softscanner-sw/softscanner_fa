@@ -69,8 +69,9 @@ export function extractWidgetsFromAst(
   templateText: string,
   ast: TemplateAstNode[],
   cfg: AnalyzerConfig,
+  componentSelectors?: ReadonlySet<string>,
 ): WidgetInfo[] {
-  const processor = new WidgetProcessor(componentId, templateFile, templateText, cfg);
+  const processor = new WidgetProcessor(componentId, templateFile, templateText, cfg, componentSelectors);
   return processor.process(ast);
 }
 
