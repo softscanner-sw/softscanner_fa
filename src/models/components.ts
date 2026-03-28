@@ -65,6 +65,13 @@ export interface ComponentInfo {
   usesComponentIds: string[];
 
   /**
+   * Composition-site structural context for each used component selector.
+   * Maps lowercase selector → context indicating if the composition site
+   * is inside a structural directive in the parent's template.
+   */
+  compositionContexts?: Record<string, { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string }>;
+
+  /**
    * WidgetInfo.id list for all widgets extracted from this component's template.
    * Sorted by: origin.file → origin.startLine → origin.startCol → stableIndex.
    */

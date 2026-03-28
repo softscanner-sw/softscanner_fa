@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * verify-determinism.mjs
- * Runs Phase 1 extraction twice AND Phase 2 (task mode) enumeration twice
+ * Runs A1 extraction twice AND A2 (task mode) enumeration twice
  * on the same target and diffs all JSON outputs byte-for-byte.
  * Exits 0 if all runs produce identical output; exits 1 on any difference.
  *
@@ -9,7 +9,7 @@
  *   node scripts/verify-determinism.mjs <projectRoot> <tsConfigPath>
  *
  * Prerequisites:
- *   npm install && npm run build   (or: npx tsx src/cli.ts directly)
+ *   npm install && npm run build   (or: npx tsx src/a1-cli.ts directly)
  */
 
 import { spawnSync } from 'node:child_process';
@@ -96,14 +96,14 @@ const out2 = path.join(tmpDir, 'run2');
 fs.mkdirSync(out1);
 fs.mkdirSync(out2);
 
-const cliPath = path.resolve('src/cli.ts');
+const cliPath = path.resolve('src/a1-cli.ts');
 const a2CliPath = path.resolve('src/a2-cli.ts');
 const tsxJsPath = path.resolve('node_modules/tsx/dist/cli.mjs');
 
 // ── A1 Determinism ─────────────────────────────────────────────────────────
 
 function runA1(outputDir, runLabel) {
-  console.log(`Running A1 ${runLabel}\u2026`);
+  console.log(`Running A1 ${runLabel}…`);
   const result = spawnSync(
     process.execPath,
     [tsxJsPath, cliPath, projectRoot, tsConfigPath, outputDir],
@@ -121,14 +121,14 @@ console.log('--- A1 Determinism Check ---');
 runA1(out1, 'Run 1');
 runA1(out2, 'Run 2');
 
-const bundle1Path = path.join(out1, 'json', 'phase1-bundle.json');
-const bundle2Path = path.join(out2, 'json', 'phase1-bundle.json');
+const bundle1Path = path.join(out1, 'json', 'a1-multigraph.json');
+const bundle2Path = path.join(out2, 'json', 'a1-multigraph.json');
 
-const a1Pass = compareFiles(bundle1Path, bundle2Path, 'phase1-bundle.json');
+const a1Pass = compareFiles(bundle1Path, bundle2Path, 'a1-multigraph.json');
 
 if (!a1Pass) {
   console.error('');
-  console.error('\u2717 A1 determinism check FAILED');
+  console.error('✗ A1 determinism check FAILED');
   console.error(`  Temp files kept at: ${tmpDir}`);
   process.exit(1);
 }
@@ -144,7 +144,7 @@ fs.mkdirSync(taskOut1);
 fs.mkdirSync(taskOut2);
 
 function runA2(inputBundle, outputDir, runLabel) {
-  console.log(`Running A2 ${runLabel}\u2026`);
+  console.log(`Running A2 ${runLabel}…`);
   const result = spawnSync(
     process.execPath,
     [tsxJsPath, a2CliPath, inputBundle, outputDir],
@@ -161,7 +161,7 @@ function runA2(inputBundle, outputDir, runLabel) {
 runA2(bundle1Path, taskOut1, 'Run 1');
 runA2(bundle1Path, taskOut2, 'Run 2');
 
-const taskFile = 'phaseA2-taskworkflows.final.json';
+const taskFile = 'a2-workflows.json';
 const taskPass = compareFiles(
   path.join(taskOut1, taskFile),
   path.join(taskOut2, taskFile),
@@ -170,7 +170,7 @@ const taskPass = compareFiles(
 
 if (!taskPass) {
   console.error('');
-  console.error('\u2717 A2 (task) determinism check FAILED');
+  console.error('✗ A2 (task) determinism check FAILED');
   console.error(`  Temp files kept at: ${tmpDir}`);
   process.exit(1);
 }
@@ -178,6 +178,6 @@ if (!taskPass) {
 // ── All passed ──────────────────────────────────────────────────────────────
 
 console.log('');
-console.log('\u2713 A1 + A2 (task) determinism check PASSED \u2014 all runs produced identical output.');
+console.log('✓ A1 + A2 (task) determinism check PASSED — all runs produced identical output.');
 fs.rmSync(tmpDir, { recursive: true, force: true });
 process.exit(0);

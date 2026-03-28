@@ -1,13 +1,13 @@
 /**
  * graph-index.ts
- * Immutable index structures built from a Phase1Bundle for fast edge/node lookups.
+ * Immutable index structures built from a A1Multigraph for fast edge/node lookups.
  * Pure data transformation — no mutation, no side effects.
  *
  * Isolation: imports only types from src/models/.
  */
 
 import { createHash } from 'node:crypto';
-import type { Edge, EdgeKind, Node, Phase1Bundle, RouteNode } from '../models/multigraph.js';
+import type { Edge, EdgeKind, Node, A1Multigraph, RouteNode } from '../models/multigraph.js';
 import type { PhaseAInputRef } from '../models/workflow.js';
 
 /** Immutable lookup index over the A1 multigraph. */
@@ -81,10 +81,10 @@ export const COMPONENT_ORIGIN_EDGE_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKi
 ]);
 
 /**
- * Build an immutable index from a Phase1Bundle.
+ * Build an immutable index from a A1Multigraph.
  * The index is a pure function of the bundle — no randomness, no side effects.
  */
-export function buildGraphIndex(bundle: Phase1Bundle): GraphIndex {
+export function buildGraphIndex(bundle: A1Multigraph): GraphIndex {
   const { multigraph } = bundle;
 
   const nodeMap = new Map<string, Node>();
@@ -292,7 +292,7 @@ export function computeActiveWidgetIds(
  * Compute an A1 input reference for audit traceability.
  * SHA-256 hash of the multigraph JSON ensures drift detection.
  */
-export function computeInputRef(bundle: Phase1Bundle): PhaseAInputRef {
+export function computeInputRef(bundle: A1Multigraph): PhaseAInputRef {
   const canonical = JSON.stringify(bundle.multigraph);
   const hash = createHash('sha256').update(canonical).digest('hex');
   return {

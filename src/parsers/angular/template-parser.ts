@@ -38,6 +38,18 @@ export interface TemplateAstNode {
   children?: TemplateAstNode[];
   /** Character offsets into the original template text (0-based). */
   span?: { start: number; end: number };
+  /**
+   * Template reference variable names for structural (ng-template) nodes.
+   * E.g., `<ng-template #content>` → `["content"]`.
+   * Used to derive templateRegionId for widgets inside explicit ng-template blocks.
+   */
+  references?: string[];
+  /**
+   * Structural directive names on this structural node.
+   * E.g., `*ngIf` → `["ngIf"]`, `*ngFor` → `["ngForOf"]`.
+   * Used to determine composition-site context for CCC edges.
+   */
+  structuralDirectives?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -135,8 +147,23 @@ export class AngularTemplateParser {
       const span = AngularTemplateParser._extractSpan(n);
       if (span !== undefined) structural.span = span;
 
+      // Extract template reference variables (e.g., <ng-template #content> → ["content"])
+      const refs = n['references'] as Array<{ name: string }> | undefined;
+      if (refs !== undefined && refs.length > 0) {
+        structural.references = refs.map(r => r.name);
+      }
+
+      // Extract structural directive names from templateAttrs for composition-site context
+      const templateAttrs = (n['templateAttrs'] as Array<{ name?: string }> | undefined) ?? [];
+      const dirNames = templateAttrs
+        .filter(a => a.name !== undefined && a.name !== '')
+        .map(a => a.name!);
+      if (dirNames.length > 0) {
+        structural.structuralDirectives = dirNames;
+      }
+
       const children: TemplateAstNode[] = [];
-      for (const attr of (n['templateAttrs'] as unknown[] | undefined) ?? []) {
+      for (const attr of templateAttrs) {
         children.push(...AngularTemplateParser._convertAttr(attr));
       }
       for (const input of (n['inputs'] as unknown[] | undefined) ?? []) {

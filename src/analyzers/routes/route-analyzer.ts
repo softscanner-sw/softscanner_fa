@@ -348,6 +348,12 @@ export class RouteAnalyzer {
 
     const specifier = importPathMatch[1];
 
+    // Collect mount-point guards for propagation (spec §5: lazy-loaded guard inheritance).
+    // Angular applies canActivate/canLoad from the mount-point route to all routes
+    // loaded by the lazy module.
+    const mountRoute = out.find(r => r.id === parentRouteId);
+    const mountGuards = mountRoute?.guards ?? [];
+
     // Find a source file matching this specifier
     for (const sourceFile of this._project.getSourceFiles()) {
       const filePath = sourceFile.getFilePath();
@@ -363,7 +369,25 @@ export class RouteAnalyzer {
           // Pass null as parentId: lazy-loaded routes from forChild() are top-level
           // within their module scope, not children of the loadChildren placeholder.
           // Parent–child is established by children:[] arrays, not loadChildren.
+          const beforeCount = out.length;
           this._convertRecords(records, parentFullPath, filePath, null, out, visited, seenRecordOrigins, componentRegistry);
+
+          // Propagate mount-point guards to all routes in the lazy module.
+          // Dedup by kind+guardName; sort for determinism.
+          if (mountGuards.length > 0) {
+            for (let i = beforeCount; i < out.length; i++) {
+              const route = out[i]!;
+              const seenKeys = new Set(route.guards.map(g => `${g.kind}::${g.guardName}`));
+              for (const mg of mountGuards) {
+                const key = `${mg.kind}::${mg.guardName}`;
+                if (!seenKeys.has(key)) {
+                  seenKeys.add(key);
+                  route.guards.push(mg);
+                }
+              }
+              route.guards.sort((a, b) => a.guardName.localeCompare(b.guardName));
+            }
+          }
         }
         break;
       }

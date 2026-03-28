@@ -77,6 +77,8 @@ export class WidgetProcessor {
     out: WidgetInfo[],
     kindCounters: Map<WidgetKind, number>,
     parentWidgetId: string | undefined,
+    insideTemplate = false,
+    templateRegionId: string | undefined = undefined,
   ): void {
     for (const node of nodes) {
       const kind = classifyWidget(node, this._componentSelectors);
@@ -118,6 +120,8 @@ export class WidgetProcessor {
           bindings,
           visibilityPredicates: [],   // filled by TemplateConstraintExtractor
           enablementPredicates: [],   // filled by TemplateConstraintExtractor
+          ...(insideTemplate ? { isTemplateContent: true } : {}),
+          ...(templateRegionId !== undefined ? { templateRegionId } : {}),
         };
         const textLabel = extractTextLabel(node, maxLen);
         if (textLabel !== undefined) widget.text = textLabel;
@@ -133,15 +137,26 @@ export class WidgetProcessor {
           out,
           kindCounters,
           widgetId,
+          insideTemplate,
+          templateRegionId,
         );
       } else {
-        // Non-widget element: recurse, pass through current parent
+        // Non-widget element: recurse, pass through current parent.
+        // If this is an explicit <ng-template> (not a structural directive like *ngIf/*ngFor),
+        // mark descendants as template content and derive the template region ID
+        // from the reference variable name (e.g., <ng-template #content> → "content").
+        const enteringTemplate = node.kind === 'structural' && node.name === 'ng-template';
+        const newRegionId = enteringTemplate && node.references?.length
+          ? node.references[0]
+          : templateRegionId;
         this._walk(
           node.children ?? [],
           [...ancestorNames, node.name ?? ''],
           out,
           kindCounters,
           parentWidgetId,
+          insideTemplate || enteringTemplate,
+          enteringTemplate ? newRegionId : templateRegionId,
         );
       }
     }

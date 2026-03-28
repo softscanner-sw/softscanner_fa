@@ -96,8 +96,10 @@ function mapWidgetKind(kind: string): SpecWidgetKind {
     case 'Form': return 'Form';
     case 'Input': return 'Input';
     case 'Select': return 'Select';
+    case 'Option': return 'Option';
     case 'Textarea': return 'TextArea';
     case 'Checkbox': return 'Checkbox';
+    case 'RadioGroup': return 'RadioGroup';
     case 'Radio': return 'Radio';
     default: return 'OtherInteractive';
   }
@@ -257,6 +259,25 @@ function buildWidgetUIProps(widget: WidgetInfo): WidgetUIProps {
   rawEntries.sort((a, b) => a[0].localeCompare(b[0]));
   for (const [k, v] of rawEntries) {
     ui.rawAttrsText[k] = v;
+  }
+
+  // Static HTML hidden attribute: <input hidden="true"> or <div hidden>
+  const hiddenAttr = widget.attributes['hidden'];
+  if (hiddenAttr !== undefined) {
+    // hidden="" or hidden="true" or hidden="hidden" — all mean hidden
+    if (hiddenAttr === '' || hiddenAttr === 'true' || hiddenAttr === 'hidden') {
+      ui.visibleLiteral = false;
+    }
+  }
+
+  // F3: Heuristic CSS visibility hint from class tokens.
+  // Known CSS hiding patterns: hide, hidden, d-none, visually-hidden, sr-only.
+  const classAttr = widget.attributes['class'];
+  if (classAttr !== undefined) {
+    const CSS_HIDDEN_PATTERNS = /\b(hide|hidden|d-none|visually-hidden|sr-only)\b/i;
+    if (CSS_HIDDEN_PATTERNS.test(classAttr)) {
+      ui.cssVisibilityHint = false;
+    }
   }
 
   return ui;
@@ -518,6 +539,8 @@ export class NavigationGraphBuilder {
           ...(hrefBinding?.value !== undefined ? { staticHref: hrefBinding.value } : {}),
           ...(Object.keys(widget.attributes).length > 0 ? { attributes: widget.attributes } : {}),
           ui: widgetUI,
+          ...(widget.isTemplateContent === true ? { isTemplateContent: true } : {}),
+          ...(widget.templateRegionId !== undefined ? { templateRegionId: widget.templateRegionId } : {}),
         },
       };
       nodes.push(node);
@@ -577,11 +600,11 @@ export class NavigationGraphBuilder {
       to: string | null,
       refs: SourceRef[],
       extras?: Partial<Edge>,
-    ): void => {
+    ): Edge | undefined => {
       // Validate from exists
-      if (!nodeIds.has(from)) return;
+      if (!nodeIds.has(from)) return undefined;
       // Validate to exists (if non-null)
-      if (to !== null && !nodeIds.has(to) && !externalNodes.has(to)) return;
+      if (to !== null && !nodeIds.has(to) && !externalNodes.has(to)) return undefined;
 
       const toKey = to ?? '__null__';
       const groupKey = `${from}::${kind}::${toKey}`;
@@ -603,6 +626,7 @@ export class NavigationGraphBuilder {
       // Ensure constraints is always present (override any spread)
       edge.constraints = constraints;
       edges.push(edge);
+      return edge;
     };
 
     // ─── 7a. STRUCTURAL EDGES ─────────────────────────────────────────────
@@ -671,9 +695,14 @@ export class NavigationGraphBuilder {
       for (const usedSelector of comp.usesComponentIds) {
         const usedComp = compBySelectorLower.get(usedSelector.toLowerCase());
         if (usedComp !== undefined && nodeIds.has(usedComp.id) && usedComp.id !== comp.id) {
-          addEdge('COMPONENT_COMPOSES_COMPONENT', comp.id, usedComp.id, [
+          const edge = addEdge('COMPONENT_COMPOSES_COMPONENT', comp.id, usedComp.id, [
             toRef(comp.origin, projectRoot),
           ]);
+          // Attach composition-site structural context if available
+          const ctx = comp.compositionContexts?.[usedSelector.toLowerCase()];
+          if (ctx !== undefined && edge !== undefined) {
+            edge.compositionContext = ctx;
+          }
         }
       }
     }

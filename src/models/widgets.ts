@@ -22,9 +22,11 @@ export type WidgetKind =
   | 'Link'
   | 'Input'
   | 'Select'
+  | 'Option'
   | 'Textarea'
   | 'Form'
   | 'Checkbox'
+  | 'RadioGroup'
   | 'Radio'
   | 'MenuItem'
   | 'Unknown';
@@ -128,4 +130,19 @@ export interface WidgetInfo {
    * Sourced from [disabled], permission directives, etc.
    */
   enablementPredicates: Predicate[];
+
+  /**
+   * True when this widget originates inside an `<ng-template>` subtree.
+   * Template-backed widgets are not in the DOM until the template is instantiated
+   * (e.g., ng-bootstrap modals, structural directives with lazy rendering).
+   * B1 uses this flag to determine whether an opener precondition is needed.
+   */
+  isTemplateContent?: boolean;
+
+  /**
+   * Template region ID: the reference variable name of the enclosing `<ng-template>`.
+   * E.g., `<ng-template #content>` → `"content"`.
+   * Used by B1 to compute per-region positional locators inside modals.
+   */
+  templateRegionId?: string;
 }

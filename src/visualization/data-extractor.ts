@@ -1,10 +1,10 @@
 /**
  * data-extractor.ts
- * Extracts VizData from a Phase1Bundle.
+ * Extracts VizData from a A1Multigraph.
  * Pure function — no I/O, no side effects.
  */
 
-import type { Phase1Bundle } from '../models/multigraph.js';
+import type { A1Multigraph } from '../models/multigraph.js';
 import type {
   VizData,
   VizNode,
@@ -30,9 +30,9 @@ function _widgetDisplayLabel(
 }
 
 /**
- * Extract VizData from a Phase1Bundle.
+ * Extract VizData from a A1Multigraph.
  */
-export function extractVizData(bundle: Phase1Bundle): VizData {
+export function extractVizData(bundle: A1Multigraph): VizData {
   const { multigraph, stats } = bundle;
 
   // ── Nodes ─────────────────────────────────────────────────────────────────

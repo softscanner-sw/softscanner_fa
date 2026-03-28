@@ -595,6 +595,332 @@ ${SHARED_CSS}
 // A2 Task Workflows — single-trigger task visualization
 // ---------------------------------------------------------------------------
 
+/**
+ * Generate a Phase B execution dashboard HTML page.
+ * Pure consumer of B3 results, B4 coverage, B5.0 execution logs, and manifest.
+ * No semantic recomputation — renders artifacts exactly as emitted.
+ */
+/**
+ * Generate a Phase B execution dashboard HTML page.
+ * Pure consumer of B2 test set (canonical enumeration), B3 results, B4 coverage,
+ * B5.0 execution logs, and manifest.
+ * No semantic recomputation — renders artifacts exactly as emitted.
+ *
+ * Enumeration invariant: ALL tests from B2 test set are shown, including those
+ * not executed by B3. B3/B5.0 data is joined by testFile name.
+ */
+export function generateB3ExecutionHtml(
+  subjectName: string,
+  b1Json: string,
+  b2Json: string,
+  b3Json: string,
+  b4Json: string,
+  manifestJson: string,
+  logEntries: Array<{ testFile: string; logJson: string }>,
+): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phase B Execution — ${subjectName}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+  h1 { color: #00d4ff; margin-bottom: 8px; }
+  h2 { color: #00d4ff; margin: 20px 0 10px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+  h3 { color: #aaa; margin: 12px 0 6px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 12px 0; }
+  .summary-card { background: #16213e; border-radius: 8px; padding: 16px; text-align: center; }
+  .summary-card .value { font-size: 28px; font-weight: bold; }
+  .summary-card .label { font-size: 12px; color: #888; margin-top: 4px; }
+  .pass { color: #4caf50; } .fail { color: #f44336; } .skip { color: #ff9800; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #2a2a4a; }
+  th { background: #16213e; color: #aaa; font-weight: 600; position: sticky; top: 0; }
+  tr:hover { background: #1e2a4a; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-pass { background: #1b5e20; color: #a5d6a7; }
+  .badge-fail { background: #b71c1c; color: #ef9a9a; }
+  .badge-kind { background: #1a237e; color: #9fa8da; }
+  .test-detail { background: #16213e; border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .step-row { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #2a2a4a; font-size: 12px; }
+  .step-id { min-width: 60px; color: #888; }
+  .step-type { min-width: 200px; }
+  .step-locator { min-width: 200px; color: #7986cb; font-family: monospace; font-size: 11px; }
+  .step-evidence { color: #66bb6a; font-family: monospace; font-size: 10px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .step-error { color: #ef5350; font-family: monospace; font-size: 10px; max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .step-timing { min-width: 60px; text-align: right; color: #888; }
+  .route-ctx { font-family: monospace; font-size: 10px; color: #5c6bc0; }
+  .screenshot-thumb { max-width: 200px; max-height: 120px; border-radius: 4px; margin: 4px; cursor: pointer; }
+  .screenshot-thumb:hover { outline: 2px solid #00d4ff; }
+  details { margin: 4px 0; }
+  summary { cursor: pointer; color: #00d4ff; }
+  .filter-bar { margin: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn { background: #16213e; color: #e0e0e0; border: 1px solid #333; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .filter-btn.active { background: #1a237e; border-color: #00d4ff; }
+  #search { background: #16213e; color: #e0e0e0; border: 1px solid #333; padding: 6px 12px; border-radius: 4px; width: 300px; }
+</style>
+</head>
+<body>
+<h1>Phase B Execution — ${subjectName}</h1>
+
+<script>
+// Inject artifacts as JS variables
+// B1_DATA has plans (assignment, preconditions, steps, postconditions)
+// B2_DATA is the canonical test inventory (all generated tests)
+var B1_DATA = ${b1Json};
+var B2_DATA = ${b2Json};
+var B3_DATA = ${b3Json};
+var B4_DATA = ${b4Json};
+var MANIFEST = ${manifestJson};
+var LOG_ENTRIES = {${logEntries.map(e => `${JSON.stringify(e.testFile)}: ${e.logJson}`).join(',\n')}};
+
+(function() {
+  // HTML-safe escaping for domEvidence and error strings
+  function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Canonical enumeration: B2 test set (all generated tests)
+  var b2Tests = (B2_DATA && B2_DATA.tests) || [];
+  // B3 results indexed by testFile for joining
+  var b3ByFile = {};
+  (B3_DATA.results || []).forEach(function(r) { b3ByFile[r.testFile] = r; });
+
+  var coverage = B4_DATA;
+  var manifest = MANIFEST;
+
+  var totalTests = b2Tests.length;
+  var executedCount = Object.keys(b3ByFile).length;
+  var passCount = 0; var failCount = 0; var notExecuted = 0;
+  b2Tests.forEach(function(t) {
+    var r = b3ByFile[t.fileName];
+    if (!r) { notExecuted++; }
+    else if (r.outcome === 'PASS') { passCount++; }
+    else { failCount++; }
+  });
+
+  // --- Summary cards ---
+  var summaryHtml = '<div class="summary-grid">';
+  summaryHtml += '<div class="summary-card"><div class="value">' + totalTests + '</div><div class="label">Total Tests (B2)</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="value">' + executedCount + '</div><div class="label">Executed (B3)</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="value pass">' + passCount + '</div><div class="label">Passed</div></div>';
+  summaryHtml += '<div class="summary-card"><div class="value fail">' + failCount + '</div><div class="label">Failed</div></div>';
+  if (notExecuted > 0) {
+    summaryHtml += '<div class="summary-card"><div class="value skip">' + notExecuted + '</div><div class="label">Not Executed</div></div>';
+  }
+  if (coverage.c3 !== undefined) {
+    summaryHtml += '<div class="summary-card"><div class="value">' + (coverage.c3 * 100).toFixed(1) + '%</div><div class="label">C3 (Execution)</div></div>';
+  }
+  if (B3_DATA.stats && B3_DATA.stats.totalDurationMs) {
+    summaryHtml += '<div class="summary-card"><div class="value">' + (B3_DATA.stats.totalDurationMs / 1000).toFixed(1) + 's</div><div class="label">Duration</div></div>';
+  }
+  summaryHtml += '</div>';
+
+  // --- FailureKind distribution ---
+  var kindCounts = {};
+  b2Tests.forEach(function(t) {
+    var r = b3ByFile[t.fileName];
+    if (r && r.outcome !== 'PASS') {
+      var log = LOG_ENTRIES[t.fileName];
+      var kind = (log && log.failureKind) || r.outcome;
+      kindCounts[kind] = (kindCounts[kind] || 0) + 1;
+    }
+  });
+  var kindHtml = '';
+  if (Object.keys(kindCounts).length > 0) {
+    kindHtml = '<h3>Failure Distribution</h3><div class="summary-grid">';
+    Object.keys(kindCounts).sort().forEach(function(k) {
+      kindHtml += '<div class="summary-card"><div class="value fail">' + kindCounts[k] + '</div><div class="label">' + esc(k) + '</div></div>';
+    });
+    kindHtml += '</div>';
+  }
+
+  // --- Manifest summary ---
+  var manifestHtml = '<h3>Environment</h3><table>';
+  manifestHtml += '<tr><td>Base URL</td><td>' + esc(manifest.baseUrl || B3_DATA.baseUrl || '') + '</td></tr>';
+  if (manifest.accounts && manifest.accounts.length > 0) {
+    manifestHtml += '<tr><td>Accounts</td><td>' + manifest.accounts.map(function(a) { return esc(a.username); }).join(', ') + '</td></tr>';
+  }
+  if (manifest.authSetup) {
+    manifestHtml += '<tr><td>Auth Route</td><td>' + esc(manifest.authSetup.loginRoute || '') + '</td></tr>';
+    manifestHtml += '<tr><td>Auth Success Selector</td><td><code>' + esc(manifest.authSetup.authSuccessSelector || '') + '</code></td></tr>';
+  }
+  manifestHtml += '</table>';
+
+  // --- Test results table (enumerated from B2 canonical source) ---
+  var tableHtml = '<h2>Test Results</h2>';
+  tableHtml += '<div class="filter-bar">';
+  tableHtml += '<input id="search" type="text" placeholder="Filter by component or workflow...">';
+  tableHtml += '<button class="filter-btn active" data-filter="all">All (' + totalTests + ')</button>';
+  tableHtml += '<button class="filter-btn" data-filter="PASS">Pass (' + passCount + ')</button>';
+  tableHtml += '<button class="filter-btn" data-filter="FAIL">Fail (' + failCount + ')</button>';
+  if (notExecuted > 0) tableHtml += '<button class="filter-btn" data-filter="NOT_EXECUTED">Not Executed (' + notExecuted + ')</button>';
+  tableHtml += '</div>';
+  tableHtml += '<table id="results-table"><thead><tr>';
+  tableHtml += '<th>Test</th><th>Outcome</th><th>Failure Kind</th><th>Failed Step</th><th>Duration</th><th>Steps</th>';
+  tableHtml += '</tr></thead><tbody>';
+  b2Tests.forEach(function(t, idx) {
+    var r = b3ByFile[t.fileName] || null;
+    var log = LOG_ENTRIES[t.fileName] || {};
+    var comp = t.fileName.replace(/^[a-f0-9]+_/, '').replace(/_W(SF|TH|NR|NE)\.test\.ts$/, '');
+    var kind = t.fileName.match(/_W(SF|TH|NR|NE)\.test\.ts$/);
+    var kindLabel = kind ? kind[1] : '';
+    var outcome = r ? r.outcome : 'NOT_EXECUTED';
+    var outcomeClass = outcome === 'PASS' ? 'badge-pass' : (outcome === 'NOT_EXECUTED' ? 'badge-kind' : 'badge-fail');
+    var failureKind = log.failureKind || '';
+    var failedStep = log.failedStepId || '';
+    var stepCount = (log.steps || []).length;
+    var dur = r ? (r.durationMs / 1000).toFixed(1) + 's' : '—';
+    tableHtml += '<tr class="test-row" data-outcome="' + outcome + '" data-idx="' + idx + '" data-comp="' + comp.toLowerCase() + '">';
+    tableHtml += '<td><a href="#test-' + idx + '" style="color:#00d4ff">' + esc(comp) + ' <span class="badge badge-kind">' + kindLabel + '</span></a></td>';
+    tableHtml += '<td><span class="badge ' + outcomeClass + '">' + outcome + '</span></td>';
+    tableHtml += '<td>' + esc(failureKind) + '</td>';
+    tableHtml += '<td>' + esc(failedStep) + '</td>';
+    tableHtml += '<td>' + dur + '</td>';
+    tableHtml += '<td>' + stepCount + '</td>';
+    tableHtml += '</tr>';
+  });
+  tableHtml += '</tbody></table>';
+
+  // --- B1 plans indexed by workflowId for joining ---
+  var b1Plans = (B1_DATA && B1_DATA.plans) || [];
+  var b1ByWfId = {};
+  b1Plans.forEach(function(p) { b1ByWfId[p.workflowId] = p; });
+
+  // --- B4 workflows indexed by workflowId ---
+  var b4Workflows = (B4_DATA && B4_DATA.workflows) || [];
+  var b4ByWfId = {};
+  b4Workflows.forEach(function(w) { b4ByWfId[w.workflowId] = w; });
+
+  // --- Individual test detail views (enriched: B1 + B2 + B3 + B5.0 + B4) ---
+  var detailHtml = '<h2>Test Details</h2>';
+  b2Tests.forEach(function(t, idx) {
+    var r = b3ByFile[t.fileName] || null;
+    var log = LOG_ENTRIES[t.fileName] || {};
+    var steps = log.steps || [];
+    var comp = t.fileName.replace(/^[a-f0-9]+_/, '').replace(/\.test\.ts$/, '');
+    var outcome = r ? r.outcome : 'NOT_EXECUTED';
+    var plan = b1ByWfId[t.workflowId] || null;
+    var b4Entry = b4ByWfId[t.workflowId] || null;
+    detailHtml += '<div class="test-detail" id="test-' + idx + '">';
+    detailHtml += '<h3>' + esc(comp) + ' <span class="badge ' + (outcome === 'PASS' ? 'badge-pass' : (outcome === 'NOT_EXECUTED' ? 'badge-kind' : 'badge-fail')) + '">' + outcome + '</span></h3>';
+    // Execution meta
+    if (r) detailHtml += '<p style="font-size:11px;color:#666">Duration: ' + (log.duration || r.durationMs || 0) + 'ms | Attempts: ' + (r.attempts || 1) + '</p>';
+    if (!r) detailHtml += '<p style="font-size:11px;color:#ff9800">Not executed \u2014 no B3 result available</p>';
+    if (log.failureKind) detailHtml += '<p>Failure kind: <span class="badge badge-kind">' + esc(log.failureKind) + '</span> at step <code>' + esc(log.failedStepId || '') + '</code></p>';
+    // B4 coverage
+    if (b4Entry) detailHtml += '<p style="font-size:11px;color:#666">Verdict: ' + esc(b4Entry.verdict || '') + ' | HasPlan: ' + (b4Entry.hasPlan ? '\u2713' : '\u2717') + ' | HasCode: ' + (b4Entry.hasCode ? '\u2713' : '\u2717') + '</p>';
+    // Artifact links
+    detailHtml += '<p style="font-size:11px;color:#666">File: ' + esc(t.fileName) + ' | Plan: ' + t.preConditionCount + ' pre, ' + t.stepCount + ' steps, ' + t.postConditionCount + ' post</p>';
+    // B1 plan assignment (when available)
+    if (plan && plan.assignment) {
+      var asgn = plan.assignment;
+      if (asgn.account) detailHtml += '<p style="font-size:11px;color:#5c6bc0">Account: ' + esc(asgn.account.username || '') + '</p>';
+      var paramKeys = Object.keys(asgn.routeParams || {});
+      if (paramKeys.length > 0) detailHtml += '<p style="font-size:11px;color:#5c6bc0">Route params: ' + paramKeys.map(function(k) { return esc(k) + '=' + esc(asgn.routeParams[k]); }).join(', ') + '</p>';
+      var formKeys = Object.keys(asgn.formData || {});
+      if (formKeys.length > 0) detailHtml += '<p style="font-size:11px;color:#5c6bc0">Form data: ' + formKeys.map(function(k) { return esc(k); }).join(', ') + '</p>';
+    }
+    // B1 plan preconditions
+    if (plan && plan.preConditions && plan.preConditions.length > 0) {
+      detailHtml += '<details><summary style="font-size:11px">Plan preconditions (' + plan.preConditions.length + ')</summary>';
+      plan.preConditions.forEach(function(pc) {
+        var cfg = pc.config || {};
+        var desc = pc.type + ': ' + (cfg.url || cfg.loginRoute || cfg.openerSelector || '');
+        detailHtml += '<div style="padding-left:16px;font-size:10px;color:#888">' + esc(desc) + '</div>';
+      });
+      detailHtml += '</details>';
+    }
+    // B1 plan steps
+    if (plan && plan.steps && plan.steps.length > 0) {
+      detailHtml += '<details><summary style="font-size:11px">Plan steps (' + plan.steps.length + ')</summary>';
+      plan.steps.forEach(function(ps) {
+        var loc = ps.locator || {};
+        var desc = (ps.type || '') + ' [' + (loc.strategy || '') + ': ' + (loc.value || '') + ']';
+        if (ps.description) desc += ' \u2014 ' + ps.description;
+        detailHtml += '<div style="padding-left:16px;font-size:10px;color:#888">' + esc(desc) + '</div>';
+      });
+      detailHtml += '</details>';
+    }
+
+    // Step-by-step log
+    steps.forEach(function(s) {
+      var timing = '';
+      if (s.timestampStart && s.timestampEnd) {
+        timing = (new Date(s.timestampEnd).getTime() - new Date(s.timestampStart).getTime()) + 'ms';
+      }
+      var statusIcon = s.success ? '\u2713' : '\u2717';
+      var statusColor = s.success ? '#4caf50' : '#f44336';
+      detailHtml += '<div class="step-row">';
+      detailHtml += '<span class="step-id" style="color:' + statusColor + '">' + statusIcon + ' ' + esc(s.stepId) + '</span>';
+      detailHtml += '<span class="step-type">' + esc(s.stepType) + '</span>';
+      if (s.locator) detailHtml += '<span class="step-locator">' + esc(s.locator.strategy) + ': ' + esc(s.locator.value) + '</span>';
+      else detailHtml += '<span class="step-locator">\u2014</span>';
+      detailHtml += '<span class="step-timing">' + timing + '</span>';
+      detailHtml += '</div>';
+      // Evidence row
+      if (s.domEvidence || s.elementTagName || s.elementFound !== undefined) {
+        detailHtml += '<div style="padding-left:68px;font-size:10px">';
+        if (s.elementTagName) detailHtml += '<span style="color:#aaa">tag: ' + esc(s.elementTagName) + '</span> ';
+        if (s.elementFound === true) detailHtml += '<span style="color:#4caf50">found</span> ';
+        if (s.elementFound === false) detailHtml += '<span style="color:#f44336">not found</span> ';
+        if (s.domEvidence) detailHtml += '<span class="step-evidence" title="' + esc(s.domEvidence) + '">' + esc(s.domEvidence.substring(0, 120)) + '</span>';
+        detailHtml += '</div>';
+      }
+      // Route context
+      if (s.routeBefore || s.routeAfter) {
+        var routeChanged = s.routeBefore !== s.routeAfter;
+        detailHtml += '<div style="padding-left:68px"><span class="route-ctx">' + esc(s.routeBefore || '') + (routeChanged ? ' \u2192 ' + esc(s.routeAfter || '') : '') + '</span></div>';
+      }
+      // Error
+      if (s.error) {
+        detailHtml += '<div style="padding-left:68px"><span class="step-error" title="' + esc(s.error) + '">' + esc(s.error.substring(0, 200)) + '</span></div>';
+      }
+      // Screenshot
+      if (s.screenshotPath) {
+        var shotName = s.screenshotPath.replace(/.*[/\\\\]/, '');
+        detailHtml += '<div style="padding-left:68px;font-size:10px;color:#888">Screenshot: ' + esc(shotName) + '</div>';
+      }
+    });
+    detailHtml += '</div>';
+  });
+
+  // --- Render ---
+  document.body.innerHTML += '<h2>Summary</h2>' + summaryHtml + kindHtml + manifestHtml + tableHtml + detailHtml;
+
+  // --- Filter logic ---
+  var filterBtns = document.querySelectorAll('.filter-btn');
+  var searchInput = document.getElementById('search');
+  function applyFilter() {
+    var activeFilter = document.querySelector('.filter-btn.active');
+    var filterVal = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+    var searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+    var rows = document.querySelectorAll('.test-row');
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var outcome = row.getAttribute('data-outcome');
+      var comp = row.getAttribute('data-comp') || '';
+      var matchFilter = filterVal === 'all' || outcome === filterVal || (filterVal === 'FAIL' && outcome !== 'PASS' && outcome !== 'NOT_EXECUTED');
+      var matchSearch = !searchVal || comp.indexOf(searchVal) >= 0;
+      row.style.display = (matchFilter && matchSearch) ? '' : 'none';
+    }
+  }
+  for (var i = 0; i < filterBtns.length; i++) {
+    filterBtns[i].addEventListener('click', function() {
+      for (var j = 0; j < filterBtns.length; j++) filterBtns[j].classList.remove('active');
+      this.classList.add('active');
+      applyFilter();
+    });
+  }
+  if (searchInput) searchInput.addEventListener('input', applyFilter);
+})();
+</script>
+</body>
+</html>`;
+}
+
 export function generateA2TaskWorkflowsHtml(data: VizData, taskJson: string): string {
   const title = 'A2 Task Workflows \u2014 ' + data.generatedFromProject;
   const palette = computePalette(data);

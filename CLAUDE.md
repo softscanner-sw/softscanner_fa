@@ -43,7 +43,7 @@ Allowed to access:
 
 Must emit exactly:
 
-* `Phase1Bundle` as defined in `approach.md`
+* `A1Multigraph` as defined in `approach.md`
 * Deterministic multigraph only
 
 Must enforce:
@@ -58,10 +58,10 @@ A1 is the only phase allowed to touch the AST or filesystem.
 
 ## A2 — TaskWorkflow Enumeration
 Must consume:
-* Serialized A1 bundle only (`Phase1Bundle` JSON)
+* Serialized A1 bundle only (`A1Multigraph` JSON)
 
 Must emit:
-* `phaseA2-taskworkflows.final.json` (stable; classified TaskWorkflows)
+* `a2-workflows.json` (stable; classified TaskWorkflows)
 
 Must NOT access:
 * AST
@@ -135,7 +135,7 @@ src/
 ├── services/
 ├── visualization/
 ├── workflows/
-├── cli.ts
+├── a1-cli.ts
 ├── a2-cli.ts
 ├── viz-cli.ts
 ```
@@ -183,7 +183,7 @@ It must not coexist with a second graph builder.
   * Angular compiler
   * ts-morph
 
-A2 must treat the Phase1Bundle JSON as immutable input.
+A2 must treat the A1Multigraph JSON as immutable input.
 It must not depend on any A1 in-memory representation.
 Visualization must consume A2 artifacts; A2 must not depend on visualization.
 
@@ -295,11 +295,114 @@ A2 must also:
 * Perform constraint merge exactly (set-union for requiredParams/guards/roles; uiAtoms concat; evidence concat with dedup by (file,start,end)).
 * Apply verdict rules in strict order (PRUNED checks, else CONDITIONAL, else FEASIBLE).
 * Only prune on explicit contradiction rules (no heuristic pruning; no SAT solving).
-* Ensure `phaseA2-taskworkflows.final.json` ordering is deterministic.
+* Ensure `a2-workflows.json` ordering is deterministic.
 
 ---
 
-# 9. Work Protocol for Claude
+# 9. Phase B Isolation Rules (Strict)
+
+## B0 — SubjectManifest Validation
+Must consume:
+* A2 workflows JSON (`a2-workflows.json`)
+* Subject manifests (`subjects/<subject>/subject-manifest.json`)
+
+Must emit:
+* Validation logs only (no new artifacts)
+
+Must NOT access: AST, source files, parsers, analyzers, builders, A1 internals.
+
+## B1 — RealizationIntent Derivation + ActionPlan Generation
+Must consume:
+* Frozen Phase A artifacts only (`a1-multigraph.json`, `a2-workflows.json`)
+* Subject manifests
+* Ground truth files (for validation only)
+
+Must emit:
+* `b1-intents.json` (RealizationIntents)
+* `b1-plans.json` (ActionPlans)
+
+Must NOT access: AST, source files, parsers, analyzers, builders, Angular compiler, ts-morph.
+Must NOT modify A1/A2 schemas or artifacts.
+
+## B2 — Code Generation
+Must consume:
+* `b1-plans.json` (ActionPlans) only as planning input
+* Subject manifests (for `baseUrl`)
+* `a2-workflows.json` (for coverage denominator only)
+
+Must emit:
+* `output/<subject>/tests/<workflowId>.test.ts` — one Selenium WebDriver test per ActionPlan
+* `output/<subject>/json/b2-tests.json` — generation metadata + coverage
+
+Must NOT access: AST, source files, parsers, analyzers, builders, Angular compiler, ts-morph.
+Must NOT modify A1/A2/B0/B1 schemas or artifacts.
+Must NOT perform execution, retries, or runtime coverage.
+Must be deterministic: same `b1-plans.json` → byte-identical generated tests.
+
+## B3 — Test Execution
+Must consume:
+* B2 generated test files (`output/<subject>/tests/*.test.ts`)
+* Subject manifests (for `baseUrl`, `skipWorkflows`)
+* Running application at `manifest.baseUrl`
+
+Must emit:
+* `output/<subject>/json/b3-results.json`
+* `output/<subject>/screenshots/`
+* `output/<subject>/logs/<testFile>.log.json` (B5.0: per-test structured execution log with step-level evidence)
+* `output/<subject>/b3-b4-report.md` (+ optional PDF)
+* `logs/b3-execution.log`
+
+Must NOT access: AST, source files, parsers, analyzers, builders.
+Must NOT start or manage application processes.
+Must NOT modify A1/A2/B0/B1/B2 artifacts.
+
+## B4 — Coverage Reporting
+Must consume:
+* `b3-results.json`, `a2-workflows.json`, `b1-plans.json`, `b2-tests.json`
+
+Must emit:
+* `output/<subject>/json/b4-coverage.json`
+
+## Phase B Architecture
+* All Phase B code lives under `src/phase-b/`.
+* Sub-phases: `src/phase-b/b0/`, `src/phase-b/b1/`, `src/phase-b/b2/`, `src/phase-b/b3/`, `src/phase-b/b4/`.
+* CLIs at `src/` root: `b0-cli.ts`, `b1-intent-cli.ts`, `b1-plan-cli.ts`, `b2-cli.ts`, `b3-cli.ts`.
+* Determinism scripts: `scripts/verify-b0-determinism.mjs`, `scripts/verify-b1-determinism.mjs`, `scripts/verify-b1-plan-determinism.mjs`, `scripts/verify-b2-determinism.mjs`.
+* Subject manifests: `subjects/<subject>/subject-manifest.json`.
+* Ground truth: `docs/analysis/phase-b/gt/<subject>.json`.
+* Subject runbooks: `docs/validation/<subject>-setup.md`.
+
+## Logging Architecture (Two Contracts)
+**A. Framework/system logs** — Pipeline behavior across phases.
+* Format: JSONL (PipelineLogEvent) at `logs/<phase>-pipeline.jsonl`
+* Schema: timestamp, phase, operation, subject, severity, event, message, duration, outcome, error, context
+* Written by CLI entry points (a1, a2, b0, b1-intent, b1-plan, b2, b3, viz). Distinct from per-test logs.
+* Append mode: successive CLI invocations append to the same JSONL file. For a clean regeneration, delete `logs/*.jsonl` before re-running (`npm run logs:clean` removes the entire logs/ directory).
+
+**B. Per-test observability logs** — Runtime evidence of individual test execution.
+* Format: JSON at `output/<subject>/logs/<testFile>.log.json`
+* Written by B2-generated test code at B3 runtime.
+* Schema: workflowId, testFile, outcome, failedStepId, failureKind, duration, screenshots, steps[]
+
+**C. Canonical stage-summary artifacts** — Deterministic outputs of each stage's runner.
+* `logs/b0-summary.json`, `logs/b1-intent-summary.json`, `logs/b1-plan-summary.json`, `logs/b2-summary.json`
+* These are canonical artifacts, not incidental logs. They are the determinism verification targets consumed by `verify-b*-determinism.mjs` scripts and referenced in CLI output.
+* Text validation logs (`b0-manifest-validation.log`, `b1-*-validation.log`, `b2-codegen.log`, `b3-execution.log`) contain per-subject detail (GT mismatch fields, structural warnings) not present in JSONL pipeline logs.
+
+These three categories must never be collapsed. See `docs/paper/approach.md` §B5 for full specification.
+
+## Documentation Structure
+* `docs/paper/approach.md` — normative spec (authoritative)
+* `docs/ROADMAP.md` — work sequencing (authoritative)
+* `docs/analysis/foundations/` — current system behavior descriptions
+* `docs/analysis/decisions/` — compressed evolution log
+* `docs/analysis/runtime/` — per-subject execution reports
+* `docs/analysis/phase-b/gt/` — ground truth JSON data
+* `docs/validation/` — corpus registry, evaluation reports, subject runbooks
+
+---
+
+# 10. Work Protocol for Claude
 For any non-trivial change, Claude must output:
 
 ### 1. PLAN
@@ -329,12 +432,13 @@ No hidden architectural drift.
 
 ---
 
-# 10. Git Discipline
+# 11. Git Discipline
 * `main` = stable Phase A
 * Feature branches:
 
   * `feat/a1-*`
   * `feat/a2-*`
+  * `feat/phase-b`
 * No direct pushes to `main`
 * CI must pass
 * No merging with failing determinism
@@ -342,7 +446,7 @@ No hidden architectural drift.
 
 ---
 
-# 11. What Claude Must Never Do
+# 12. What Claude Must Never Do
 * Weaken `approach.md`
 * Continue implementation when spec ambiguity exists
 * Introduce parallel graph representations
@@ -354,7 +458,7 @@ No hidden architectural drift.
 
 ---
 
-# 12. Separation of Responsibilities
+# 13. Separation of Responsibilities
 
 | File          | Responsibility                                      |
 | ------------- | --------------------------------------------------- |
@@ -363,3 +467,24 @@ No hidden architectural drift.
 | `CLAUDE.md`   | Defines architectural and implementation discipline |
 
 If these blur, Phase A becomes unstable.
+
+# 14. Space Efficiency
+Before starting any server, container, watcher, or background task:
+1. check whether an equivalent process is already running,
+2. reuse it if appropriate,
+3. otherwise start exactly one instance,
+4. record its PID/port,
+5. and at the end of the task provide explicit shutdown commands and stop any temporary processes you started unless I ask you to keep them running.
+
+## Cleanup
+- Stop leftover dev servers and containers that are no longer needed.
+- Remove stale temporary outputs that are safe to delete.
+- Do NOT delete source code, package-lock files, or anything necessary for the projects to run.
+- Before each destructive cleanup action, state exactly what will be removed and why.
+- After cleanup, report how much RAM/disk was recovered.
+
+## Strict rules:
+- Do not kill or delete blindly.
+- Verify each target before removing it.
+- Prefer minimal safe cleanup.
+- Show exact commands run and evidence for each conclusion.

@@ -51,7 +51,7 @@ const rawArgs = process.argv.slice(2);
 let skipA1 = rawArgs.includes('--skip-a1');
 
 const tsxPath = path.resolve('node_modules/tsx/dist/cli.mjs');
-const cliPath = path.resolve('src/cli.ts');
+const cliPath = path.resolve('src/a1-cli.ts');
 const a2CliPath = path.resolve('src/a2-cli.ts');
 const vizCliPath = path.resolve('src/viz-cli.ts');
 
@@ -81,7 +81,7 @@ console.log('');
 for (const subject of SUBJECTS) {
   const outputDir = path.resolve('output', subject.name);
   const jsonDir = path.join(outputDir, 'json');
-  const bundlePath = path.join(jsonDir, 'phase1-bundle.json');
+  const bundlePath = path.join(jsonDir, 'a1-multigraph.json');
   const tsConfigPath = path.resolve(subject.projectRoot, subject.tsConfig);
 
   console.log(`=== ${subject.name} ===`);

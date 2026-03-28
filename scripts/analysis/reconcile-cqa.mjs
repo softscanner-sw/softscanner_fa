@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
-const bundle = JSON.parse(readFileSync('output/softscanner-cqa-frontend/json/phase1-bundle.json', 'utf8'));
-const tw = JSON.parse(readFileSync('output/softscanner-cqa-frontend/json/phaseA2-taskworkflows.final.json', 'utf8'));
+const bundle = JSON.parse(readFileSync('output/softscanner-cqa-frontend/json/a1-multigraph.json', 'utf8'));
+const tw = JSON.parse(readFileSync('output/softscanner-cqa-frontend/json/a2-workflows.json', 'utf8'));
 const gtFile = JSON.parse(readFileSync('docs/analysis/task-workflow-ground-truth.json', 'utf8'));
 const cqaGT = gtFile.subjects['softscanner-cqa-frontend'].gt;
 

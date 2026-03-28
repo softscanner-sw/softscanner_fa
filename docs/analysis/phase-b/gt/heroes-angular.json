@@ -1,0 +1,1036 @@
+{
+  "subject": "heroes-angular",
+  "generatedDate": "2026-03-10",
+  "a2Source": "output/heroes-angular/json/a2-workflows.json",
+  "totalEntries": 19,
+  "difficultyBreakdown": {
+    "D1": 8,
+    "D7": 11
+  },
+  "entries": [
+    {
+      "gtId": "heroes-GT-01",
+      "workflowId": "AboutComponent|about.component.ts:10:15|Link|0::WNE::__ext__49fb48e0",
+      "a2WorkflowIndex": 0,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "http://twitter.com/john_papa",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='http://twitter.com/john_papa']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "http://twitter.com/john_papa"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "twitter.com/john_papa"
+      },
+      "locatorNotes": "Static href attribute on anchor tag; CSS selector via href is reliable",
+      "knownChallenges": [
+        "External URL may redirect or require network access"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-02",
+      "workflowId": "AboutComponent|about.component.ts:25:13|Link|1::WNE::__ext__5a2c33d8",
+      "a2WorkflowIndex": 1,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://github.com/johnpapa/heroes-angular",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://github.com/johnpapa/heroes-angular']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://github.com/johnpapa/heroes-angular"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "github.com/johnpapa/heroes-angular"
+      },
+      "locatorNotes": "Static href on anchor; CSS selector via href",
+      "knownChallenges": [
+        "External URL navigation"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-03",
+      "workflowId": "AboutComponent|about.component.ts:30:13|Link|2::WNE::__ext__373a6e7d",
+      "a2WorkflowIndex": 2,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://github.com/johnpapa/heroes-react",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://github.com/johnpapa/heroes-react']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://github.com/johnpapa/heroes-react"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "github.com/johnpapa/heroes-react"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL navigation"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-04",
+      "workflowId": "AboutComponent|about.component.ts:35:13|Link|3::WNE::__ext__e18ee5ba",
+      "a2WorkflowIndex": 3,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://github.com/johnpapa/heroes-vue",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://github.com/johnpapa/heroes-vue']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://github.com/johnpapa/heroes-vue"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "github.com/johnpapa/heroes-vue"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL navigation"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-05",
+      "workflowId": "AboutComponent|about.component.ts:42:22|Link|4::WNE::__ext__a4b900d5",
+      "a2WorkflowIndex": 4,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://aka.ms/jp-free",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://aka.ms/jp-free']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://aka.ms/jp-free"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "aka.ms/jp-free"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL may redirect (URL shortener)"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-06",
+      "workflowId": "AboutComponent|about.component.ts:46:13|Link|5::WNE::__ext__5a03d198",
+      "a2WorkflowIndex": 5,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://papa-heroes-angular.azurewebsites.net",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://papa-heroes-angular.azurewebsites.net']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://papa-heroes-angular.azurewebsites.net"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "papa-heroes-angular.azurewebsites.net"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL may be down"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-07",
+      "workflowId": "AboutComponent|about.component.ts:51:13|Link|6::WNE::__ext__29271c9d",
+      "a2WorkflowIndex": 6,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://papa-heroes-react.azurewebsites.net",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://papa-heroes-react.azurewebsites.net']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://papa-heroes-react.azurewebsites.net"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "papa-heroes-react.azurewebsites.net"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL may be down"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-08",
+      "workflowId": "AboutComponent|about.component.ts:56:13|Link|7::WNE::__ext__fe2cb2fe",
+      "a2WorkflowIndex": 7,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://papa-heroes-vue.azurewebsites.net",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "a[href='https://papa-heroes-vue.azurewebsites.net']",
+            "componentScope": "app-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://papa-heroes-vue.azurewebsites.net"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "papa-heroes-vue.azurewebsites.net"
+      },
+      "locatorNotes": "Static href on anchor",
+      "knownChallenges": [
+        "External URL may be down"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-09",
+      "workflowId": "HeaderBarBrandComponent|header-bar-brand.component.ts:3:7|Link|0::WNE::__ext__c43ad6cb",
+      "a2WorkflowIndex": 8,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-header-bar-brand",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://angular.io/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-header-bar-brand a.navbar-item",
+            "componentScope": "app-header-bar-brand",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://angular.io/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "angular.io"
+      },
+      "locatorNotes": "Shared component on all routes; class=navbar-item distinguishes from nav-home link; use any startRoute",
+      "knownChallenges": [
+        "Shared component — test from any of 4 routes"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-10",
+      "workflowId": "HeaderBarLinksComponent|header-bar-links.component.ts:6:13|Link|0::WNE::__ext__5a2c33d8",
+      "a2WorkflowIndex": 9,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-header-bar-links",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://github.com/johnpapa/heroes-angular",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-header-bar-links a[href='https://github.com/johnpapa/heroes-angular']",
+            "componentScope": "app-header-bar-links",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://github.com/johnpapa/heroes-angular"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "github.com/johnpapa/heroes-angular"
+      },
+      "locatorNotes": "Shared header links component; href attribute for locator",
+      "knownChallenges": [
+        "Shared component on 4 routes"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-11",
+      "workflowId": "HeaderBarLinksComponent|header-bar-links.component.ts:9:13|Link|1::WNE::__ext__763eeceb",
+      "a2WorkflowIndex": 10,
+      "difficultyClass": "D7",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-header-bar-links",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "terminalExternalUrl": "https://twitter.com/john_papa",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-header-bar-links a[href='https://twitter.com/john_papa']",
+            "componentScope": "app-header-bar-links",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": "https://twitter.com/john_papa"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "twitter.com/john_papa"
+      },
+      "locatorNotes": "Shared header links; href attribute for locator",
+      "knownChallenges": [
+        "Shared component on 4 routes"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-12",
+      "workflowId": "NavComponent|nav.component.ts:11:7|Link|2::WNR::/about",
+      "a2WorkflowIndex": 11,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-nav",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-nav a[routerlink='/about']",
+            "componentScope": "app-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/about"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/about"
+      },
+      "locatorNotes": "routerLink attribute provides reliable CSS selector; shared nav on 4 routes",
+      "knownChallenges": []
+    },
+    {
+      "gtId": "heroes-GT-13",
+      "workflowId": "NavComponent|nav.component.ts:5:7|Link|0::WNR::/heroes",
+      "a2WorkflowIndex": 12,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-nav",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-nav a[routerlink='/heroes']",
+            "componentScope": "app-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "routerLink attribute; shared nav component",
+      "knownChallenges": []
+    },
+    {
+      "gtId": "heroes-GT-14",
+      "workflowId": "NavComponent|nav.component.ts:8:7|Link|1::WNR::/villains",
+      "a2WorkflowIndex": 13,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-nav",
+        "startRouteFullPaths": [
+          "/**",
+          "/about",
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/villains",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-nav a[routerlink='/villains']",
+            "componentScope": "app-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/villains"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/villains"
+      },
+      "locatorNotes": "routerLink attribute; shared nav component",
+      "knownChallenges": []
+    },
+    {
+      "gtId": "heroes-GT-15",
+      "workflowId": "ButtonFooterComponent|button-footer.component.ts:2:5|Button|0::WTH",
+      "a2WorkflowIndex": 14,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-button-footer",
+        "startRouteFullPaths": [
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/heroes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-button-footer button[aria-label='label']",
+            "componentScope": "app-button-footer",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "aria-label='label' on button; shared on /heroes and /villains; handler: handleClick()",
+      "knownChallenges": [
+        "Shared component — effect depends on which route is active"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-16",
+      "workflowId": "ListHeaderComponent|list-header.component.ts:13:7|Button|1::WTH",
+      "a2WorkflowIndex": 15,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-list-header",
+        "startRouteFullPaths": [
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/heroes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-list-header button[aria-label='refresh']",
+            "componentScope": "app-list-header",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "aria-label='refresh' distinguishes from add button; handler: handleRefresh()",
+      "knownChallenges": [
+        "Shared component on /heroes and /villains"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-17",
+      "workflowId": "ListHeaderComponent|list-header.component.ts:6:7|Button|0::WTH",
+      "a2WorkflowIndex": 16,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-list-header",
+        "startRouteFullPaths": [
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/heroes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-list-header button[aria-label='add']",
+            "componentScope": "app-list-header",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "aria-label='add' distinguishes from refresh button; handler: handleAdd()",
+      "knownChallenges": [
+        "Shared component on /heroes and /villains"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-18",
+      "workflowId": "ModalComponent|modal.component.ts:12:11|Button|0::WTH",
+      "a2WorkflowIndex": 17,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-modal",
+        "startRouteFullPaths": [
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/heroes"
+          },
+          {
+            "type": "trigger-modal",
+            "note": "Modal must be opened first via delete action"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-modal button.modal-no",
+            "componentScope": "app-modal",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "class=modal-no distinguishes No from Yes button; modal must be visible first",
+      "knownChallenges": [
+        "Modal must be triggered before button is accessible; requires multi-step precondition"
+      ]
+    },
+    {
+      "gtId": "heroes-GT-19",
+      "workflowId": "ModalComponent|modal.component.ts:13:11|Button|1::WTH",
+      "a2WorkflowIndex": 18,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-modal",
+        "startRouteFullPaths": [
+          "/heroes",
+          "/villains"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/heroes",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/heroes"
+          },
+          {
+            "type": "trigger-modal",
+            "note": "Modal must be opened first via delete action"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-modal button.modal-yes",
+            "componentScope": "app-modal",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/heroes"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/heroes"
+      },
+      "locatorNotes": "class=modal-yes distinguishes Yes from No button; handler: onYes()",
+      "knownChallenges": [
+        "Modal must be triggered before button is accessible; destructive action (delete confirmation)"
+      ]
+    }
+  ]
+}

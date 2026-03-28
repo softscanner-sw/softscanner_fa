@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 
-const data = JSON.parse(readFileSync('output/spring-petclinic-angular/json/phaseA2-taskworkflows.final.json', 'utf8'));
+const data = JSON.parse(readFileSync('output/spring-petclinic-angular/json/a2-workflows.json', 'utf8'));
 
 console.log('Total workflows:', data.workflows.length);
 console.log('Stats:', JSON.stringify(data.stats, null, 2));

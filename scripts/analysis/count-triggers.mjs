@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 
-const data = JSON.parse(readFileSync('output/spring-petclinic-angular/json/phase1-bundle.json', 'utf8'));
+const data = JSON.parse(readFileSync('output/spring-petclinic-angular/json/a1-multigraph.json', 'utf8'));
 
 const routes = data.multigraph.nodes.filter(n => n.kind === 'Route');
 const entryRoutes = new Set(routes.filter(r => r.meta.isEntry).map(r => r.id));

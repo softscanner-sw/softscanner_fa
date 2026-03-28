@@ -1,0 +1,41 @@
+{
+  "subjectName": "ever-traduora",
+  "baseUrl": "http://localhost:4200",
+  "accounts": [
+    {
+      "username": "admin@test.com",
+      "password": "Test1234!",
+      "roles": [
+        "admin"
+      ],
+      "guardSatisfies": [
+        "AuthGuard",
+        "CanGuard"
+      ]
+    },
+    {
+      "username": "user@test.com",
+      "password": "Test1234!",
+      "roles": [
+        "user"
+      ],
+      "guardSatisfies": [
+        "AuthGuard"
+      ]
+    }
+  ],
+  "routeParamValues": {
+    "localeCode": "en",
+    "projectId": "ee752941-79f4-4d7a-b05c-38e627820e10"
+  },
+  "authSetup": {
+    "loginRoute": "/login",
+    "usernameField": "input[formcontrolname='email']",
+    "passwordField": "input[formcontrolname='password']",
+    "submitButton": "button[type='submit']",
+    "authSuccessSelector": "app-bar [routerLink='/projects']"
+  },
+  "executionConfig": {
+    "preAttemptCommand": "docker exec mysqldb mysql -u tr -pchange_me tr_dev -e \"UPDATE user SET loginAttempts = 0, lastLogin = NULL;\""
+  }
+}

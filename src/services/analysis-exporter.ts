@@ -1,6 +1,6 @@
 /**
  * analysis-exporter.ts
- * Serialize Phase1Bundle and debug artifacts to deterministic JSON.
+ * Serialize A1Multigraph and debug artifacts to deterministic JSON.
  *
  * Constraints:
  * - JSON output must be stable: same bundle → identical bytes.
@@ -10,21 +10,21 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { Phase1Bundle } from '../models/multigraph.js';
+import type { A1Multigraph } from '../models/multigraph.js';
 import type { A1InternalBundle } from '../models/analysis-bundle.js';
 
 export class AnalysisExporter {
   /**
-   * Serialize a Phase1Bundle to a deterministic JSON string.
+   * Serialize a A1Multigraph to a deterministic JSON string.
    */
-  static toJson(bundle: Phase1Bundle): string {
+  static toJson(bundle: A1Multigraph): string {
     return JSON.stringify(bundle, AnalysisExporter._stableSortReplacer(), 2);
   }
 
   /**
-   * Write the spec-compliant Phase1Bundle to a file.
+   * Write the spec-compliant A1Multigraph to a file.
    */
-  static writeBundle(bundle: Phase1Bundle, outPath: string): void {
+  static writeBundle(bundle: A1Multigraph, outPath: string): void {
     const resolved = path.resolve(outPath);
     fs.mkdirSync(path.dirname(resolved), { recursive: true });
     fs.writeFileSync(resolved, AnalysisExporter.toJson(bundle), 'utf-8');
@@ -35,7 +35,7 @@ export class AnalysisExporter {
    */
   static writeDebugArtifacts(
     internal: A1InternalBundle,
-    bundle: Phase1Bundle,
+    bundle: A1Multigraph,
     outDir: string,
   ): void {
     const resolved = path.resolve(outDir);

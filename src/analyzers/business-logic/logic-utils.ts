@@ -213,6 +213,28 @@ function _extractFromMethod(
         args,
         origin: TsAstUtils.getOrigin(callExpr),
       });
+
+      // F1: Bounded Router-service tracing.
+      // When the service class name matches a Router/Navigation pattern,
+      // trace ONE level into the called method to find Navigate calls.
+      // This resolves thin Router wrappers like RouterService.routeToX()
+      // → this.router.navigate(['path']).
+      if (/router|navigation/i.test(resolvedName) && classDecl !== undefined && depth < 1) {
+        const fieldDecl = classDecl.getConstructors()[0]
+          ?.getParameters()
+          .find(p => p.getName() === servicePart);
+        const fieldType = fieldDecl?.getType();
+        const symbol = fieldType?.getSymbol() ?? fieldType?.getAliasSymbol();
+        const serviceClassDecl = symbol?.getDeclarations()?.[0]?.asKind?.(SyntaxKind.ClassDeclaration);
+        if (serviceClassDecl !== undefined) {
+          const serviceMethod = serviceClassDecl.getMethod(methodPart);
+          if (serviceMethod !== undefined && !visited.has(`${resolvedName}.${methodPart}`)) {
+            visited.add(`${resolvedName}.${methodPart}`);
+            _extractFromMethod(serviceMethod, maxLen, serviceClassDecl, contexts, visited, depth + 1);
+          }
+        }
+      }
+
       continue;
     }
 

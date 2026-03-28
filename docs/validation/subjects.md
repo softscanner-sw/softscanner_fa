@@ -26,28 +26,28 @@ Phase A1 and A2 output. All commands are run from the `softscanner_fa` project r
 
 ---
 
-## Exact phase1 commands
+## Exact A1 commands
 
 ```bash
 # Subject 1 — posts-users-ui-ng
-npm run phase1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng" --debug
+npm run a1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng" --debug
 
 # Subject 2 — spring-petclinic-angular
-npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular" --debug
+npm run a1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular" --debug
 
 # Subject 3 — heroes-angular
 # NOTE: the root tsconfig.json is a solution-style config with "files": [].
 # Use src/tsconfig.app.json to include source files.
-npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular" --debug
+npm run a1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular" --debug
 
 # Subject 4 — softscanner-cqa-frontend
-npm run phase1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend" --debug
+npm run a1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend" --debug
 
 # Subject 5 — ever-traduora
-npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora" --debug
+npm run a1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora" --debug
 
 # Subject 6 — airbus-inventory
-npm run phase1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory" --debug
+npm run a1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory" --debug
 ```
 
 ---
@@ -55,12 +55,12 @@ npm run phase1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusI
 ## Phase A2 commands
 
 ```bash
-npm run phase2 -- output/posts-users-ui-ng/json/phase1-bundle.json output/posts-users-ui-ng/json
-npm run phase2 -- output/spring-petclinic-angular/json/phase1-bundle.json output/spring-petclinic-angular/json
-npm run phase2 -- output/heroes-angular/json/phase1-bundle.json output/heroes-angular/json
-npm run phase2 -- output/softscanner-cqa-frontend/json/phase1-bundle.json output/softscanner-cqa-frontend/json
-npm run phase2 -- output/ever-traduora/json/phase1-bundle.json output/ever-traduora/json
-npm run phase2 -- output/airbus-inventory/json/phase1-bundle.json output/airbus-inventory/json
+npm run a2 -- output/posts-users-ui-ng/json/a1-multigraph.json output/posts-users-ui-ng/json
+npm run a2 -- output/spring-petclinic-angular/json/a1-multigraph.json output/spring-petclinic-angular/json
+npm run a2 -- output/heroes-angular/json/a1-multigraph.json output/heroes-angular/json
+npm run a2 -- output/softscanner-cqa-frontend/json/a1-multigraph.json output/softscanner-cqa-frontend/json
+npm run a2 -- output/ever-traduora/json/a1-multigraph.json output/ever-traduora/json
+npm run a2 -- output/airbus-inventory/json/a1-multigraph.json output/airbus-inventory/json
 
 ```
 
@@ -84,13 +84,49 @@ npm run run:all -- --skip-a1 # reuse existing A1 bundles
 
 ---
 
+## Phase B commands
+
+### B0 — SubjectManifest validation
+
+```bash
+npm run b0:validate                  # validates all 6 manifests against A2 outputs
+npm run verify:b0-determinism        # byte-identical B0 outputs across runs
+```
+
+### B1 — RealizationIntent derivation + ActionPlan generation
+
+```bash
+npm run b1:intents                   # derives intents from A2 workflows + A1 multigraph
+npm run b1:plans                     # generates plans from intents + manifests + A1 multigraph
+npm run verify:b1-determinism        # byte-identical B1 intent outputs across runs
+npm run verify:b1-plan-determinism   # byte-identical B1 plan outputs across runs
+```
+
+### B1 GT validation
+
+B1 intents and plans are validated against ground-truth entries in `docs/analysis/phase-b/gt/<subject>.json`.
+The runners report per-workflow match/mismatch counts. Current status: **257/257 matched** (0 mismatches) for both intents and plans.
+
+### B2 — Code Generation
+
+```bash
+npm run b2:codegen                   # generates Selenium test files from ActionPlans
+npm run verify:b2-determinism        # byte-identical B2 outputs across runs
+```
+
+B2 generates one `.test.ts` file per ActionPlan under `output/<subject>/tests/`.
+Generation coverage metadata is written to `output/<subject>/json/b2-tests.json`.
+Current status: **257/257 tests generated** (100% generation rate across all 6 subjects).
+
+---
+
 ## Expected output files
 
 ### A1 output (`<outputDir>/json/`)
 
 | File | Contents |
 |------|---------|
-| `phase1-bundle.json` | Full `Phase1Bundle` (multigraph + stats, deterministic JSON) |
+| `a1-multigraph.json` | Full `A1Multigraph` (multigraph + stats, deterministic JSON) |
 | `graph.json` | `Multigraph` — all nodes and edges |
 | `routes.json` | `RouteMap` — all extracted routes |
 | `components.json` | `ComponentRegistry` — all extracted components + widget IDs |
@@ -99,13 +135,27 @@ npm run run:all -- --skip-a1 # reuse existing A1 bundles
 | `config.json` | `AnalyzerConfig` used for the run |
 | `stats.json` | Summary counts (nodeCount, edgeCount, structural, executable) |
 
-With `--debug`, a log file is written to `logs/<subject>/<timestamp>/phase1.log`.
+With `--debug`, a log file is written to `logs/<subject>/<timestamp>/a1.log`.
 
 ### A2 output (`<outputDir>/json/`)
 
 | File | Contents |
 |------|----------|
-| `phaseA2-taskworkflows.final.json` | `TaskWorkflowBundle` (single-trigger task workflows, classified) |
+| `a2-workflows.json` | `A2WorkflowSet` (single-trigger task workflows, classified) |
+
+### B1 output (`<outputDir>/json/`)
+
+| File | Contents |
+|------|----------|
+| `b1-intents.json` | `B1IntentSet` (RealizationIntents derived from A2 workflows) |
+| `b1-plans.json` | `B1PlanSet` (ActionPlans with assignments, preconditions, steps, postconditions) |
+
+### B2 output (`<outputDir>/tests/` + `<outputDir>/json/`)
+
+| File | Contents |
+|------|----------|
+| `tests/<hash>_<class>_<kind>.test.ts` | Selenium WebDriver TypeScript test files (one per ActionPlan) |
+| `json/b2-tests.json` | `B2TestSet` — generation metadata, per-test entry counts, coverage stats |
 
 ### Visualization output (`<outputDir>/vis/`)
 
@@ -123,9 +173,9 @@ With `--debug`, a log file is written to `logs/<subject>/<timestamp>/phase1.log`
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 64 |
-| edgeCount | 131 |
-| structuralEdgeCount | 100 |
+| nodeCount | 72 |
+| edgeCount | 147 |
+| structuralEdgeCount | 116 |
 | executableEdgeCount | 31 |
 
 **Node kinds:** `Module: 2, Route: 8, Component: 11, Widget: 41, Service: 2`
@@ -171,9 +221,9 @@ With `--debug`, a log file is written to `logs/<subject>/<timestamp>/phase1.log`
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 191 |
-| edgeCount | 422 |
-| structuralEdgeCount | 294 |
+| nodeCount | 195 |
+| edgeCount | 430 |
+| structuralEdgeCount | 302 |
 | executableEdgeCount | 128 |
 
 **Node kinds:** `Module: 16, Route: 24, Component: 22, Widget: 120, Service: 9`
@@ -284,9 +334,9 @@ All 4 component-bearing routes have `ROUTE_ACTIVATES_COMPONENT` edges.
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 37 |
-| edgeCount | 74 |
-| structuralEdgeCount | 57 |
+| nodeCount | 42 |
+| edgeCount | 84 |
+| structuralEdgeCount | 67 |
 | executableEdgeCount | 17 |
 
 **Node kinds:** `Module: 3, Route: 1, Component: 10, Widget: 21, Service: 2`
@@ -331,9 +381,9 @@ All 4 component-bearing routes have `ROUTE_ACTIVATES_COMPONENT` edges.
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 247 |
-| edgeCount | 499 |
-| structuralEdgeCount | 384 |
+| nodeCount | 253 |
+| edgeCount | 511 |
+| structuralEdgeCount | 396 |
 | executableEdgeCount | 115 |
 
 **Node kinds:** `Module: 4, Route: 20, Component: 45, Widget: 152, Service: 26`
@@ -385,9 +435,9 @@ All 4 component-bearing routes have `ROUTE_ACTIVATES_COMPONENT` edges.
 
 | Metric | Value |
 |--------|-------|
-| nodeCount | 59 |
-| edgeCount | 131 |
-| structuralEdgeCount | 90 |
+| nodeCount | 68 |
+| edgeCount | 149 |
+| structuralEdgeCount | 108 |
 | executableEdgeCount | 41 |
 
 **Node kinds:** `Module: 1, Route: 7, Component: 10, Widget: 36, Service: 5`
@@ -437,7 +487,7 @@ gap fixes (GAP A–D), post-audit patches, bounded transitive following, form-ga
 containment fix, *ngIf expression/elementSpan fixes, parent-route component inclusion
 fix, and child-route enumeration extension. All 6 subjects benchmark-stable and
 deterministic. Full-application recall: 256/256 = 100% trigger identity match
-(1 surplus, 1 wrong-constraint). See `docs/analysis/phase-a-stabilization-decision.md`.
+(1 surplus, 1 wrong-constraint). See `docs/analysis/phase-a/stabilization-decision.md`.
 
 ---
 
@@ -457,10 +507,10 @@ deterministic. Full-application recall: 256/256 = 100% trigger identity match
 
 ## Structural invariants checklist
 
-Use these checks to spot-validate `phase1-bundle.json` and `graph.json` after
+Use these checks to spot-validate `a1-multigraph.json` and `graph.json` after
 any significant change.
 
-### phase1-bundle.json
+### a1-multigraph.json
 
 - [ ] File is valid JSON (parseable)
 - [ ] Top-level keys: `multigraph`, `stats`
@@ -489,7 +539,7 @@ any significant change.
 - [ ] External node IDs match the pattern `__ext__[0-9a-f]{8}` (FNV-1a hash)
 
 
-### phaseA2-taskworkflows.final.json
+### a2-workflows.json
 
 - [ ] File is valid JSON (parseable)
 - [ ] Top-level keys: `input`, `config`, `workflows`, `partitions`, `stats`
@@ -523,12 +573,12 @@ stats to the expected values above. Differences must be explained before merging
 npm run run:all
 
 # Or individually:
-npm run phase1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng"
-npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular"
-npm run phase1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular"
-npm run phase1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend"
-npm run phase1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora"
-npm run phase1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory"
+npm run a1 -- "C:/Users/basha/git/github/posts-users-ui-ng" "C:/Users/basha/git/github/posts-users-ui-ng/tsconfig.json" "output/posts-users-ui-ng"
+npm run a1 -- "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular" "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/tsconfig.json" "output/spring-petclinic-angular"
+npm run a1 -- "C:/Users/basha/git/github/heroes-angular" "C:/Users/basha/git/github/heroes-angular/src/tsconfig.app.json" "output/heroes-angular"
+npm run a1 -- "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend" "C:/Users/basha/git/softscanner/softscanner-continuous-quality-assessment-frontend/tsconfig.app.json" "output/softscanner-cqa-frontend"
+npm run a1 -- "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp" "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/tsconfig.app.json" "output/ever-traduora"
+npm run a1 -- "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory" "C:/Users/basha/git/github/Inventory-Management-System/AirbusInventory/tsconfig.app.json" "output/airbus-inventory"
 
 # Determinism check (A1 + A2 task, run for each subject)
 npm run verify:determinism -- "C:/Users/basha/git/github/posts-users-ui-ng" "tsconfig.json"

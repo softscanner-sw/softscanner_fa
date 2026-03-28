@@ -318,8 +318,9 @@ When A1 recursively extracts routes from a lazy-loaded module (via `loadChildren
 * Routes registered via `RouterModule.forChild([...])` inside a lazy-loaded module must NOT inherit a `parentId` from the lazy-load discovery call site.
 * The parent–child relationship in the Angular route tree is established by `children: [...]` arrays, not by the `loadChildren` discovery mechanism.
 * A lazy-loaded route with `parentId === undefined` (no `children` parent) is top-level and therefore an entry candidate.
+* Guards (`canActivate`, `canLoad`) declared on the mount-point route record that carries `loadChildren` must be propagated to every route within the lazy-loaded module. Angular's router applies mount-point guards transitively to all routes loaded by the lazy module, so these guards are semantically present on every route in that module. Guard propagation is deduplicated (union by guard name) and deterministically sorted.
 
-Rationale: Angular merges lazy-loaded routes into the global router at their mount point, but these routes are independently navigable URL-level endpoints. Treating them as children of the lazy-load placeholder would incorrectly suppress their entry status.
+Rationale: Angular merges lazy-loaded routes into the global router at their mount point, but these routes are independently navigable URL-level endpoints. Treating them as children of the lazy-load placeholder would incorrectly suppress their entry status. Guard propagation is separate from parent–child hierarchy: it ensures that constraint surfaces on edges targeting lazy-loaded routes correctly reflect the mount-point's access-control requirements without altering component ancestry.
 
 No ENTRY node.
 
@@ -796,7 +797,7 @@ export interface Multigraph {
 }
 
 /** Phase A1 output bundle. */
-export interface Phase1Bundle {
+export interface A1Multigraph {
   /** Primary artifact: the multigraph. */
   multigraph: Multigraph;
 
@@ -876,7 +877,7 @@ A2 has two internal stages:
 * A2.1 TaskWorkflow enumeration (trigger-centric, deterministic effect closure)
 * A2.2 Constraint merge + classification (deterministic, rule-based)
 
-A2 emits the final workflow space as `phaseA2-taskworkflows.final.json`, a single stable artifact.
+A2 emits the final workflow space as `a2-workflows.json`, a single stable artifact.
 
 ---
 
@@ -1323,7 +1324,7 @@ This is intentionally strict and conservative.
 ---
 
 # A2 Output Artifact (single stable contract)
-`phaseA2-taskworkflows.final.json` contains:
+`a2-workflows.json` contains:
 
 * reference to the A1 multigraph hash/metadata
 * config `{ mode: "task" }`
@@ -1432,7 +1433,7 @@ export interface TaskWorkflow {
 }
 
 /** Output artifact for A2. */
-export interface TaskWorkflowBundle {
+export interface A2WorkflowSet {
   /** Reference to the A1 input used. */
   input: PhaseAInputRef;
   /** Configuration. */
@@ -1464,3 +1465,683 @@ export interface TaskWorkflowBundle {
 * No full SAT solving.
 * No semantic interpretation of guards/roles beyond the fixed deterministic rules above.
 * No attempt to bind params, authenticate, or select accounts (Phase B).
+
+---
+
+# Phase B — Executable Test Derivation (Normative, Frozen)
+Phase B consumes the frozen Phase A artifacts (`a1-multigraph.json`, `a2-workflows.json`) and produces executable Selenium test cases that maximize coverage over the fixed Phase A workflow space.
+
+## B0–B4 Decomposition
+| Stage | Purpose | Input | Output |
+|-------|---------|-------|--------|
+| **B0** | Subject manifest authoring | Manual per-subject | `manifest.json` |
+| **B1** | RealizationIntent derivation + ActionPlan generation | A1 + A2 + manifest | `b1-intents.json`, `b1-plans.json` |
+| **B2** | Selenium test code generation | B1 plans | `tests/<workflowId>.test.ts` |
+| **B3** | Execution + bounded retry | B2 tests + running app | `b3-results.json` |
+| **B4** | Coverage reporting | B3 results + A2 workflow set | `b4-coverage.json` |
+
+**B0** is manual. **B1** is deterministic (except LLM-assisted form data for complex CONDITIONAL). **B2** targets Selenium WebDriver JS (TypeScript); the B1 artifact model is conceptually framework-agnostic. **B3** includes bounded retry with escalation. **B4** computes tiered coverage metrics.
+
+---
+
+## Subject Manifest (B0)
+The subject manifest is the normative per-subject contract that supplies runtime-specific information not available from static analysis:
+
+```ts
+SubjectManifest {
+  subjectName: string
+  baseUrl: string                        // e.g., "http://localhost:4200"
+  accounts: Array<{
+    username: string
+    password: string
+    roles: string[]
+    guardSatisfies: string[]             // Guard class names this account satisfies
+  }>
+  routeParamValues: Record<string, string>   // param name → concrete value (global fallback)
+  routeParamOverrides?: Record<string, Record<string, string>> // fullPath → param → value (per-template)
+  formDataOverrides?: Record<string, Record<string, string>>  // workflowId → field → value
+  skipWorkflows?: string[]               // Workflow IDs to exclude from execution
+  authSetup?: AuthSetup                  // How to authenticate (required if accounts present)
+  executionConfig?: ExecutionConfig      // Execution-readiness settings (B3 only)
+}
+
+AuthSetup {
+  loginRoute: string                     // Path for login page (e.g., "/login")
+  usernameField: string                  // CSS selector for username input
+  passwordField: string                  // CSS selector for password input
+  submitButton: string                   // CSS selector for submit button
+}
+
+ExecutionConfig {
+  readinessEndpoint?: string             // URL to GET for readiness check (defaults to baseUrl)
+  readinessTimeoutMs?: number            // Max wait for readiness in ms (default: 30000)
+  seedDataNotes?: string[]               // Human-readable notes about required seed data/fixtures
+}
+```
+
+The manifest maps `guardNames` from RealizationIntent to concrete credentials via `guardSatisfies`. When guards are present, `authSetup` provides the login mechanism so B1 can fully populate `PreCondition.config` for `auth-setup` preconditions and B2 can generate correct Selenium authentication code. This separates WHAT credentials to use (accounts) from HOW to use them (authSetup).
+
+`executionConfig` is consumed only by B3. B0 validates its schema if present but does not perform runtime checks. B1 and B2 ignore it. The `seedDataNotes` field is informational — it documents entity/fixture requirements for the user but is not validated or enforced.
+
+### B0 — Manifest Wizard
+B0 provides a normative manifest wizard (`b0:wizard`) that scaffolds a `SubjectManifest` skeleton from A2 artifacts. The wizard:
+
+1. Reads `a2-workflows.json` for the subject.
+2. Collects all `guardNames` referenced across all non-PRUNED workflows and determines which are auth guards vs. NoAuth guards.
+3. Collects all `requiredParams` referenced across all non-PRUNED workflows.
+4. Emits a `subject-manifest.json` skeleton with:
+   - `subjectName` set to the directory name
+   - `baseUrl` set to the provided URL (or `http://localhost:4200` by default)
+   - One account entry per distinct guard set, with empty `username`/`password`/`roles` placeholders
+   - One `routeParamValues` entry per discovered param, with empty-string placeholder; for multi-family params (same param name used by ≥2 entity families), `routeParamOverrides` entries are emitted per entity family
+   - `authSetup` scaffolded if any auth guards were found; login form selectors are auto-derived from A1 widget data when available (confidence-labeled HIGH/MEDIUM/UNRESOLVED)
+5. The emitted skeleton is **not** immediately valid — the user must fill in credentials and selectors, then run `b0:validate` to confirm correctness.
+
+The wizard is a generation aid, not a replacement for `b0:validate`. B0 validation must pass before B1 planning is attempted.
+
+---
+
+## B1 — RealizationIntent (auditable intermediate)
+B1 produces one `RealizationIntent` per TaskWorkflow by reading A1 + A2 bundles. This is a deterministic derivation — no manifest or LLM needed.
+
+```ts
+RealizationIntent {
+  workflowId: string               // = TaskWorkflow.id
+  verdict: WorkflowVerdict
+  triggerKind: EdgeKind             // WTH, WSF, WNR, WNE
+  triggerEvent?: string             // DOM event name
+  startRoutes: Array<{
+    routeId: string
+    fullPath: string               // URL template
+    requiredParams: string[]       // From route meta
+  }>
+  triggerWidget: {
+    nodeId: string
+    tagName?: string
+    widgetKind: SpecWidgetKind
+    attributes: Record<string, string>
+    componentSelector?: string     // Owning component's selector
+    formControlName?: string
+    routerLinkText?: string
+    containingFormId?: string      // If inside a form (via WIDGET_CONTAINS_WIDGET)
+  }
+  formSchema?: Array<{            // Only for WSF triggers
+    fieldNodeId: string
+    tagName: string
+    widgetKind: SpecWidgetKind
+    formControlName?: string
+    nameAttr?: string
+    idAttr?: string             // Fallback identifier from HTML id attribute
+    inputType?: string
+    required: boolean
+    minLength?: number
+    maxLength?: number
+    min?: number
+    max?: number
+    pattern?: string
+  }>
+  effectSteps: TaskStep[]          // From TaskWorkflow.steps
+  terminalNodeId: string
+  terminalRoutePath?: string       // Resolved from A1 if terminal is a route
+  constraints: ConstraintSurface   // = TaskWorkflow.cw
+  explanation: WorkflowExplanation
+  guardNames: string[]             // Guard class names from route meta
+  requiresParams: boolean          // requiredParams.length > 0
+  hasUnresolvedTargets: boolean
+}
+```
+
+**Start route policy:** For workflows with multiple `startRouteIds`, B1 uses `startRouteIds[0]` deterministically. A2 produces deterministic ordering of `startRouteIds`.
+
+---
+
+## B1 — ActionPlan (assignment-bound)
+The action plan binds a realization intent to concrete values from the subject manifest and produces an ordered sequence of browser actions.
+
+```ts
+ActionPlan {
+  workflowId: string
+  planVersion: number              // Incremented on re-planning (LLM repair)
+  assignment: Assignment
+  preConditions: PreCondition[]
+  steps: ActionStep[]
+  postConditions: PostCondition[]
+}
+
+Assignment {
+  account?: { username: string, password: string, roles: string[] }
+  routeParams: Record<string, string>
+  formData: Record<string, string>       // formControlName → value
+}
+
+PreCondition {
+  type: 'auth-setup' | 'navigate-to-route' | 'trigger-dialog-open'
+  config: Record<string, string>
+}
+
+ActionStep {
+  type: 'click' | 'type' | 'clear-and-type' | 'submit' | 'select-option' |
+        'navigate' | 'wait-for-navigation' | 'wait-for-dialog' | 'wait-for-element'
+  locator: ScopedLocator
+  value?: string
+  edgeId?: string                  // Traceability to A1/A2
+  description: string
+}
+
+ScopedLocator {
+  componentSelector?: string       // Scoping ancestor
+  formSelector?: string            // Form scoping (if inside form)
+  strategy: 'data-testid' | 'id' | 'name' | 'formcontrolname' | 'aria-label' |
+            'routerlink' | 'href' | 'placeholder' | 'tag-position' | 'custom'
+  value: string
+  tagName?: string
+  fallbacks?: ScopedLocator[]
+}
+
+PostCondition {
+  type: 'assert-url-matches' | 'assert-no-crash'
+  expected?: string
+}
+```
+
+---
+
+## B1 — Assignment Contract
+**Assignments must satisfy C(w).** Every `ActionPlan.assignment` must be consistent with `TaskWorkflow.constraints` — no contradictions. The subject manifest maps guard names to credentials, route params to concrete values, and form fields to valid test data.
+
+---
+
+## B1 — Start Route Selection
+When a workflow has multiple `startRoutes`, B1 must select exactly one as the navigation target. The selection is deterministic and optimizes for minimal test complexity:
+
+1. **Exclude wildcard routes** — routes whose `fullPath` contains `**` are never selected (catch-all routes are not navigable targets).
+2. **Auth-aware guard preference** — if the workflow's `guardNames` array contains any auth guard (i.e., the workflow's constraint surface requires authentication), prefer guarded routes so that `auth-setup` is emitted and auth-dependent trigger widgets are rendered. Otherwise, prefer unguarded routes to minimize test complexity. Guard names matching `/noauth/i` are excluded from both the workflow guard check and the route guard classification.
+3. **Fewest required params** — among tied routes, prefer those with fewer `:param` placeholders.
+4. **Shortest path** — among tied routes, prefer shorter `fullPath` strings.
+5. **Alphabetical** — final tie-break by lexicographic order of `fullPath`.
+
+If all routes are wildcards, the first wildcard is used as fallback.
+
+---
+
+## B1 — Route Param Scope
+`Assignment.routeParams` includes all `:param` placeholders that appear in **either**:
+- the selected start route's `fullPath`, **or**
+- the workflow's `terminalRoutePath` (used in `assert-url-matches` postconditions).
+
+Values are drawn from `manifest.routeParamOverrides` (per-template) with fallback to `manifest.routeParamValues` (global). Lookup order: `routeParamOverrides[terminalPath][param]` → `routeParamOverrides[startPath][param]` → `routeParamValues[param]` → placeholder `<paramName>`. The `routeParamOverrides` field allows subjects with multi-family params (e.g., `/owners/:id` vs `/pets/:id` in spring-petclinic) to specify distinct seed values per route template without ambiguity.
+
+**Dynamic-ID postcondition rule:** For WSF (form submission) workflows where the terminal route contains params NOT present in any start route, those params are likely server-generated (e.g., creating a new user navigates to `/users/:newId`). B1 retains the `:param` template placeholder in the `assert-url-matches` expected URL instead of substituting the manifest value. B2 emits a regex-based URL assertion for such patterns (`:param` → `[^/]+`), allowing any valid server-generated ID to match.
+
+**Login-route WSF postcondition rule:** When a WSF workflow's selected start route matches `manifest.authSetup.loginRoute` AND the A2 terminal route equals the start route (i.e., A2 could not resolve the post-login navigation destination), B1 emits `assert-no-crash` instead of `assert-url-matches`. This compensates for unresolvable handler indirection (e.g., `RouterService.routeToHomepage()`). *Caveat:* `assert-no-crash` is a weak oracle — it verifies only that the page did not crash, not that login succeeded. Login success is validated transitively by `auth-setup` preconditions in guarded workflows that use the same manifest credentials. A login-form WSF pass with `assert-no-crash` is only meaningful when at least one guarded workflow's auth-setup succeeds in the same B3 run.
+
+---
+
+## B1 — Form Field Scope
+`Assignment.formData` includes form fields from `RealizationIntent.formSchema` — every direct `WIDGET_CONTAINS_WIDGET` child of the trigger's containing form, **with the following exclusions** applied at formSchema derivation time:
+
+- **`Form`** — nested forms (excluded to avoid recursion).
+- **`Button`** — not an interactive fill target.
+- **`Option`** — children of `Select` widgets (not direct form children).
+
+All other widget kinds are included, with widget-kind-aware step type mapping:
+
+| Widget kind / input type | Step type | Default value |
+|---|---|---|
+| `Checkbox` | `click` | `"true"` |
+| `RadioGroup` | `click` (first `mat-radio-button` child) | `"selected"` |
+| `Radio` (standalone) | `click` | `"selected"` |
+| `file` input type | `type` (sendKeys file path) | `/tmp/test-file.txt` |
+| `Select` / `mat-select` | `select-option` | `option-1` (sentinel; B2 selects first option) |
+| text-like inputs | `clear-and-type` | see default value table below |
+
+**Form field key resolution order:** `formControlName` → `nameAttr` → `idAttr` (HTML `id` attribute) → `fieldNodeId`.
+
+**Trigger widget locator resolution order:** `routerlink` (anchors only) → `href` → `data-testid` → `id` → `formcontrolname` → `name` → `aria-label` → `placeholder` → CSS `class` (compound selector) → `tag-position` (nth-of-type with stableIndex).
+
+*CSS class fallback caveat:* The CSS class compound selector (e.g., `.material-icons.edit`) is a best-effort fallback applied only after all stronger semantic attributes fail. It is scoped within the component selector and deterministic, but may resolve to the first of multiple sibling elements with identical class sets within the same component subtree.
+
+B1 does not filter fields by visibility, editability, or runtime behavior beyond the above structural exclusions.
+
+**Default value policy for text-like `formData`** (deterministic, no LLM):
+
+| Input type | Default value |
+|---|---|
+| `email` | `test@example.com` |
+| `password` | `Test123!` |
+| `number` | `min` value if present, else `1` |
+| `tel` | `1234567890` |
+| `url` | `https://example.com` |
+| `color` | `#000000` |
+| `date` | `2024-01-01` |
+| `time` | `12:00` |
+| `month` | `2024-01` |
+| `week` | `2024-W01` |
+| `datetime-local` | `2024-01-01T12:00` |
+| `textarea` | `test-{fieldKey}` |
+| text-like (`text`, `search`, `range`, etc.) | `test-{fieldKey}`, padded to `minLength` if set |
+
+**Composite widget capture (A1):** `mat-radio-group` is captured as a `RadioGroup` widget node with its `formControlName`. Its `mat-radio-button` children are captured as `Radio` widgets connected via `WIDGET_CONTAINS_WIDGET`. Similarly, `mat-option` and `<option>` children of `Select` / `mat-select` widgets are captured as `Option` widget nodes with their `value` attributes. This enables B1 to emit a single click step for the first radio button in a group, and provides option value metadata for select fields.
+
+**Select-option semantics:** B2 selects the first available option by position (CSS `option:nth-of-type(1)` for native selects, first `mat-option` for Angular Material). Subject operators who require a specific option value must use `formDataOverrides` in the manifest.
+
+**Login-form credential materialization:** When a WSF workflow's selected start route matches `manifest.authSetup.loginRoute`, B1 populates the form's username and password fields from the first manifest account (`accounts[0]`) instead of using deterministic defaults. The field matching uses the `formControlName` extracted from the `authSetup.usernameField` and `authSetup.passwordField` CSS selectors. If no account is available, the default value policy applies as normal.
+
+---
+
+## B1 — Auth Materialization
+If the **selected start route** (per the route selection rule above) carries auth guards (excluding NoAuth-style guard names) and the subject manifest contains an account whose `guardSatisfies` covers all such guards, B1 emits an `auth-setup` precondition with credentials from that account. If no guards are present on the selected route, no `auth-setup` is emitted regardless of whether other start routes are guarded.
+
+---
+
+## B1 — Dialog Precondition
+When a trigger widget belongs to a dialog component (reachable via `COMPONENT_COMPOSES_COMPONENT` edge in A1), B1 derives the opener by graph traversal and injects a `trigger-dialog-open` precondition step in the ActionPlan. A component is identified as a dialog candidate if and only if: (1) it is a target of at least one `COMPONENT_COMPOSES_COMPONENT` edge, and (2) its selector matches the pattern `/dialog|modal/i`.
+
+---
+
+## B2 — Code Generation
+B2 generates one Selenium WebDriver JS (TypeScript) test file per ActionPlan. The generated code:
+- Navigates to the start route
+- Executes preconditions (auth setup, dialog opening)
+- Performs action steps (click, type, submit, wait)
+- Asserts post-conditions (URL match, no crash)
+
+B2 is deterministic: same ActionPlan → same generated code.
+
+### B2 — Angular Material Widget Interaction
+For form fields whose `tagName` is `mat-select` (Angular Material select), B2 generates a three-step overlay interaction instead of a native `<select>` interaction:
+
+1. Click the `mat-select` element to open the options overlay.
+2. Wait for `mat-option` to appear in the DOM (overlay rendered).
+3. Click the first `mat-option`.
+
+This is necessary because `mat-select` renders its options in a CDK overlay portal outside the component DOM tree — the native `<select>` / `<option>` interaction pattern does not apply.
+
+---
+
+## B3 — Execution and Bounded Retry
+B3 executes generated tests against a running subject application. Bounded retry with escalation:
+
+1. **Level 1:** Execute as-is. If pass → done.
+2. **Level 2:** Retry with increased timeouts / wait strategies.
+3. **Level 3:** LLM-assisted locator or plan repair. Re-generate and retry.
+
+Maximum 3 attempts per workflow. Each attempt produces an `ExecutionResult` entry.
+
+### B3 — App Readiness
+The framework assumes the target application is already running at `SubjectManifest.baseUrl`. Users are responsible for starting the application and provisioning any required seed data (entities referenced by `routeParamValues`).
+
+Before executing tests for a subject, B3 must perform a readiness check: HTTP GET to `executionConfig.readinessEndpoint` (defaults to `baseUrl`). If the check fails after `executionConfig.readinessTimeoutMs` (default: 30000 ms), all workflows for that subject are marked `FAIL_APP_NOT_READY`.
+
+### B3 — ExecutionResult Schema
+```ts
+type ExecutionOutcome =
+  | 'PASS'                    // Test passed all assertions
+  | 'FAIL_APP_NOT_READY'      // Readiness check failed (environment deficiency)
+  | 'FAIL_AUTH'               // Authentication precondition failed
+  | 'FAIL_ELEMENT_NOT_FOUND'  // Locator did not match any element
+  | 'FAIL_ASSERTION'          // PostCondition assertion failed
+  | 'FAIL_TIMEOUT'            // Operation timed out
+  | 'FAIL_UNKNOWN';           // Unclassified error
+
+interface ExecutionResult {
+  workflowId: string;
+  testFile: string;
+  outcome: ExecutionOutcome;
+  attempts: number;            // 1–3 (bounded retry)
+  durationMs: number;
+  error?: string;              // Error message if not PASS
+}
+```
+
+### B3 — Entity Data Responsibility
+Route parameter values in `routeParamValues` (e.g., `id=1`, `projectId=test-project-id`) assume corresponding entities exist in the running application's data store. Entity provisioning is the user's responsibility. Missing-entity failures produce `FAIL_ELEMENT_NOT_FOUND` or `FAIL_ASSERTION`, not `FAIL_APP_NOT_READY`.
+
+The optional `executionConfig.seedDataNotes` field documents what entities or fixtures the user must provision. These notes are informational and are not validated or enforced by B0 or B3.
+
+---
+
+### B3 — Execution Environment
+B3 executes each generated test file as an isolated subprocess. The normative execution model:
+
+- **Runner:** Each test file is executed via `tsx` (TypeScript ESM runner). No compilation step. Test files are run from the project root.
+- **Isolation:** Each test file creates and destroys its own `WebDriver` instance. No shared browser state between tests.
+- **Sequencing:** Tests are executed sequentially per subject. Parallel execution within a subject is not permitted (avoids ChromeDriver port conflicts and session state interference).
+- **Environment requirements:** Node.js (≥18), ChromeDriver on PATH, Chrome (≥112) installed. Generated tests import `selenium-webdriver` — this dependency must be available from the project root `node_modules/`.
+- **Per-test session isolation:** Each test starts with a blank Chrome profile (no cookies, no session storage). This ensures NoAuthGuard-protected routes (login, signup) are accessible without an explicit "ensure-not-logged-in" precondition.
+
+---
+
+### B3 — Failure Classification
+B3 classifies execution outcomes by examining the error thrown when a test subprocess exits with a non-zero code. Classification is performed by B3 (not by generated test code) using the following ordered rules:
+
+1. If the readiness check failed before the subprocess was launched → `FAIL_APP_NOT_READY`
+2. If the subprocess exit code is 0 → `PASS`
+3. If the error message contains `NoSuchElementError`, `StaleElementReferenceError`, `InvalidArgumentError`, or `ElementNotInteractableError` → `FAIL_ELEMENT_NOT_FOUND`
+4. If the error message contains `AssertionError` or `assert` with postcondition text → `FAIL_ASSERTION`
+5. If the error message contains `TimeoutError` → `FAIL_TIMEOUT`
+6. If the error occurs during an `auth-setup` precondition block (detectable from error context) → `FAIL_AUTH`
+7. Otherwise → `FAIL_UNKNOWN`
+
+B3 records the raw error message in `ExecutionResult.error` regardless of classification, enabling post-hoc re-classification and debugging.
+
+---
+
+## B4 — Coverage Reporting
+Coverage is framed over the fixed workflow space W = A2WorkflowSet.workflows.
+
+Tiered metrics:
+- **C1 (Plan coverage):** fraction of W for which B1 produces a valid ActionPlan
+- **C2 (Code coverage):** fraction of W for which B2 produces syntactically valid test code
+- **C3 (Execution coverage):** fraction of W for which B3 produces a passing test. The C3 denominator excludes: (a) PRUNED workflows (provably infeasible), (b) workflows with outcome `FAIL_APP_NOT_READY` (environment deficiency, not test failure — B3 must record this outcome explicitly and must never reclassify it as a skip or treat it as equivalent to a user-declared skip), and (c) workflows explicitly listed in `manifest.skipWorkflows` (user-declared opt-out only; B3 must never autonomously add workflows to the skip set — it may only skip what the manifest declares). All other outcomes — including `FAIL_ELEMENT_NOT_FOUND`, `FAIL_ASSERTION`, `FAIL_TIMEOUT`, `FAIL_AUTH`, and `FAIL_UNKNOWN` — count against C3. If the readiness check fails, B3 marks all workflows for that subject `FAIL_APP_NOT_READY` without executing them, and exits the subject run.
+- **C4 (Oracle strength):** deferred (assertion richness beyond URL-match)
+
+PRUNED workflows are reported separately as "provably infeasible" and excluded from the coverage denominator.
+
+### B4 — Output Artifact Schema
+B4 emits `b4-coverage.json`:
+
+```ts
+B4CoverageReport {
+  input: PhaseAInputRef                  // A2 bundle reference
+  workflows: B4WorkflowEntry[]           // One entry per A2 workflow
+  summary: B4Summary
+}
+
+B4WorkflowEntry {
+  workflowId: string
+  verdict: WorkflowVerdict               // FEASIBLE | CONDITIONAL | PRUNED
+  hasPlan: boolean                       // B1 produced an ActionPlan
+  hasCode: boolean                       // B2 produced a test file
+  executionOutcome?: ExecutionOutcome    // Set by B3 (absent if not executed)
+  attempts?: number                      // B3 attempt count (1–3)
+  durationMs?: number                    // B3 total execution time
+  error?: string                         // B3 error message if not PASS
+}
+
+B4Summary {
+  subject: string
+  totalWorkflows: number                 // |W| = all A2 workflows
+  prunedCount: number                    // PRUNED verdict
+  appNotReadyCount: number               // FAIL_APP_NOT_READY outcomes
+  skippedCount: number                   // manifest.skipWorkflows (user-declared)
+  c1: number                             // plan coverage: hasPlan / (total - pruned)
+  c2: number                             // code coverage: hasCode / (total - pruned)
+  c3: number                             // exec coverage: PASS / (total - pruned - appNotReady - skipped)
+  c4: number                             // oracle strength: deferred
+}
+```
+
+The C1/C2 denominator is `totalWorkflows - prunedCount`. The C3 denominator is `totalWorkflows - prunedCount - appNotReadyCount - skippedCount`.
+
+---
+
+## B1 Output Artifacts
+`b1-intents.json` contains:
+
+```ts
+B1IntentSet {
+  input: PhaseAInputRef
+  intents: RealizationIntent[]
+  stats: {
+    totalCount: number
+    feasibleCount: number
+    conditionalCount: number
+    prunedCount: number
+  }
+}
+```
+
+`b1-plans.json` contains:
+
+```ts
+B1PlanSet {
+  input: PhaseAInputRef
+  plans: ActionPlan[]
+  stats: {
+    totalPlanned: number
+    skipped: number
+  }
+}
+```
+
+---
+
+## Difficulty Classes (D1–D7)
+| Class | Description |
+|-------|------------|
+| D1 | Simple FEASIBLE (click/nav, no constraints) |
+| D2 | Form submission (FormValid gate) |
+| D3 | Guard-protected navigation (route guard) |
+| D4 | Parameterized route navigation (requiredParams) |
+| D5 | Combined constraints (visibility gates, mixed) |
+| D6 | Dialog/modal component interaction |
+| D7 | External URL navigation |
+
+---
+
+## Phase A GT vs Phase B GT Policy
+Phase A GT (Definition A) defines what the extractor *should* extract — the extraction recall benchmark. It covers 256 unique triggers and excludes UI-feedback events like `(hovered)`.
+
+Phase B GT covers the full A2 workflow space (257 entries = all A2WorkflowSet.workflows), including any A2-surplus triggers that Phase A GT excluded. Phase B GT is the coverage benchmark for test generation.
+
+---
+
+## What Phase B Explicitly Does Not Do
+* No modification of A1 or A2 artifacts.
+* No re-extraction from source code.
+* No interpretation of Angular expressions at runtime (visibility gates are handled via `wait-for-element` steps).
+* No full semantic oracle (C4 deferred; initial scope is execution success).
+
+---
+
+## B5 — Execution Enhancements
+
+B0–B4 constitute the core Phase B pipeline. B5 covers execution-layer enhancements beyond the core pipeline, organized into a rigorous substage structure with clearly defined vocabulary, evidence classes, and implementation status.
+
+### B5 Canonical Vocabulary
+
+| Term | Definition | Phase | Kind |
+|---|---|---|---|
+| **workflow** | A2 TaskWorkflow: single-trigger interaction path through the multigraph | A2 | structural |
+| **test** | B2-generated Selenium WebDriver TypeScript file for one workflow | B2 | structural |
+| **manifest** | B0 SubjectManifest: subject configuration (baseUrl, accounts, params, auth) | B0 | structural |
+| **seed data** | Pre-existing application database state required for test execution | B0/B3 | environment |
+| **interaction data** | Form field values, route parameter values from B1 assignment | B1 | structural |
+| **environment** | Running application + backend + database at manifest.baseUrl | B3 | runtime |
+| **precondition** | B1 PreCondition: setup action before the trigger step (auth, navigate, dialog-open) | B1 | structural |
+| **postcondition** | B1 PostCondition: assertion after the trigger step (URL-match, no-crash) | B1 | structural |
+| **oracle** | The postcondition assertion strategy — determines what "pass" means | B1/B4 | oracle |
+| **coverage** | B4 tiered measurement: C1 (plan), C2 (code), C3 (execution), C4 (oracle strength) | B4 | oracle |
+| **validity** | Whether the test exercises the intended user interaction correctly | B3/B5 | oracle |
+| **debugging** | Root-cause analysis from execution evidence to structural origin | B5 | runtime |
+| **observability** | Structured evidence capture during test execution (B5.0 logs) | B5 | runtime |
+| **instrumentation agent** | Code injected or activated to capture runtime evidence beyond Selenium | B5 | runtime |
+| **UI** | The rendered browser DOM at a point in time | B3 | runtime |
+| **DOM** | Document Object Model — the browser's representation of the page | B3 | runtime |
+| **screenshot** | PNG capture of the browser viewport at a specific step/milestone | B5 | runtime |
+| **backend status** | HTTP response codes, API availability, database state | B3 | environment |
+
+### B5 Evidence Classes
+
+| Class | What it captures | Source | Available now |
+|---|---|---|---|
+| **Structural evidence** | A1 multigraph nodes/edges, A2 workflows, B1 plans, B2 test code | A1–B2 artifacts | Yes |
+| **Execution evidence** | Per-step success/failure, timing, locator resolution, route context | B5.0 logs | Yes |
+| **UI evidence** | Screenshots, DOM snippets (outerHTML), element tag names | B5.0 logs | Yes (partial) |
+| **Environment evidence** | App readiness, auth success, backend response timing | B3 readiness check, B5.0 auth step | Yes (partial) |
+| **Oracle evidence** | Postcondition assertion result, URL match, crash detection | B5.0 postcondition steps | Yes (C3 only) |
+| **Network evidence** | HTTP request/response pairs, timing, status codes | CDP (deferred) | No |
+| **Framework evidence** | Per-step Angular change detection status, component lifecycle | testability API (deferred) | No |
+
+### B5 Observability Model
+
+| Need | Required data | Currently available | Gap |
+|---|---|---|---|
+| **Coverage** | Test count, pass/fail, per-workflow verdict | B4 coverage report | None (C3 complete) |
+| **Validity** | Whether the correct element was interacted with | domEvidence, elementTagName | Partial (no post-action DOM) |
+| **Debugging** | Step-level causality, route context, failure classification | B5.0 logs | Sufficient for classification; network/framework evidence deferred |
+| **Timing analysis** | Per-step timestamps, auth duration, postcondition wait duration | B5.0 timestamps | Sufficient; CDP would add network-level timing |
+
+### B5 Instrumentation Architecture (Layered)
+
+| Layer | Scope | Mechanism | Status |
+|---|---|---|---|
+| **L1: Test instrumentation** | Generated test code | B2 emits logStep()/captureScreenshot() calls | Implemented (B5.0) |
+| **L2: Browser instrumentation** | Selenium WebDriver | CDP network/performance domains | Deferred (B5.3) |
+| **L3: Application instrumentation** | Target Angular app | Zone.js/testability API hooks | Deferred (B5.3) |
+
+L1 is generic (works with any subject). L2 requires Chrome/Chromium. L3 requires Angular-specific runtime hooks and may be subject-specific.
+
+### B5 Oracle Tiers
+
+| Tier | What it asserts | Current implementation | Status |
+|---|---|---|---|
+| **O1: Execution oracle** | Test runs without crash or timeout | assert-no-crash postcondition | Implemented |
+| **O2: Navigation oracle** | URL matches expected route after interaction | assert-url-matches postcondition | Implemented |
+| **O3: UI state oracle** | Expected DOM elements/text appear after interaction | Not implemented | Deferred (B5.5) |
+| **O4: Semantic state oracle** | Backend state changed as expected (entity CRUD) | Not implemented | Deferred (B5.5) |
+
+C3 coverage uses O1+O2. C4 coverage (deferred) requires O3+O4.
+
+### B5 Logging Architecture
+
+Two distinct logging contracts coexist:
+
+**A. Framework/system logs** — Describe the behavior of the pipeline itself.
+- Written by CLI entry points (a1-cli, b2-cli, b3-cli, viz-cli)
+- Format: JSONL (one JSON object per line) with PipelineLogEvent schema
+- Location: `logs/<phase>-pipeline.jsonl`
+- Fields: timestamp, phase, operation, subject, severity, event, message, duration, outcome, error, context
+
+**B. Per-test observability logs** — Describe runtime evidence of individual test execution.
+- Written by B2-generated test code at B3 runtime
+- Format: JSON (one file per test)
+- Location: `output/<subject>/logs/<testFile>.log.json`
+- Fields: workflowId, testFile, outcome, failedStepId, failureKind, duration, screenshots, steps[]
+
+These must never be collapsed. Framework logs trace pipeline progress across subjects. Test logs trace step-level execution evidence within a single test.
+
+---
+
+### B5.0 — Observability Contract (Implemented)
+
+B2-generated tests emit a structured JSON execution log per test run.
+
+**Screenshot contract:** Unified via `captureScreenshot()`. Milestone screenshots (after-preconditions, after-steps, final, error) and step-level failure screenshots use the same mechanism. All paths traceable from the structured log via `screenshots[]` and per-step `screenshotPath`.
+
+**Per-step log entry (field presence varies by step kind):**
+| Field | Type | Present for | Source |
+|---|---|---|---|
+| `stepId` | string | all | Deterministic: `pre-N`, `step-N`, `post-N` |
+| `edgeId` | string? | action steps | From ActionStep |
+| `stepType` | string | all | `precondition:<type>`, `click`, `submit`, `postcondition:<type>` |
+| `locator` | `{strategy, value}`? | action steps, preconditions | From ScopedLocator |
+| `timestampStart` | ISO 8601 | all | Captured before step execution |
+| `timestampEnd` | ISO 8601 | all | Captured in finally block |
+| `success` | boolean | all | From try/catch result |
+| `elementFound` | boolean? | action steps only | True iff findElement resolved. Omitted for preconditions/postconditions. |
+| `elementTagName` | string? | action steps only | Lowercase tag name of the resolved element |
+| `domEvidence` | string? | action steps only | outerHTML snippet (≤200 chars) |
+| `failureKind` | enum? | failed steps | `locator-not-found`, `interaction-failed`, `timeout`, `assertion-failed`, `navigation-failed`, `unknown` |
+| `error` | string? | failed steps | Raw error message |
+| `routeBefore` | string? | all | URL before step |
+| `routeAfter` | string? | all | URL after step |
+| `screenshotPath` | string? | failed steps | Step-level failure screenshot path |
+
+**Test-level summary:** workflowId, testFile, outcome, failedStepId, failureKind, duration, screenshots[], steps[].
+
+**Output:** `output/<subject>/logs/<testFileName>.log.json`
+
+**Wait/action invariant:** wait-for-element uses same scoped locator as subsequent action step.
+
+**Visualization:** `npm run viz -- output/<subject>` generates `vis/b3-execution.html` consuming B1/B2/B3/B4/B5.0/manifest artifacts. Enumerates from B2 canonical test set. Pure consumer.
+
+### B5.1 — Network-Aware Wait Strategies (Deferred)
+
+**Problem:** B3's current wait model uses fixed timeouts (IMPLICIT_WAIT 10s, NAVIGATION_WAIT 15s). For applications with backend API round-trips (HTTP POST → server processing → redirect), the fixed window is insufficient when the server response exceeds the timeout.
+
+**Evidence:** spring-petclinic-angular (10 tests), airbus-inventory (2 tests) exhibit postcondition timeouts where the test action is correct but the backend response + Angular routing pipeline exceeds 15s.
+
+**Strategies:**
+1. Wait-for-network-idle via Chrome DevTools Protocol (CDP)
+2. Per-step retry with exponential backoff
+3. Configurable per-subject timeout profiles (manifest.executionConfig)
+
+**Expected impact:** ~12 timing failures across petclinic + airbus.
+
+**Dependencies:** B5.0 (for timing evidence from step logs). No spec changes needed.
+
+### B5.2 — Component-Ready and Data-Ready Waits (Deferred)
+
+**Problem:** Angular components that fetch data from APIs render their interactive elements (buttons, links inside `*ngFor` loops) only after the HTTP response arrives and change detection completes. B3's implicit wait finds the element only if it renders within the timeout window.
+
+**Evidence:** spring-petclinic-angular (6 tests) exhibit element-timeout failures for buttons inside `*ngFor` list items. The data loads eventually (confirmed by screenshots of later page states) but not within the 10s implicit wait. ever-traduora (8 tests) exhibit auth timing failures where Angular transition exceeds 45s for authSuccessSelector.
+
+**Strategies:**
+1. Wait-for-specific-element after navigation (targeted CSS selector wait)
+2. Polling with application-specific readiness signals
+3. Wait-for-Angular-stability via CDP or `testability` API
+
+**Expected impact:** ~14 timing failures across petclinic + traduora.
+
+**Dependencies:** B5.0 (step timing evidence). CDP integration optional but beneficial.
+
+### B5.3 — Repeater-Aware Locator Semantics (Deferred)
+
+**Problem:** A1 assigns `stableIndex` to template-level widgets. In `*ngFor` repeaters, a single template widget produces N runtime instances. The `tag:nth-of-type(N)` locator using stableIndex targets the N-th element in the DOM, which may not correspond to the intended template-level widget when multiple `*ngFor` items are rendered.
+
+**Evidence:** spring-petclinic-angular list components (PettypeList, SpecialtyList, VetList) have template buttons at stableIndex 2–3 (Home, Add) that map to DOM positions 13–14 when 6 list items are rendered, each with 2 buttons.
+
+**Strategies:**
+1. Distinguish template-level from instance-level widgets in A1
+2. Emit list-item-scoped locators (e.g., `tr:nth-of-type(1) button:nth-of-type(1)`)
+3. Use text-content or data-attribute matching for disambiguation
+
+**Expected impact:** ~14 locator failures in petclinic list components.
+
+**Dependencies:** May require A1 extraction changes. Spec amendment needed.
+
+### B5.4 — Stronger Oracle Design / C4 (Deferred)
+
+**Problem:** B4's C3 metric measures execution success (test runs without crash/timeout). C4 (oracle strength) is deferred — current postconditions are limited to URL-match and no-crash assertions.
+
+**Strategies:**
+1. DOM content assertions (verify expected text/elements appear)
+2. State-change verification (entity created/updated/deleted)
+3. API response validation
+4. Visual regression comparison
+
+**Expected impact:** Enables C4 coverage measurement. ~3 oracle failures (heroes external URL redirect).
+
+**Dependencies:** B5.0 (evidence model). Spec amendment needed for C4 definition.
+
+### B5.5 — Data-Aware Test Preconditions (Deferred)
+
+**Problem:** Some workflows depend on application data state that may not exist in the seed database. Tests targeting list-item actions fail when the list is empty.
+
+**Evidence:** spring-petclinic-angular VisitList (2 tests) — visit table is empty for the seeded pet, so action buttons don't exist.
+
+**Strategies:**
+1. API-driven data seeding as a test precondition
+2. Data-dependency analysis from A1 service call chains
+3. Per-workflow data fixture generation
+
+**Expected impact:** ~4 seed/data failures across subjects.
+
+**Dependencies:** May require B1 plan structure changes. Spec amendment needed.
+
+### B5.6 — Inline Composed-Component Materialization (Deferred)
+
+**Problem:** Some Angular components are conditionally rendered inline by a parent (e.g., add forms toggled by a button click). Without a defensible opener derivation, the test navigates to the parent route but the child component is not yet rendered.
+
+**Evidence:** spring-petclinic-angular SpecialtyAdd (2 tests) — the add form component has no route and is toggled by a local handler that A1 cannot trace via CCS chains. ever-traduora (15 tests) — inline components composed via CCC with zero-widget parents or multiple CCC parents.
+
+**Strategies:**
+1. Template-level `*ngIf` visibility analysis for composed components
+2. Handler-name heuristics for toggle detection
+3. Wait-for-component-selector with increased timeout
+
+**Expected impact:** ~17 inline-component locator failures across petclinic + traduora.
+
+**Dependencies:** A1 compositionContext (already extracted). May require B1 plan changes.

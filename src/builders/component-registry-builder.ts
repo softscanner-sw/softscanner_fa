@@ -25,7 +25,7 @@ import { AngularTemplateParser } from '../parsers/angular/template-parser.js';
 import { TsAstUtils } from '../parsers/ts/ts-ast-utils.js';
 import { WidgetProcessor } from '../analyzers/template/widgets/widget-processor.js';
 import { TemplateConstraintExtractor } from '../analyzers/template/constraints/template-constraint-extractor.js';
-import { extractNestedComponentsFromAst } from '../analyzers/template/template-utils.js';
+import { extractNestedComponentsFromAst, extractNestedComponentContextsFromAst } from '../analyzers/template/template-utils.js';
 import { AnalysisCache } from '../services/analysis-cache.js';
 import { SilentLogger } from '../services/logger.js';
 import type { Logger } from '../services/logger.js';
@@ -207,8 +207,9 @@ export class ComponentRegistryBuilder {
     // Store full WidgetInfo objects for downstream builders
     this._widgetsByComponentId.set(canonicalName, enrichedWidgets);
 
-    // Extract nested component selectors
+    // Extract nested component selectors and their composition-site contexts
     const nestedSelectors = extractNestedComponentsFromAst(ast);
+    const nestedContexts = extractNestedComponentContextsFromAst(ast);
 
     // Build stable symbol
     const symbol = {
@@ -225,6 +226,7 @@ export class ComponentRegistryBuilder {
       origin: meta.origin,
       declaredInModuleIds: [],    // populated post-hoc by ModuleRegistryBuilder if needed
       usesComponentIds: nestedSelectors, // best-effort via selectors (resolved later)
+      ...(Object.keys(nestedContexts).length > 0 ? { compositionContexts: nestedContexts } : {}),
       widgets: enrichedWidgets.map((w) => w.id),
     };
     if (meta.templateUrl !== null) info.templateUrl = meta.templateUrl;

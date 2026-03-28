@@ -10,7 +10,7 @@
  *   5. WidgetEventMapBuilder.build(...)
  *   6. ServiceExtraction (resolve @Injectable classes)
  *   7. NavigationGraphBuilder.build(...) → Multigraph
- *   8. Assemble Phase1Bundle (multigraph + stats)
+ *   8. Assemble A1Multigraph (multigraph + stats)
  *   9. AnalysisValidator.validatePhase1(bundle)
  *  10. Optional disk output
  *  11. Return bundle
@@ -18,7 +18,7 @@
 
 import type { Project, Decorator } from 'ts-morph';
 import type { AnalyzerConfig } from '../models/analyzer-config.js';
-import type { Phase1Bundle } from '../models/multigraph.js';
+import type { A1Multigraph } from '../models/multigraph.js';
 import { STRUCTURAL_EDGE_KINDS } from '../models/multigraph.js';
 import type { A1InternalBundle } from '../models/analysis-bundle.js';
 import { TsProjectBuilder } from '../builders/ts-project-builder.js';
@@ -52,7 +52,7 @@ export class Phase1Orchestrator {
     this._log = options.logger ?? new SilentLogger();
   }
 
-  run(): Phase1Bundle {
+  run(): A1Multigraph {
     this._log.info('Phase 1 pipeline starting');
 
     // Step 1 — Project
@@ -172,13 +172,13 @@ export class Phase1Orchestrator {
       });
     }
 
-    // Step 8 — Assemble Phase1Bundle (spec-compliant)
+    // Step 8 — Assemble A1Multigraph (spec-compliant)
     const structuralEdgeCount = multigraph.edges.filter(
       (e) => STRUCTURAL_EDGE_KINDS.has(e.kind),
     ).length;
     const executableEdgeCount = multigraph.edges.length - structuralEdgeCount;
 
-    const bundle: Phase1Bundle = {
+    const bundle: A1Multigraph = {
       multigraph,
       stats: {
         nodeCount: multigraph.nodes.length,

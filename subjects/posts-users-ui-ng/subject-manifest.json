@@ -1,0 +1,8 @@
+{
+  "subjectName": "posts-users-ui-ng",
+  "baseUrl": "http://localhost:4200",
+  "accounts": [],
+  "routeParamValues": {
+    "id": "3f57c674-52eb-48f7-b067-3254fdba47ff"
+  }
+}

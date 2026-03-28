@@ -1,0 +1,934 @@
+{
+  "subject": "softscanner-cqa-frontend",
+  "generatedDate": "2026-03-10",
+  "a2Source": "output/softscanner-cqa-frontend/json/a2-workflows.json",
+  "totalEntries": 16,
+  "difficultyBreakdown": {
+    "D1": 13,
+    "D2": 1,
+    "D6": 2
+  },
+  "entries": [
+    {
+      "gtId": "cqa-GT-01",
+      "workflowId": "MetadataFormComponent|metadata-form.component.html:29:9|Select|0::WTH",
+      "a2WorkflowIndex": 0,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "selectionChange",
+        "triggerWidgetTag": "mat-select",
+        "triggerWidgetKind": "Select",
+        "componentSelector": "app-metadata-form",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "select-option",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form mat-select#type",
+            "componentScope": "app-metadata-form",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "mat-select with id='type' and name='type'; handler: onTypeChange()",
+      "knownChallenges": [
+        "mat-select requires Angular Material interaction pattern: click to open overlay, then click option"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-02",
+      "workflowId": "MetadataFormComponent|metadata-form.component.html:5:5|Form|0::WSF",
+      "a2WorkflowIndex": 1,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "app-metadata-form",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/",
+        "formFields": [
+          {
+            "name": "name",
+            "tag": "input",
+            "id": "name",
+            "required": true,
+            "ngModel": "appMetadata.name"
+          },
+          {
+            "name": "path",
+            "tag": "input",
+            "id": "path",
+            "required": true,
+            "ngModel": "appMetadata.path"
+          },
+          {
+            "name": "url",
+            "tag": "input",
+            "id": "url",
+            "required": true,
+            "ngModel": "appMetadata.url"
+          },
+          {
+            "name": "type",
+            "tag": "mat-select",
+            "id": "type",
+            "required": true
+          },
+          {
+            "name": "technology",
+            "tag": "mat-select",
+            "id": "technology",
+            "required": true
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "name": "test-app",
+            "path": "/tmp/test",
+            "url": "http://localhost:4200",
+            "type": "Web Application",
+            "technology": "Angular"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-field",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form input#name",
+            "value": "test-app",
+            "componentScope": "app-metadata-form"
+          },
+          {
+            "type": "fill-field",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form input#path",
+            "value": "/tmp/test",
+            "componentScope": "app-metadata-form"
+          },
+          {
+            "type": "fill-field",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form input#url",
+            "value": "http://localhost:4200",
+            "componentScope": "app-metadata-form"
+          },
+          {
+            "type": "select-option",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form mat-select#type",
+            "value": "Web Application",
+            "componentScope": "app-metadata-form"
+          },
+          {
+            "type": "select-option",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form mat-select#technology",
+            "value": "Angular",
+            "componentScope": "app-metadata-form"
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metadata-form form",
+            "componentScope": "app-metadata-form",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Form with 5 required fields (3 inputs + 2 mat-selects). All have id attributes. Submit button is type=submit inside form. CONDITIONAL verdict due to FormValid atom.",
+      "knownChallenges": [
+        "All 5 required fields must be filled for form to be valid",
+        "mat-select fields require Material overlay interaction",
+        "Form validity gate (FormValid atom)"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-03",
+      "workflowId": "QualityAssessmentComponent|quality-assessment.component.html:35:9|Button|0::WTH",
+      "a2WorkflowIndex": 2,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-quality-assessment",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-quality-assessment button[type='button']",
+            "componentScope": "app-quality-assessment",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Button with type='button'; handler: toggleAssessment(). Effect chain includes COMPONENT_CALLS_SERVICE to ApiService.",
+      "knownChallenges": [
+        "Button triggers API call via service; assessment state must be set up first"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-04",
+      "workflowId": "QualityModelComponent|quality-model.component.html:13:17|Button|1::WTH",
+      "a2WorkflowIndex": 3,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-quality-model",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-quality-model mat-nested-tree-node button",
+            "componentScope": "app-quality-model",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Button inside mat-nested-tree-node (branch node); handler: showGoalDetails(). Opens GoalDetailsComponent dialog.",
+      "knownChallenges": [
+        "Tree must have data loaded; button is inside a mat-tree nested node; requires tree node to be expanded"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-05",
+      "workflowId": "QualityModelComponent|quality-model.component.html:16:17|Checkbox|0::WTH",
+      "a2WorkflowIndex": 4,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "change",
+        "triggerWidgetTag": "mat-checkbox",
+        "triggerWidgetKind": "Checkbox",
+        "componentSelector": "app-quality-model",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-quality-model mat-nested-tree-node mat-checkbox",
+            "componentScope": "app-quality-model",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "mat-checkbox inside mat-nested-tree-node (branch node); handler: toggleGoalSelection(). Requires tree data loaded and node expanded.",
+      "knownChallenges": [
+        "Checkbox is inside tree branch node; tree must have data and node must be visible"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-06",
+      "workflowId": "QualityModelComponent|quality-model.component.html:29:17|Button|2::WTH",
+      "a2WorkflowIndex": 5,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-quality-model",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-quality-model mat-tree-node button",
+            "componentScope": "app-quality-model",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Button inside mat-tree-node (leaf node); handler: showGoalDetails(). Opens GoalDetailsComponent dialog.",
+      "knownChallenges": [
+        "Tree must have data loaded; button is inside a mat-tree leaf node"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-07",
+      "workflowId": "QualityModelComponent|quality-model.component.html:32:17|Checkbox|1::WTH",
+      "a2WorkflowIndex": 6,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "change",
+        "triggerWidgetTag": "mat-checkbox",
+        "triggerWidgetKind": "Checkbox",
+        "componentSelector": "app-quality-model",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-quality-model mat-tree-node mat-checkbox",
+            "componentScope": "app-quality-model",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "mat-checkbox inside mat-tree-node (leaf node); handler: toggleGoalSelection(). Requires tree data loaded.",
+      "knownChallenges": [
+        "Checkbox is inside tree leaf node; tree must have data"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-08",
+      "workflowId": "CollapsibleGoalPanelsComponent|collapsible-goal-panels.component.html:2:5|Unknown|0::WTH::opened",
+      "a2WorkflowIndex": 7,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "opened",
+        "triggerWidgetTag": "mat-expansion-panel",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-collapsible-goal-panels",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-collapsible-goal-panels mat-expansion-panel-header",
+            "componentScope": "app-collapsible-goal-panels",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "mat-expansion-panel opened event; click on mat-expansion-panel-header to trigger. Handler: onPanelOpened(). Panel must be in *ngFor loop over goals.",
+      "knownChallenges": [
+        "Panel is inside *ngFor; need goal data loaded to have panels rendered",
+        "Click target is mat-expansion-panel-header, not the panel itself"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-09",
+      "workflowId": "CollapsibleGoalPanelsComponent|collapsible-goal-panels.component.html:2:5|Unknown|0::WTH::closed",
+      "a2WorkflowIndex": 8,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "closed",
+        "triggerWidgetTag": "mat-expansion-panel",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-collapsible-goal-panels",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "ensure-panel-open",
+            "note": "Panel must be expanded first before it can be closed"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-collapsible-goal-panels mat-expansion-panel-header",
+            "componentScope": "app-collapsible-goal-panels",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "mat-expansion-panel closed event; same widget as GT-08 but different trigger (closed). Handler: onPanelClosed(). Must open panel first, then close it.",
+      "knownChallenges": [
+        "Panel must be opened before it can be closed; requires two-step interaction"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-10",
+      "workflowId": "GoalAssessmentOverviewComponent|goal-assessment-overview.component.html:23:3|Unknown|1::WTH",
+      "a2WorkflowIndex": 9,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "select",
+        "triggerWidgetTag": "ngx-charts-bar-horizontal",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-goal-assessment-overview",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-goal-assessment-overview ngx-charts-bar-horizontal",
+            "componentScope": "app-goal-assessment-overview",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "ngx-charts-bar-horizontal chart; handler: onMetricLegendClick(). Requires chart data to be loaded.",
+      "knownChallenges": [
+        "Chart interaction requires clicking on a rendered bar element inside SVG",
+        "Chart must have data loaded to render bars"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-11",
+      "workflowId": "GoalAssessmentOverviewComponent|goal-assessment-overview.component.html:7:3|Unknown|0::WTH",
+      "a2WorkflowIndex": 10,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "select",
+        "triggerWidgetTag": "ngx-charts-line-chart",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-goal-assessment-overview",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-goal-assessment-overview ngx-charts-line-chart",
+            "componentScope": "app-goal-assessment-overview",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "ngx-charts-line-chart; handler: onGoalLegendClick(). Requires chart data to be loaded.",
+      "knownChallenges": [
+        "Chart interaction requires clicking on a rendered data point inside SVG",
+        "Chart must have data loaded"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-12",
+      "workflowId": "GoalDetailsComponent|goal-details.component.html:13:5|Button|0::WTH",
+      "a2WorkflowIndex": 11,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-goal-details",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-goal-details button",
+            "componentScope": "app-goal-details",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Close button inside GoalDetailsComponent dialog. Handler: close(). Dialog opened via MatDialog from QualityModelComponent.showGoalDetails().",
+      "knownChallenges": [
+        "Dialog must be opened first by clicking a tree node button in QualityModelComponent",
+        "MatDialog component — not in DOM until opened"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-13",
+      "workflowId": "MetricDetailsComponent|metric-details.component.html:40:5|Button|0::WTH",
+      "a2WorkflowIndex": 12,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-metric-details",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metric-details button",
+            "componentScope": "app-metric-details",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Close button inside MetricDetailsComponent dialog. Handler: close(). Dialog opened via MatDialog from MetricsDashboardComponent.openMetricDetails() or GoalAssessmentOverviewComponent.",
+      "knownChallenges": [
+        "Dialog must be opened first via openMetricDetails() call",
+        "MatDialog component — not in DOM until opened"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-14",
+      "workflowId": "MetricsDashboardComponent|metrics-dashboard.component.html:12:13|Button|0::WTH",
+      "a2WorkflowIndex": 13,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-metrics-dashboard",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metrics-dashboard button",
+            "componentScope": "app-metrics-dashboard",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "Button inside MetricsDashboardComponent; handler: openMetricDetails(). Opens MetricDetailsComponent dialog via MatDialog.",
+      "knownChallenges": [
+        "Button is inside an *ngFor over metrics; need metrics data loaded",
+        "Opens a MatDialog — success criterion is dialog appearance"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-15",
+      "workflowId": "MetricsDashboardComponent|metrics-dashboard.component.html:22:11|Unknown|0::WTH",
+      "a2WorkflowIndex": 14,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "select",
+        "triggerWidgetTag": "ngx-charts-line-chart",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-metrics-dashboard",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metrics-dashboard ngx-charts-line-chart",
+            "componentScope": "app-metrics-dashboard",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "ngx-charts-line-chart inside MetricsDashboardComponent; handler: onLegendClick(). Requires metrics data loaded.",
+      "knownChallenges": [
+        "Chart interaction requires clicking on rendered SVG element",
+        "Chart must have data loaded"
+      ]
+    },
+    {
+      "gtId": "cqa-GT-16",
+      "workflowId": "MetricsDashboardComponent|metrics-dashboard.component.html:37:11|Unknown|1::WTH",
+      "a2WorkflowIndex": 15,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "select",
+        "triggerWidgetTag": "ngx-charts-bar-vertical",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "app-metrics-dashboard",
+        "startRouteFullPaths": [
+          "/"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-metrics-dashboard ngx-charts-bar-vertical",
+            "componentScope": "app-metrics-dashboard",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/"
+      },
+      "locatorNotes": "ngx-charts-bar-vertical inside MetricsDashboardComponent; handler: onLegendClick(). Requires metrics data loaded.",
+      "knownChallenges": [
+        "Chart interaction requires clicking on rendered SVG bar element",
+        "Chart must have data loaded"
+      ]
+    }
+  ]
+}

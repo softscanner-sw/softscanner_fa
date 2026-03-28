@@ -48,9 +48,9 @@ export interface ModuleInfo {
   /** Route IDs whose definition belongs to this module (sorted, unique). */
   routesOwned: string[];
 
-  /** Per-import-name origin for edge ref generation (internal; not part of Phase1Bundle). */
+  /** Per-import-name origin for edge ref generation (internal; not part of A1Multigraph). */
   importOrigins?: Record<string, Origin>;
-  /** Per-export-name origin for edge ref generation (internal; not part of Phase1Bundle). */
+  /** Per-export-name origin for edge ref generation (internal; not part of A1Multigraph). */
   exportOrigins?: Record<string, Origin>;
 
   /** Present when the module is lazily loaded via the router. */
