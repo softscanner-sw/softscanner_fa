@@ -1,7 +1,15 @@
 /**
  * b3-cli.ts
  * CLI for B3 execution + B4 coverage reporting.
- * Usage: npx tsx src/b3-cli.ts <subjectName>
+ *
+ * Usage:
+ *   npx tsx src/b3-cli.ts <subjectName> [options]
+ *
+ * Options:
+ *   --resume         Resume an interrupted prior run
+ *   --failed-only    Only rerun tests that failed in prior b3-results.json
+ *   --only <ids>     Only run specific workflow IDs (comma-separated)
+ *   --batch-size <N> Clean up Chrome every N tests (default: 10)
  *
  * Assumes the application is already running at the manifest's baseUrl.
  */
@@ -14,12 +22,28 @@ import { generateReport, generatePdf } from './phase-b/b3/report-generator.js';
 import type { B3Config } from './phase-b/b3/b3-types.js';
 import { PipelineLogger } from './services/logger.js';
 
-const subjectName = process.argv[2];
+// --- Parse CLI args ---
+const args = process.argv.slice(2);
+const subjectName = args.find(a => !a.startsWith('--'));
 if (!subjectName) {
-  console.error('Usage: npx tsx src/b3-cli.ts <subjectName>');
-  console.error('Example: npx tsx src/b3-cli.ts posts-users-ui-ng');
+  console.error('Usage: npx tsx src/b3-cli.ts <subjectName> [--resume] [--failed-only] [--only <ids>] [--batch-size <N>]');
   process.exit(1);
 }
+
+const hasFlag = (flag: string) => args.includes(flag);
+const getFlagValue = (flag: string): string | undefined => {
+  const idx = args.indexOf(flag);
+  return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : undefined;
+};
+
+const resume = hasFlag('--resume');
+const failedOnly = hasFlag('--failed-only');
+const onlyRaw = getFlagValue('--only');
+const onlyWorkflows = onlyRaw !== undefined ? onlyRaw.split(',').map(s => s.trim()) : undefined;
+const batchSizeRaw = getFlagValue('--batch-size');
+const batchSize = batchSizeRaw !== undefined ? parseInt(batchSizeRaw, 10) : 10; // default: cleanup every 10 tests
+const maxRetriesRaw = getFlagValue('--max-retries');
+const maxRetries = maxRetriesRaw !== undefined ? parseInt(maxRetriesRaw, 10) : 3;
 
 const projectRoot = process.cwd();
 const manifestPath = path.join(projectRoot, 'subjects', subjectName, 'subject-manifest.json');
@@ -39,8 +63,8 @@ if (!fs.existsSync(testsDir)) {
   process.exit(1);
 }
 
-// Clean previous screenshots (tests will create their own subdirectories)
-if (fs.existsSync(screenshotDir)) {
+// Clean previous screenshots only on full runs (not resume/failed-only)
+if (!resume && !failedOnly && fs.existsSync(screenshotDir)) {
   fs.rmSync(screenshotDir, { recursive: true, force: true });
 }
 
@@ -50,25 +74,52 @@ const config: B3Config = {
   outputDir,
   testsDir,
   screenshotDir,
-  maxRetries: 3,
+  maxRetries,
   readinessTimeoutMs: 30_000,
   testTimeoutMs: 60_000,
   skipWorkflows: manifest.skipWorkflows,
   ...(manifest.executionConfig?.preAttemptCommand
     ? { preAttemptCommand: manifest.executionConfig.preAttemptCommand }
     : {}),
+  ...(manifest.executionConfig?.batchResetCommand
+    ? { batchResetCommand: manifest.executionConfig.batchResetCommand }
+    : {}),
+  // Execution control
+  resume,
+  failedOnly,
+  ...(onlyWorkflows !== undefined ? { onlyWorkflows } : {}),
+  batchSize,
 };
 
+const mode = failedOnly ? 'failed-only' : resume ? 'resume' : onlyWorkflows ? 'selective' : 'full';
 const plog = new PipelineLogger('B3', 'execution');
-plog.info('pipeline-start', `B3/B4 starting for ${subjectName}`, { subject: subjectName, context: { baseUrl: config.baseUrl } });
+plog.info('pipeline-start', `B3/B4 starting for ${subjectName} (mode: ${mode})`, { subject: subjectName, context: { baseUrl: config.baseUrl, mode } });
 
-console.log(`B3/B4 pilot for ${subjectName}`);
+console.log(`B3/B4 pilot for ${subjectName} (mode: ${mode})`);
 console.log(`  baseUrl: ${config.baseUrl}`);
 console.log(`  tests: ${testsDir}`);
+console.log(`  batchSize: ${batchSize}`);
+if (resume) console.log(`  resume: true`);
+if (failedOnly) console.log(`  failedOnly: true`);
+if (onlyWorkflows) console.log(`  only: ${onlyWorkflows.length} workflows`);
 console.log('');
 
-// Top-level await — node --import tsx/esm properly awaits this.
 try {
+  // --- Seed lifecycle (run ONCE before any tests) ---
+  const seedCommand = manifest.executionConfig?.seedCommand;
+  if (seedCommand) {
+    console.log(`Running seed command: ${seedCommand}`);
+    try {
+      const { execSync } = await import('node:child_process');
+      execSync(seedCommand, { stdio: 'inherit', timeout: 120000, cwd: projectRoot });
+      console.log('  Seed command completed.');
+    } catch (seedErr) {
+      console.error(`  Seed command FAILED: ${(seedErr as Error).message?.slice(0, 200)}`);
+      console.error('  Continuing without seed — tests may fail due to missing data.');
+    }
+  }
+  console.log('');
+
   // --- B3: Execution ---
   const b3 = await runB3(config);
   console.log('');

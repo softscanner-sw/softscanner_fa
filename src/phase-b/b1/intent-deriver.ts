@@ -160,6 +160,11 @@ function deriveTriggerWidget(
     ...(widget.meta.ui.formControlName !== undefined ? { formControlName: widget.meta.ui.formControlName } : {}),
     ...(widget.meta.routerLinkText !== undefined ? { routerLinkText: widget.meta.routerLinkText } : {}),
     ...(containingFormId !== undefined ? { containingFormId } : {}),
+    ...(widget.meta.insideNgFor !== undefined ? { insideNgFor: widget.meta.insideNgFor } : {}),
+    ...(widget.meta.insideNgForOrdinal !== undefined ? { insideNgForOrdinal: widget.meta.insideNgForOrdinal } : {}),
+    ...(widget.meta.ngForItemTag !== undefined ? { ngForItemTag: widget.meta.ngForItemTag } : {}),
+    ...(widget.meta.text !== undefined ? { text: widget.meta.text } : {}),
+    ...(widget.meta.compositionGates !== undefined && widget.meta.compositionGates.length > 0 ? { compositionGates: widget.meta.compositionGates } : {}),
   };
 }
 

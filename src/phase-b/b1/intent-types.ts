@@ -41,6 +41,18 @@ export interface IntentTriggerWidget {
   formControlName?: string;
   routerLinkText?: string;
   containingFormId?: string;
+  /** Set when the widget is inside a *ngFor repeater container.
+   *  Value is the iterable expression (e.g., "petTypes", "owners").
+   *  When set, tag-position locators are unsound — B1 must use repeater-relative locators. */
+  insideNgFor?: string;
+  /** 0-based ordinal among same-tag widgets within the same *ngFor repeater template. */
+  insideNgForOrdinal?: number;
+  /** Tag name of the *ngFor host element (repeater item root, e.g., "tr", "div"). */
+  ngForItemTag?: string;
+  /** Static text content of the widget element (e.g., "Add", "Home"). */
+  text?: string;
+  /** Transitive composition gates (insideNgIf expressions from ancestor CCC edges). */
+  compositionGates?: string[];
 }
 
 /** Form field schema entry (WSF triggers only). */

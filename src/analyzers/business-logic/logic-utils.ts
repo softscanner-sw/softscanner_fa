@@ -172,7 +172,7 @@ function _extractFromMethod(
       continue;
     }
 
-    // ── DialogOpen — this.dialog.open(Component) / this.modalService.open(Component)
+    // ── DialogOpen — this.dialog.open(Component) / this.modalService.open(templateRef)
     if (exprText.endsWith('.open')) {
       const dialogMatch = exprText.match(
         /^(?:this\.)?([A-Za-z_$][A-Za-z0-9_$]*)\.open$/,
@@ -180,15 +180,27 @@ function _extractFromMethod(
       if (dialogMatch !== null) {
         const args = TsAstUtils.getCallExpressionArgs(callExpr, maxLen);
         const firstArg = args[0];
-        // First argument should be a component class name (PascalCase identifier)
-        if (firstArg !== undefined && /^[A-Z][A-Za-z0-9_$]*$/.test(firstArg)) {
-          contexts.push({
-            kind: 'DialogOpen',
-            target: { componentClassName: firstArg },
-            args,
-            origin: TsAstUtils.getOrigin(callExpr),
-          });
-          continue;
+        if (firstArg !== undefined) {
+          // PascalCase → component class name (e.g., EditUserComponent)
+          if (/^[A-Z][A-Za-z0-9_$]*$/.test(firstArg)) {
+            contexts.push({
+              kind: 'DialogOpen',
+              target: { componentClassName: firstArg },
+              args,
+              origin: TsAstUtils.getOrigin(callExpr),
+            });
+            continue;
+          }
+          // camelCase identifier → template reference variable (e.g., content, contentSecret)
+          if (/^[a-z][A-Za-z0-9_$]*$/.test(firstArg)) {
+            contexts.push({
+              kind: 'DialogOpen',
+              target: { templateRef: firstArg },
+              args,
+              origin: TsAstUtils.getOrigin(callExpr),
+            });
+            continue;
+          }
         }
       }
     }
@@ -258,19 +270,221 @@ function _extractFromMethod(
         }
       }
     }
+
+    // ── Subscribe callback capture ───────────────────────────────────────
+    // Detect .subscribe(callback) on this.<expr> chains and inspect the
+    // callback body for Navigate, ServiceCall, DialogOpen, StateUpdate.
+    // Spec: approach.md "Subscribe callback capture (normative)".
+    if (depth < 1) {
+      _captureSubscribeCallbacks(callExpr, maxLen, classDecl, contexts, visited, depth);
+    }
   }
 
   // ── StateUpdate — this.<prop> = … (only at depth 0) ───────────────────
+  // Extract the mutated property name so downstream can match it against
+  // *ngIf expressions / visibility gates on composed components/widgets.
   if (depth === 0) {
     for (const binaryExpr of method.getDescendantsOfKind(SyntaxKind.BinaryExpression)) {
       if (contexts.length >= 20) break;
       const text = binaryExpr.getText().trim();
-      if (text.startsWith('this.') && text.includes('=')) {
+      const propMatch = text.match(/^this\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/);
+      if (propMatch !== null) {
         contexts.push({
           kind: 'StateUpdate',
-          target: {},
+          target: { mutatedProperty: propMatch[1]! },
           args: [TsAstUtils.truncateDeterministically(text, maxLen)],
           origin: methodOrigin,
+        });
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Subscribe callback capture
+// ---------------------------------------------------------------------------
+
+/**
+ * Detect `.subscribe(callback)` on `this.<expr>` chains and recursively
+ * inspect the callback body for call contexts.
+ *
+ * Patterns captured:
+ *   this.service.action().subscribe(result => { ... })
+ *   this.service.action().subscribe((result) => { ... })
+ *   this.dialogRef.afterClosed().subscribe(result => { ... })
+ *   this.obs$.subscribe({ next: (val) => { ... } })
+ *
+ * Only the first argument (or `next` property of an object argument) is inspected.
+ * Pipe operators are NOT followed — only the terminal .subscribe() callback.
+ */
+function _captureSubscribeCallbacks(
+  callExpr: import('ts-morph').CallExpression,
+  maxLen: number,
+  classDecl: ClassDeclaration | undefined,
+  contexts: EventHandlerCallContext[],
+  visited: Set<string>,
+  depth: number,
+): void {
+  // Must be a .subscribe() call
+  const exprNode = callExpr.getExpression();
+  if (exprNode.getKind() !== SyntaxKind.PropertyAccessExpression) return;
+  const propAccess = exprNode as import('ts-morph').PropertyAccessExpression;
+  if (propAccess.getName() !== 'subscribe') return;
+
+  // The chain must originate from `this.` (to avoid capturing unrelated observables)
+  const fullText = callExpr.getExpression().getText().trim();
+  if (!fullText.startsWith('this.')) return;
+
+  const args = callExpr.getArguments();
+  if (args.length === 0) return;
+
+  const firstArg = args[0]!;
+  let callbackBody: import('ts-morph').Node | undefined;
+
+  // Case 1: Arrow function or function expression as first argument
+  if (firstArg.getKind() === SyntaxKind.ArrowFunction ||
+      firstArg.getKind() === SyntaxKind.FunctionExpression) {
+    callbackBody = firstArg;
+  }
+  // Case 2: Object literal with `next` property
+  else if (firstArg.getKind() === SyntaxKind.ObjectLiteralExpression) {
+    const objLit = firstArg as import('ts-morph').ObjectLiteralExpression;
+    for (const prop of objLit.getProperties()) {
+      if (prop.getKind() === SyntaxKind.PropertyAssignment) {
+        const propAssign = prop as import('ts-morph').PropertyAssignment;
+        if (propAssign.getName() === 'next') {
+          const init = propAssign.getInitializer();
+          if (init !== undefined &&
+              (init.getKind() === SyntaxKind.ArrowFunction ||
+               init.getKind() === SyntaxKind.FunctionExpression)) {
+            callbackBody = init;
+          }
+        }
+      }
+    }
+  }
+
+  if (callbackBody === undefined) return;
+
+  // Extract call contexts from the callback body's call expressions.
+  // Reuse the same mechanism: scan for CallExpression descendants and process them.
+  const callbackKey = `subscribe@${callExpr.getStart()}`;
+  if (visited.has(callbackKey)) return;
+  visited.add(callbackKey);
+
+  const callExprs = callbackBody.getDescendantsOfKind(SyntaxKind.CallExpression);
+  for (const innerCall of callExprs) {
+    if (contexts.length >= 20) break;
+
+    const innerExpr = innerCall.getExpression();
+    const innerText = innerExpr.getText().trim();
+
+    // Navigate patterns inside subscribe callback
+    if (
+      innerText.endsWith('.navigate') ||
+      innerText.endsWith('.navigateByUrl') ||
+      innerText === 'this.router.navigate' ||
+      innerText.endsWith('.back') ||
+      innerText.endsWith('.go')
+    ) {
+      const navArgs = innerCall.getArguments();
+      const args = navArgs.map(a => TsAstUtils.truncateDeterministically(a.getText(), maxLen));
+      const target: EventHandlerCallContext['target'] = {};
+      if (args[0] !== undefined) target.route = args[0];
+      contexts.push({
+        kind: 'Navigate',
+        target,
+        args,
+        origin: TsAstUtils.getOrigin(innerCall),
+      });
+      continue;
+    }
+
+    // Navigate (external URL) inside subscribe callback
+    if (innerText.startsWith('window.location') || innerText.startsWith('window.open')) {
+      const navArgs = innerCall.getArguments();
+      const args = navArgs.map(a => TsAstUtils.truncateDeterministically(a.getText(), maxLen));
+      const target: EventHandlerCallContext['target'] = {};
+      if (args[0] !== undefined) target.url = args[0];
+      contexts.push({
+        kind: 'Navigate',
+        target,
+        args,
+        origin: TsAstUtils.getOrigin(innerCall),
+      });
+      continue;
+    }
+
+    // DialogOpen inside subscribe callback
+    if (innerText.endsWith('.open')) {
+      const dialogArgs = innerCall.getArguments();
+      if (dialogArgs.length > 0) {
+        const firstArgText = dialogArgs[0]!.getText().trim();
+        const args = dialogArgs.map(a => TsAstUtils.truncateDeterministically(a.getText(), maxLen));
+        if (/^[A-Z]/.test(firstArgText)) {
+          contexts.push({
+            kind: 'DialogOpen',
+            target: { componentClassName: firstArgText },
+            args,
+            origin: TsAstUtils.getOrigin(innerCall),
+          });
+          continue;
+        } else if (/^[a-z]/.test(firstArgText)) {
+          contexts.push({
+            kind: 'DialogOpen',
+            target: { templateRef: firstArgText },
+            args,
+            origin: TsAstUtils.getOrigin(innerCall),
+          });
+          continue;
+        }
+      }
+    }
+
+    // ServiceCall inside subscribe callback (this.<service>.<method>())
+    const svcMatch = innerText.match(
+      /^this\.([A-Za-z_$][A-Za-z0-9_$]*)\.([A-Za-z_$][A-Za-z0-9_$]*)$/,
+    );
+    if (svcMatch !== null) {
+      const resolvedName = svcMatch[1]!;
+      const methodPart = svcMatch[2]!;
+      contexts.push({
+        kind: 'ServiceCall',
+        target: { serviceMethod: `${resolvedName}.${methodPart}` },
+        args: innerCall.getArguments().map(a => TsAstUtils.truncateDeterministically(a.getText(), maxLen)),
+        origin: TsAstUtils.getOrigin(innerCall),
+      });
+      continue;
+    }
+
+    // Same-class method call inside subscribe callback → follow transitively
+    if (depth < 1 && classDecl !== undefined) {
+      const sameClassMatch = innerText.match(/^this\.([A-Za-z_$][A-Za-z0-9_$]*)$/);
+      if (sameClassMatch !== null) {
+        const calleeName = sameClassMatch[1]!;
+        if (!visited.has(calleeName)) {
+          const calleeMethod = classDecl.getMethod(calleeName);
+          if (calleeMethod !== undefined) {
+            visited.add(calleeName);
+            _extractFromMethod(calleeMethod, maxLen, classDecl, contexts, visited, depth + 1);
+          }
+        }
+      }
+    }
+  }
+
+  // StateUpdate inside subscribe callback (only at depth 0, matching _extractFromMethod behavior)
+  if (depth === 0) {
+    for (const binaryExpr of callbackBody.getDescendantsOfKind(SyntaxKind.BinaryExpression)) {
+      if (contexts.length >= 20) break;
+      const text = binaryExpr.getText().trim();
+      const propMatch = text.match(/^this\.([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/);
+      if (propMatch !== null) {
+        contexts.push({
+          kind: 'StateUpdate',
+          target: { mutatedProperty: propMatch[1]! },
+          args: [TsAstUtils.truncateDeterministically(text, maxLen)],
+          origin: TsAstUtils.getOrigin(binaryExpr, propMatch[1]!),
         });
       }
     }

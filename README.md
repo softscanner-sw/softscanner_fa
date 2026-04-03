@@ -43,23 +43,27 @@ Per-subject results: pass/fail, screenshots, coverage report
 |---|---|---|
 | Phase A1 | COMPLETE | Deterministic multigraph extraction (6 node kinds, 18 edge kinds) |
 | Phase A2 | COMPLETE | TaskWorkflow enumeration (257 workflows across 6 subjects) |
-| B0 | COMPLETE | Manifest validation (6/6 subjects valid) |
+| B0 | COMPLETE | Manifest validation + seed contract (6/6 subjects valid) |
 | B1 | COMPLETE | Intent + plan derivation (257/257 GT matched) |
 | B2 | COMPLETE | Test code generation (257/257, 100% generation rate) |
-| B3/B4 | IN PROGRESS | Sequential single-subject rollout |
+| B3/B4 | COMPLETE | 5-subject benchmark baseline (integrity-verified) |
 | B5.0 | COMPLETE | Observability contract (structured logs, unified screenshots, pipeline JSONL) |
-| B5.1–B5.6 | DEFERRED | Execution enhancements (see approach.md §B5) |
+| B5.1 | PARTIAL | Adaptive timeouts, CDP network evidence (batched) |
+| B5.2–B5.6 | DEFERRED | Execution enhancements (see approach.md §B5) |
 
-### Runtime validation results
+### Benchmark results (integrity-verified, environment-clean)
+
+> Authoritative source: `docs/ROADMAP.md` Stage 5. Summary below for quick reference.
 
 | Subject | C3 | Pass/Total | Status |
 |---|---|---|---|
-| posts-users-ui-ng | 94.4% | 17/18 | Closed |
-| airbus-inventory | 90.5% | 19/21 | Closed |
+| posts-users-ui-ng | 88.9% | 16/18 | Closed |
 | heroes-angular | 89.5% | 17/19 | Closed |
-| spring-petclinic-angular | 73.0% | 54/74 | Closed |
-| ever-traduora | 44.0% | 48/109 | Closed |
-| softscanner-cqa-frontend | — | — | Next |
+| airbus-inventory | 90.5% | 19/21 | Closed |
+| spring-petclinic-angular | 74.3% | 55/74 | Closed |
+| ever-traduora | 45.0% | 49/109 | Closed |
+| softscanner-cqa-frontend | — | — | Not executed |
+| **Aggregate** | **64.7%** | **156/241** | **85 residuals** |
 
 ---
 
@@ -108,9 +112,12 @@ softscanner_fa/
 +-- scripts/                           # Determinism verifiers, batch runners
 +-- docs/
 |   +-- paper/approach.md             # Normative spec (authoritative)
+|   +-- paper/scientific-report.md    # Scientific/technical report
 |   +-- ROADMAP.md                    # Work sequencing and gates
-|   +-- validation/                   # Subject registry, setup runbooks, evaluation reports
-|   +-- analysis/                     # Foundations, decisions, runtime baselines, GT data
+|   +-- validation/protocols/         # Benchmark + diagnostic protocols
+|   +-- validation/manifest/          # B0 manifest guide + subject onboarding
+|   +-- validation/runbooks/          # Per-subject setup runbooks
+|   +-- analysis/phase-b/             # Diagnostic catalog, GT data, design docs
 |
 +-- .github/workflows/ci.yml         # CI: typecheck + test + build + lint + determinism
 ```
@@ -133,7 +140,7 @@ npm install
 ```bash
 npm run typecheck        # source typecheck (tsconfig.src.json)
 npm run typecheck:tests  # test typecheck (tsconfig.test.json)
-npm test                 # unit + integration tests (258 tests)
+npm test                 # unit + integration tests (267 tests)
 npm run lint             # ESLint
 ```
 
@@ -152,10 +159,13 @@ npm run run:all                                                     # All 6 subj
 ### Phase B — Test generation and execution
 ```bash
 npm run b0:validate                        # Validate all subject manifests
+npm run b0:wizard                          # Interactive manifest generation wizard
 npm run b1:intents                         # Derive RealizationIntents (all subjects)
 npm run b1:plans                           # Generate ActionPlans (all subjects)
 npm run b2:codegen                         # Generate Selenium tests (all subjects)
-npm run b3 -- <subjectName>                # Execute tests for one subject (requires live app)
+
+# B3 test execution (requires live app — do NOT use npm run b3)
+node node_modules/tsx/dist/cli.mjs src/b3-cli.ts <subjectName> [--max-retries N] [--batch-size N]
 ```
 
 ### Determinism verification
@@ -224,18 +234,11 @@ B0 validates manifests. B1 derives intents and plans (locators, values, precondi
 
 ## Validation subjects
 
-Six Angular applications validate the pipeline:
-
-| Subject | Angular | Nodes | Edges | Workflows | Auth |
-|---|---|---|---|---|---|
-| posts-users-ui-ng | 18 | 72 | 147 | 18 | No |
-| spring-petclinic-angular | 14 | 195 | 430 | 74 | No |
-| heroes-angular | 14 (NgRx) | 67 | 88 | 19 | No |
-| softscanner-cqa-frontend | 17.3 | 42 | 84 | 16 | No |
-| ever-traduora | 12.2 | 253 | 511 | 109 | Yes |
-| airbus-inventory | 12.2 | 68 | 149 | 21 | Yes |
-
-Subject setup runbooks are in `docs/validation/<subject>-setup.md`.
+Six Angular applications (Angular 12–18) validate the pipeline. See:
+- **Subject registry** (paths, frameworks, A1 commands): `docs/validation/empirical reports/subjects.md`
+- **Setup runbooks**: `docs/validation/runbooks/<subject>-setup.md`
+- **Manifest values**: `docs/validation/manifest/subject-onboarding-guide.md`
+- **Benchmark results**: `docs/ROADMAP.md` (Stage 5 results table)
 
 ---
 
@@ -243,13 +246,15 @@ Subject setup runbooks are in `docs/validation/<subject>-setup.md`.
 
 | File | Responsibility |
 |---|---|
-| `docs/paper/approach.md` | Normative semantics, schemas, Phase B spec, deferred B5 scope |
-| `docs/ROADMAP.md` | Work sequencing, stage gates, completion status |
-| `CLAUDE.md` | Implementation discipline, architectural rules |
-| `docs/validation/subjects.md` | Subject registry with expected A1 stats |
-| `docs/analysis/runtime/*.md` | Per-subject authoritative runtime baselines |
-| `docs/analysis/decisions/*.md` | Compressed evolution log and decision records |
-| `docs/analysis/foundations/*.md` | Current-state system behavior descriptions |
+| `docs/paper/approach.md` | Normative semantics, schemas, Phase B spec |
+| `docs/paper/scientific-report.md` | Scientific/technical report with empirical results |
+| `docs/ROADMAP.md` | Work sequencing, stage gates, benchmark results |
+| `CLAUDE.md` | Implementation discipline, architectural rules, B3 execution invariants |
+| `docs/validation/protocols/` | Benchmark execution protocol, diagnostic protocol |
+| `docs/validation/manifest/` | B0 manifest guide, subject onboarding guide |
+| `docs/validation/runbooks/` | Per-subject setup/teardown runbooks |
+| `docs/validation/empirical reports/subjects.md` | Subject registry (paths, frameworks, commands) |
+| `docs/analysis/phase-b/diagnostic-reclassification-report.md` | Current residual failure catalog |
 | `docs/analysis/phase-b/gt/*.json` | Ground truth data (257 entries across 6 subjects) |
 
 ---

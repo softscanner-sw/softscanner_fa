@@ -50,6 +50,14 @@ export interface TemplateAstNode {
    * Used to determine composition-site context for CCC edges.
    */
   structuralDirectives?: string[];
+  /**
+   * *ngFor iterable expression text.
+   * E.g., `*ngFor="let pt of petTypes"` → `"petTypes"`.
+   * Captures the data collection being iterated. Used for:
+   * - repeater context propagation to descendant widgets (insideNgFor)
+   * - future seed-data dependency analysis (identifying required data collections)
+   */
+  ngForExpression?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -153,13 +161,39 @@ export class AngularTemplateParser {
         structural.references = refs.map(r => r.name);
       }
 
-      // Extract structural directive names from templateAttrs for composition-site context
-      const templateAttrs = (n['templateAttrs'] as Array<{ name?: string }> | undefined) ?? [];
+      // Extract structural directive names and *ngFor expression from templateAttrs
+      const templateAttrs = (n['templateAttrs'] as Array<{ name?: string; value?: string }> | undefined) ?? [];
       const dirNames = templateAttrs
         .filter(a => a.name !== undefined && a.name !== '')
         .map(a => a.name!);
       if (dirNames.length > 0) {
         structural.structuralDirectives = dirNames;
+      }
+      // Capture *ngFor iterable expression (e.g., "petTypes", "owner.pets | async")
+      // for repeater context propagation to descendant widgets.
+      // The Angular compiler stores *ngFor="let x of expr" as templateAttr name="ngForOf" with
+      // the expression text accessible via the AST value property.
+      if (dirNames.includes('ngForOf') || dirNames.includes('ngFor')) {
+        const ngForOfAttr = templateAttrs.find(a => a.name === 'ngForOf');
+        if (ngForOfAttr !== undefined) {
+          // The value is on the BoundAttribute AST node — extract via the value property
+          // which contains the expression source text
+          const rawValue = (ngForOfAttr as Record<string, unknown>)['value'];
+          let exprText: string | undefined;
+          if (typeof rawValue === 'string' && rawValue !== '') {
+            exprText = rawValue;
+          } else if (rawValue !== null && rawValue !== undefined && typeof rawValue === 'object') {
+            // Angular compiler represents the value as an AST expression node
+            // with a .source property containing the original text
+            const source = (rawValue as Record<string, unknown>)['source'];
+            if (typeof source === 'string' && source !== '') {
+              exprText = source;
+            }
+          }
+          if (exprText !== undefined) {
+            structural.ngForExpression = exprText;
+          }
+        }
       }
 
       const children: TemplateAstNode[] = [];

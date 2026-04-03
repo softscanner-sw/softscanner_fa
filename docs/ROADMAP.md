@@ -234,12 +234,13 @@ Sequential single-subject rollout with per-subject runbooks, hardening, and resi
 
 | Subject | C3 | Pass/Total | Status |
 |---|---|---|---|
-| posts-users-ui-ng | 94.4% | 17/18 | CLOSED — 1 residual (CONDITIONAL *ngIf precondition) |
-| airbus-inventory | 90.5% | 19/21 | CLOSED — 2 residuals (dialog componentSelector gap) |
+| posts-users-ui-ng | 88.9% | 16/18 | CLOSED — 2 residuals (1 *ngIf precondition, 1 parameterized postcondition) |
 | heroes-angular | 89.5% | 17/19 | CLOSED — 2 residuals (AboutComponent external URL assertion) |
-| spring-petclinic-angular | 73.0% | 54/74 | CLOSED — 20 residuals (all B5: timing, *ngFor, data-dependent) |
-| ever-traduora | 44.0% | 48/109 | CLOSED — 61 residuals (30 limitation, 27 B5, 2 unresolved, 1 env, 1 seed) |
-| softscanner-cqa-frontend | — | — | NEXT |
+| airbus-inventory | 90.5% | 19/21 | CLOSED — 2 residuals (dialog componentSelector gap) |
+| spring-petclinic-angular | 74.3% | 55/74 | CLOSED — 19 residuals (B5: timing, *ngFor, data-dependent, non-navigating) |
+| ever-traduora | 45.0% | 49/109 | CLOSED — 60 residuals (env-clean: 0 rate-limit, 53 async-gate/timeout, 7 locator/other) |
+| softscanner-cqa-frontend | — | — | NOT EXECUTED (out of scope) |
+| **Aggregate (5 subjects)** | **64.7%** | **156/241** | **85 total residuals (env-clean baseline)** |
 
 B5 deferred work formalized in `docs/paper/approach.md` §B5.
 
@@ -251,11 +252,11 @@ B5 deferred work formalized in `docs/paper/approach.md` §B5.
 - Framework/system pipeline logs (`logs/<phase>-pipeline.jsonl`) — structured JSONL with PipelineLogEvent schema
 - Visualization: `npm run viz` generates `vis/b3-execution.html` consuming B1/B2/B3/B4/B5.0/manifest
 - Two distinct logging contracts: framework logs (pipeline behavior) vs per-test logs (execution evidence)
-- See `docs/paper/approach.md` §B5 for vocabulary, evidence classes, oracle tiers, and instrumentation layers
+- See `docs/paper/approach.md` §B5 for canonical I/L/O layer model, vocabulary, evidence classes, oracle tiers, and instrumentation layers
 
-**B5.1 — Network-Aware Wait Strategies (NOT STARTED)** — CDP network-idle, configurable timeouts, per-step retry. ~12 timing failures.
-**B5.2 — Component-Ready / Data-Ready Waits (NOT STARTED)** — targeted waits, Angular stability, auth timing. ~14 timing failures.
-**B5.3 — Repeater-Aware Locator Semantics (NOT STARTED)** — *ngFor instance disambiguation. ~14 locator failures.
+**B5.1 — Network-Aware Wait Strategies (PARTIAL)** — Configurable timeout profiles implemented (implicitWait, navigationWait, authWait via manifest). CDP network evidence capture implemented as optional I2 instrumentation (`enableNetworkEvidence`). 8 auth timeouts eliminated; 0 net C3 gain (structural failures downstream). CDP-based retry deferred.
+**B5.2 — Component-Ready / Data-Ready Waits (PARTIAL)** — First slice: B1 propagates `TriggerContext` (compositionGates, insideNgFor, componentSelector) to ActionPlan. B2 emits structurally-derived `pre-wait` steps for async/permission-gated and repeater-hosted widgets. L3 precondition support, not oracle logic. Awaits traduora baseline restoration for C3 measurement.
+**B5.3 — Repeater-Aware Locator Semantics (PARTIAL)** — A1 extracts `insideNgFor`, `insideNgForOrdinal`, `ngForItemTag`. B1 emits repeater-relative locators (`itemTag:nth-of-type(1) widgetTag:nth-of-type(ord+1)`). Broader repeater disambiguation deferred.
 **B5.4 — Stronger Oracle / C4 (NOT STARTED)** — DOM/state assertions, C4 coverage. ~3 oracle failures.
 **B5.5 — Data-Aware Preconditions (NOT STARTED)** — API seeding, data-dependency analysis. ~4 seed/data failures.
 **B5.6 — Inline Component Materialization (NOT STARTED)** — *ngIf visibility, toggle detection. ~17 inline-component failures.

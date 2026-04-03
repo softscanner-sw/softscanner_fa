@@ -46,7 +46,7 @@
     "verify:b2-determinism": "node scripts/verify-b2-determinism.mjs",
     "logs:clean": "rimraf logs",
     "b0:wizard": "tsx src/b0-wizard-cli.ts",
-    "b3": "node --import tsx/esm src/b3-cli.ts"
+    "b3": "node scripts/b3-launcher.mjs"
   },
   "keywords": [
     "static-analysis",

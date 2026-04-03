@@ -385,7 +385,7 @@ describe('assignment resolution', () => {
     const manifest = makeManifest();
     const result = derivePlans(intentSet, manifest, a1);
     const formData = result.plans[0]!.assignment.formData;
-    expect(formData['email']).toBe('test@example.com');
+    expect(formData['email']).toMatch(/^test-[a-f0-9]{4}@example\.com$/);
     expect(formData['password']).toBe('Test123!');
   });
 
@@ -788,14 +788,14 @@ describe('default form values', () => {
     const intentSet = makeIntentSet([intent]);
     const result = derivePlans(intentSet, makeManifest(), a1);
     const fd = result.plans[0]!.assignment.formData;
-    expect(fd['email']).toBe('test@example.com');
+    expect(fd['email']).toMatch(/^test-[a-f0-9]{4}@example\.com$/);
     expect(fd['pass']).toBe('Test123!');
     expect(fd['count']).toBe('1');
     expect(fd['phone']).toBe('1234567890');
     expect(fd['site']).toBe('https://example.com');
     expect(fd['role']).toBe('option-1');
-    expect(fd['bio']).toBe('test-bio');
-    expect(fd['name']).toBe('test-name');
+    expect(fd['bio']).toMatch(/^test-bio-[a-f0-9]{4}$/);
+    expect(fd['name']).toMatch(/^test-name-[a-f0-9]{4}$/);
   });
 
   test('generates correct datetime/special type defaults', () => {

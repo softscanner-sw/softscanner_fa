@@ -140,8 +140,11 @@ export function runB2CodeGeneration(config: B2RunnerConfig): B2Summary {
         fs.readFileSync(manifestPath, 'utf-8'),
       ) as SubjectManifest;
 
-      // Generate test code
-      const testMap = emitTestSet(planSet.plans, manifest.baseUrl);
+      // Generate test code (B5.1: timeout profile, CDP: optional network evidence)
+      const emitOpts: import('./test-emitter.js').EmitOptions = {};
+      if (manifest.executionConfig?.timeoutProfile !== undefined) emitOpts.timeoutProfile = manifest.executionConfig.timeoutProfile;
+      if (manifest.executionConfig?.enableNetworkEvidence === true) emitOpts.enableNetworkEvidence = true;
+      const testMap = emitTestSet(planSet.plans, manifest.baseUrl, emitOpts);
 
       // Write test files
       const testsDir = path.join(config.outputDir, subjectName, 'tests');

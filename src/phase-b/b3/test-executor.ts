@@ -4,7 +4,7 @@
  * Spec: §B3 — isolated subprocess, sequential, max 3 attempts.
  */
 
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import type { ExecutionAttempt, ExecutionResult } from './b3-types.js';
@@ -124,41 +124,73 @@ function runTestSubprocess(
     // Strip npm lifecycle env vars — npm sets variables that can interfere with
     // subprocess Chrome/chromedriver spawning on Windows.
     const tsxCliPath = path.join(process.cwd(), 'node_modules', 'tsx', 'dist', 'cli.mjs');
-    // Build clean env: remove npm lifecycle vars and restore original PATH
-    // (npm prepends node_modules/.bin to PATH which can interfere with subprocess behavior).
+    // Build clean env: remove ALL npm lifecycle vars (including non-prefixed ones
+    // like INIT_CWD, COLOR, NODE, EDITOR that npm injects during `npm run`).
+    // These can cause silent subprocess failures when passed to child processes.
+    const NPM_LIFECYCLE_VARS = new Set([
+      'INIT_CWD', 'COLOR', 'NODE', 'EDITOR', 'PROMPT',
+    ]);
     const cleanEnv: Record<string, string> = {};
     for (const [k, v] of Object.entries(process.env)) {
       if (v === undefined) continue;
       if (k.startsWith('npm_')) continue;
-      if (k === 'Path' || k === 'PATH') {
-        // Remove node_modules/.bin entries from PATH
-        const sep = process.platform === 'win32' ? ';' : ':';
-        const filtered = v.split(sep).filter(p => !p.includes('node_modules'));
-        cleanEnv[k] = filtered.join(sep);
-        continue;
-      }
+      if (NPM_LIFECYCLE_VARS.has(k)) continue;
       cleanEnv[k] = v;
     }
-    execFile(
+    // Ensure project node_modules/.bin is in PATH for chromedriver
+    const projBin = path.join(process.cwd(), 'node_modules', '.bin');
+    const pathKey = process.platform === 'win32' ? 'Path' : 'PATH';
+    const currentPath = cleanEnv[pathKey] ?? '';
+    if (!currentPath.includes(projBin)) {
+      const sep = process.platform === 'win32' ? ';' : ':';
+      cleanEnv[pathKey] = projBin + sep + currentPath;
+    }
+    // Spawn the test subprocess using tsx CLI entry point.
+    // IMPORTANT: B3 must be invoked via `node node_modules/tsx/dist/cli.mjs
+    // src/b3-cli.ts` (not via `npm run` with `--import tsx/esm`), because
+    // npm's Windows process lifecycle kills subprocess event loops before
+    // async work (WebDriver/Chrome) completes. The npm script "b3" in
+    // package.json uses the tsx CLI path for this reason.
+    const child = spawn(
       process.execPath,
       [tsxCliPath, testFilePath],
       {
         cwd: process.cwd(),
         env: cleanEnv,
-        timeout: timeoutMs,
-        maxBuffer: 10 * 1024 * 1024,
-      },
-      (error, stdout, stderr) => {
-        const exitCode = error?.code !== undefined
-          ? (typeof error.code === 'number' ? error.code : 1)
-          : 0;
-        resolve({
-          exitCode,
-          stdout: stdout ?? '',
-          stderr: stderr ?? '',
-        });
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true,
       },
     );
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+    child.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
+
+    // Enforce timeout manually
+    const timer = setTimeout(() => {
+      try { child.kill('SIGTERM'); } catch { /* already dead */ }
+      // On Windows, SIGTERM may not work; use taskkill as fallback
+      if (process.platform === 'win32') {
+        try {
+          const { execSync } = require('node:child_process') as typeof import('node:child_process');
+          execSync(`taskkill //PID ${child.pid} //F //T`, { stdio: 'pipe', timeout: 5000 });
+        } catch { /* already dead */ }
+      }
+    }, timeoutMs);
+
+    child.on('close', (code: number | null, signal: string | null) => {
+      clearTimeout(timer);
+      const killedByTimeout = signal === 'SIGTERM' || (code === null && signal !== null);
+      const exitCode = killedByTimeout ? -1 : (code ?? 1);
+      resolve({
+        exitCode,
+        stdout,
+        stderr: killedByTimeout
+          ? `TimeoutError: Test process killed after ${timeoutMs}ms timeout\n${stderr}`
+          : stderr,
+      });
+    });
   });
 }
 

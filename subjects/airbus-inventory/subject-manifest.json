@@ -20,5 +20,14 @@
     "passwordField": "input[formcontrolname='password']",
     "submitButton": "button[type='submit']",
     "authSuccessSelector": "mat-sidenav-container"
+  },
+  "seedRequirements": {
+    "authGuards": [
+      "CanActivateRouteGuard"
+    ],
+    "negativeGuards": [],
+    "routeParams": [],
+    "hasFormWorkflows": true,
+    "seedStatus": "needs-command"
   }
 }

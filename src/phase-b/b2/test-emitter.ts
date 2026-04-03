@@ -23,7 +23,19 @@ import type {
 /**
  * Emit a complete Selenium WebDriver TypeScript test file for one ActionPlan.
  */
-export function emitTest(plan: ActionPlan, baseUrl: string): string {
+/** B5.1: Subject-level timeout overrides from manifest executionConfig.timeoutProfile. */
+export interface TimeoutProfile {
+  implicitWait?: number;
+  navigationWait?: number;
+  authWait?: number;
+}
+
+export interface EmitOptions {
+  timeoutProfile?: TimeoutProfile;
+  enableNetworkEvidence?: boolean;
+}
+
+export function emitTest(plan: ActionPlan, baseUrl: string, opts?: EmitOptions): string {
   const lines: string[] = [];
 
   // Imports
@@ -47,8 +59,14 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
 
   // Main test function
   lines.push(`const BASE_URL = ${quote(baseUrl)};`);
-  lines.push(`const IMPLICIT_WAIT = 10000;`);
-  lines.push(`const NAVIGATION_WAIT = 15000;`);
+  const timeoutProfile = opts?.timeoutProfile;
+  const enableNetworkEvidence = opts?.enableNetworkEvidence === true;
+  const implicitWait = timeoutProfile?.implicitWait ?? 5000;
+  const navigationWait = timeoutProfile?.navigationWait ?? 10000;
+  const authWait = timeoutProfile?.authWait ?? 15000;
+  lines.push(`const IMPLICIT_WAIT = ${implicitWait};`);
+  lines.push(`const NAVIGATION_WAIT = ${navigationWait};`);
+  lines.push(`const AUTH_WAIT = ${authWait};`);
   lines.push(``);
   lines.push(`const __testFile = fileURLToPath(import.meta.url);`);
   lines.push(`const SCREENSHOT_DIR = path.join(path.dirname(__testFile), '..', 'screenshots', path.basename(__testFile, '.test.ts'));`);
@@ -76,6 +94,7 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
   lines.push(`  elementTagName?: string;`);
   lines.push(`  domEvidence?: string;`);
   lines.push(`  screenshotPath?: string;`);
+  lines.push(`  networkEvidence?: NetworkEvidence[];`);
   lines.push(`}`);
   lines.push(`interface ExecutionLog {`);
   lines.push(`  workflowId: string;`);
@@ -205,12 +224,48 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
   lines.push(`  } catch { return {}; }`);
   lines.push(`}`);
   lines.push(``);
+  if (enableNetworkEvidence) {
+    lines.push(`// CDP network evidence types (enabled via manifest enableNetworkEvidence)`);
+    lines.push(`interface NetworkEvidence { url: string; method: string; status: number; timing: number; }`);
+    lines.push(`let _pendingRequests = new Map<string, { url: string; method: string; start: number }>();`);
+    lines.push(`let _allNetworkEvidence: NetworkEvidence[] = [];`);
+    lines.push(`let drainNetworkLogs: () => Promise<void> = async () => {};`);
+    lines.push(`function _attributeNetworkEvidence(): void {`);
+    lines.push(`  if (_allNetworkEvidence.length === 0 || _stepLogs.length === 0) return;`);
+    lines.push(`  // Attribute buffered evidence to steps by timestamp overlap`);
+    lines.push(`  for (const step of _stepLogs) {`);
+    lines.push(`    if (!step.timestampStart || !step.timestampEnd) continue;`);
+    lines.push(`    const start = new Date(step.timestampStart).getTime() / 1000;`);
+    lines.push(`    const end = new Date(step.timestampEnd).getTime() / 1000;`);
+    lines.push(`    const stepEvidence = _allNetworkEvidence.filter(e => e.timing >= start && e.timing <= end);`);
+    lines.push(`    if (stepEvidence.length > 0) step.networkEvidence = stepEvidence;`);
+    lines.push(`  }`);
+    lines.push(`  // Remaining unattributed evidence goes to last step`);
+    lines.push(`  const attributed = new Set(_stepLogs.flatMap(s => s.networkEvidence ?? []));`);
+    lines.push(`  const unattributed = _allNetworkEvidence.filter(e => !attributed.has(e));`);
+    lines.push(`  if (unattributed.length > 0) {`);
+    lines.push(`    const last = _stepLogs[_stepLogs.length - 1]!;`);
+    lines.push(`    last.networkEvidence = [...(last.networkEvidence ?? []), ...unattributed];`);
+    lines.push(`  }`);
+    lines.push(`}`);
+  } else {
+    lines.push(`// CDP network evidence disabled (default)`);
+    lines.push(`const drainNetworkLogs: () => Promise<void> = async () => {};`);
+    lines.push(`function _attributeNetworkEvidence(): void { /* no-op */ }`);
+  }
+  lines.push(``);
   lines.push(`async function runTest(): Promise<void> {`);
   lines.push(`  const options = new chrome.Options();`);
   lines.push(`  options.addArguments('--headless');`);
   lines.push(`  options.addArguments('--no-sandbox');`);
   lines.push(`  options.addArguments('--disable-dev-shm-usage');`);
   lines.push(`  options.addArguments('--window-size=1920,1080');`);
+  if (enableNetworkEvidence) {
+    lines.push(`  // Enable performance logging for CDP network evidence`);
+    lines.push(`  const loggingPrefs = new (await import('selenium-webdriver/lib/logging.js')).Preferences();`);
+    lines.push(`  loggingPrefs.setLevel('performance', 'ALL');`);
+    lines.push(`  options.setLoggingPrefs(loggingPrefs);`);
+  }
   lines.push(``);
   lines.push(`  const driver: WebDriver = await new Builder()`);
   lines.push(`    .forBrowser('chrome')`);
@@ -218,6 +273,34 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
   lines.push(`    .build();`);
   lines.push(``);
   lines.push(`  await driver.manage().setTimeouts({ implicit: IMPLICIT_WAIT });`);
+  lines.push(``);
+  if (enableNetworkEvidence) {
+  lines.push(`  // Collect network evidence from Chrome performance logs`);
+  lines.push(`  drainNetworkLogs = async function(): Promise<void> {`);
+  lines.push(`    try {`);
+  lines.push(`      const logs = await driver.manage().logs().get('performance');`);
+  lines.push(`      for (const entry of logs) {`);
+  lines.push(`        try {`);
+  lines.push(`          const msg = JSON.parse(entry.message)?.message;`);
+  lines.push(`          if (!msg) continue;`);
+  lines.push(`          if (msg.method === 'Network.requestWillBeSent') {`);
+  lines.push(`            const p = msg.params;`);
+  lines.push(`            if (p?.request?.url && !p.request.url.startsWith('data:')) {`);
+  lines.push(`              _pendingRequests.set(p.requestId, { url: p.request.url, method: p.request.method || 'GET', start: p.timestamp || 0 });`);
+  lines.push(`            }`);
+  lines.push(`          } else if (msg.method === 'Network.responseReceived') {`);
+  lines.push(`            const p = msg.params;`);
+  lines.push(`            const req = _pendingRequests.get(p?.requestId);`);
+  lines.push(`            if (req && p?.response) {`);
+  lines.push(`              _allNetworkEvidence.push({ url: req.url, method: req.method, status: p.response.status || 0, timing: ((p.timestamp || 0) - req.start) * 1000 });`);
+  lines.push(`              _pendingRequests.delete(p.requestId);`);
+  lines.push(`            }`);
+  lines.push(`          }`);
+  lines.push(`        } catch { /* ignore malformed log entries */ }`);
+  lines.push(`      }`);
+  lines.push(`    } catch { /* performance logging not available */ }`);
+  lines.push(`  }`);
+  } // end if (enableNetworkEvidence) — drainNetworkLogs assignment
   lines.push(``);
   lines.push(`  try {`);
 
@@ -238,6 +321,32 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
   // Milestone screenshot: after all preconditions
   lines.push(`    await captureScreenshot(driver, 'milestone_after-preconditions');`);
   lines.push(``);
+
+  // B5.2: Emit structurally-derived pre-action waits for async/permission gates
+  // and repeater/list readiness. These are L3 precondition-support mechanisms,
+  // not oracle logic. They ensure the target widget has materialized before the
+  // first interaction step.
+  const tc = plan.triggerContext;
+  const hasAsyncGate = (tc?.compositionGates ?? []).some(g => /async|can:/i.test(g));
+  const hasRepeater = tc?.insideNgFor !== undefined;
+  if ((hasAsyncGate || hasRepeater) && plan.steps.length > 0) {
+    const firstStep = plan.steps[0]!;
+    const waitLocator = emitFindElement(firstStep.locator);
+    const waitTimeout = `IMPLICIT_WAIT`;
+    const waitReason = hasAsyncGate
+      ? `async/permission gate: ${(tc?.compositionGates ?? []).join('; ').slice(0, 60)}`
+      : `repeater data readiness: *ngFor="${tc?.insideNgFor}"`;
+    lines.push(`    // B5.2: Pre-action wait for ${hasAsyncGate ? 'async/permission gate' : 'repeater data readiness'}`);
+    lines.push(`    await logStep(driver, 'pre-wait', 'wait-for-element', { strategy: 'b5.2', value: ${quote(waitReason)} }, undefined, async () => {`);
+    lines.push(`      await driver.manage().setTimeouts({ implicit: 0 });`);
+    lines.push(`      await driver.wait(async () => {`);
+    lines.push(`        try { await ${waitLocator}; return true; } catch { return false; }`);
+    lines.push(`      }, ${waitTimeout}, ${quote(`B5.2 wait: ${waitReason}`)});`);
+    lines.push(`      await driver.manage().setTimeouts({ implicit: IMPLICIT_WAIT });`);
+    lines.push(`      return {};`);
+    lines.push(`    });`);
+    lines.push(``);
+  }
 
   // Steps — each wrapped in logStep with honest evidence capture
   for (let i = 0; i < plan.steps.length; i++) {
@@ -273,11 +382,15 @@ export function emitTest(plan: ActionPlan, baseUrl: string): string {
     lines.push(``);
   }
 
+  // Drain CDP network logs once at test end and attribute to steps by timestamp
+  lines.push(`    await drainNetworkLogs();`);
+  lines.push(`    _attributeNetworkEvidence();`);
   // Milestone screenshot: test complete
   lines.push(`    await captureScreenshot(driver, 'milestone_final');`);
   lines.push(`    console.log('Test PASSED: ${escapeString(plan.workflowId)}');`);
   lines.push(`    writeExecutionLog('PASS');`);
   lines.push(`  } catch (testError: any) {`);
+  lines.push(`    try { await drainNetworkLogs(); _attributeNetworkEvidence(); } catch { /* best effort */ }`);
   lines.push(`    await captureScreenshot(driver, 'milestone_error');`);
   lines.push(`    const failedStep = _stepLogs.length > 0 ? _stepLogs[_stepLogs.length - 1]?.stepId : undefined;`);
   lines.push(`    writeExecutionLog('FAIL', failedStep);`);
@@ -323,10 +436,11 @@ function _preConditionLocatorMeta(pre: PreCondition): string {
 export function emitTestSet(
   plans: ActionPlan[],
   baseUrl: string,
+  opts?: EmitOptions,
 ): Map<string, string> {
   const result = new Map<string, string>();
   for (const plan of plans) {
-    result.set(plan.workflowId, emitTest(plan, baseUrl));
+    result.set(plan.workflowId, emitTest(plan, baseUrl, opts));
   }
   return result;
 }
@@ -426,7 +540,7 @@ export function emitPreCondition(
         lines.push(`  await driver.wait(async () => {`);
         lines.push(`    const els = await driver.findElements(By.css(${quote(authSuccessSelector)}));`);
         lines.push(`    return els.length > 0;`);
-        lines.push(`  }, NAVIGATION_WAIT * 3, ${quote(`Auth success element not found: ${authSuccessSelector}`)});`);
+        lines.push(`  }, AUTH_WAIT, ${quote(`Auth success element not found: ${authSuccessSelector}`)});`);
         lines.push(`  await driver.manage().setTimeouts({ implicit: IMPLICIT_WAIT });`);
       }
       lines.push(`}`);
@@ -449,13 +563,21 @@ export function emitPreCondition(
       if (openerSelector) {
         lines.push(`{`);
         if (openerWidgetSelector !== undefined && openerWidgetSelector !== '') {
-          // F4: Click the specific opener widget (e.g., add button) instead of the component root.
-          // Convert tag-position format "tag:N" → "tag:nth-of-type(N)" for valid CSS.
+          // F4: Click the specific opener widget. Supports three locator forms:
+          // - "text:Add" → XPath text match (structurally grounded in template text)
+          // - "tag:N" → CSS nth-of-type
+          // - CSS selector → direct CSS
+          const textMatch = openerWidgetSelector.match(/^text:(.+)$/);
           const colonMatch = openerWidgetSelector.match(/^([a-zA-Z][a-zA-Z0-9-]*):(\d+)$/);
-          const resolvedOpenerSelector = colonMatch
-            ? `${colonMatch[1]}:nth-of-type(${colonMatch[2]})`
-            : openerWidgetSelector;
-          lines.push(`  const openerWidget = await driver.findElement(By.css(${quote(openerSelector)})).findElement(By.css(${quote(resolvedOpenerSelector)}));`);
+          if (textMatch) {
+            const textContent = textMatch[1]!;
+            lines.push(`  const openerWidget = await driver.findElement(By.css(${quote(openerSelector)})).findElement(By.xpath(${quote(`.//button[normalize-space()='${textContent}']`)}));`);
+          } else if (colonMatch) {
+            const resolvedOpenerSelector = `${colonMatch[1]}:nth-of-type(${colonMatch[2]})`;
+            lines.push(`  const openerWidget = await driver.findElement(By.css(${quote(openerSelector)})).findElement(By.css(${quote(resolvedOpenerSelector)}));`);
+          } else {
+            lines.push(`  const openerWidget = await driver.findElement(By.css(${quote(openerSelector)})).findElement(By.css(${quote(openerWidgetSelector)}));`);
+          }
           lines.push(`  await driver.executeScript('arguments[0].click()', openerWidget);`);
         } else {
           lines.push(`  const opener = await driver.findElement(By.css(${quote(openerSelector)}));`);

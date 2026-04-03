@@ -145,4 +145,40 @@ export interface WidgetInfo {
    * Used by B1 to compute per-region positional locators inside modals.
    */
   templateRegionId?: string;
+
+  /**
+   * Set when this widget is inside an `*ngFor` repeater container.
+   * Value is the *ngFor expression (e.g., `"petTypes"`, `"owner.pets"`).
+   * Widgets inside repeaters have stableIndex values that do NOT correspond
+   * to runtime DOM positions (one template widget → N runtime instances).
+   * B1 uses this to select semantic locators instead of tag-position.
+   */
+  insideNgFor?: string;
+
+  /**
+   * 0-based ordinal among same-tag widgets within the same *ngFor repeater template.
+   * E.g., if a repeater template has 2 buttons (Edit, Delete), they get ordinals 0 and 1.
+   * Combined with insideNgFor, enables repeater-relative locators:
+   * "in the Nth repeater item, find the (ordinal+1)th button".
+   * Only set when insideNgFor is set.
+   */
+  insideNgForOrdinal?: number;
+
+  /**
+   * Aggregated visibility/composition gates from ancestor CCC edges.
+   * Each entry is an `insideNgIf` expression from a CCC edge pointing to
+   * this widget's component or any ancestor in the composition chain.
+   * Enables downstream classification into LOCAL_STATE / ASYNC_DATA / PERMISSION / COMPOSITE.
+   * Empty array = no gating. Only set when gates exist.
+   */
+  compositionGates?: string[];
+
+  /**
+   * Tag name of the *ngFor host element (the repeater item root).
+   * E.g., `*ngFor` on `<tr>` → `"tr"`, on `<div>` → `"div"`.
+   * Enables repeater-relative locators:
+   * `componentSelector itemRootTag:nth-of-type(1) widgetTag:nth-of-type(ordinal+1)`.
+   * Only set when insideNgFor is set.
+   */
+  ngForItemTag?: string;
 }

@@ -1,0 +1,58 @@
+@startuml Determinism Summaries
+!theme plain
+top to bottom direction
+title Contract C: Stage Summaries + Determinism Verification
+
+legend right
+  Edges: produces / consumes only
+  Summary JSONs are canonical
+  determinism verification targets.
+endlegend
+
+package "Runners <<process>>" {
+  hexagon "B0 Runner" <<process>> as RB0
+  hexagon "B1 Intent Runner" <<process>> as RB1I
+  hexagon "B1 Plan Runner" <<process>> as RB1P
+  hexagon "B2 Runner" <<process>> as RB2
+  hexagon "B3 Runner" <<process>> as RB3
+}
+
+package "Summary JSONs <<artifact>>" #Wheat {
+  artifact "b0-summary.json" as SB0
+  artifact "b1-intent-summary.json" as SB1I
+  artifact "b1-plan-summary.json" as SB1P
+  artifact "b2-summary.json" as SB2
+}
+
+package "Text Logs <<artifact>>" #Wheat {
+  artifact "b0-manifest-validation.log" as TB0
+  artifact "b1-intent-validation.log" as TB1I
+  artifact "b1-plan-validation.log" as TB1P
+  artifact "b2-codegen.log" as TB2
+  artifact "b3-execution.log" as TB3
+}
+
+package "Verification <<process>>" #PaleGreen {
+  hexagon "verify-b0-determinism" <<process>> as VB0
+  hexagon "verify-b1-determinism" <<process>> as VB1I
+  hexagon "verify-b1-plan-determinism" <<process>> as VB1P
+  hexagon "verify-b2-determinism" <<process>> as VB2
+}
+
+RB0 --> SB0 : produces
+RB1I --> SB1I : produces
+RB1P --> SB1P : produces
+RB2 --> SB2 : produces
+
+RB0 --> TB0 : produces
+RB1I --> TB1I : produces
+RB1P --> TB1P : produces
+RB2 --> TB2 : produces
+RB3 --> TB3 : produces
+
+SB0 --> VB0 : consumes
+SB1I --> VB1I : consumes
+SB1P --> VB1P : consumes
+SB2 --> VB2 : consumes
+
+@enduml

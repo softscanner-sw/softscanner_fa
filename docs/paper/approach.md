@@ -203,6 +203,20 @@ When analyzing a handler body, if a call expression matches `this.<methodName>(�
 
 This bounded rule applies to service call extraction, router navigation extraction, and dialog/modal open detection. It does **not** apply to StateUpdate detection.
 
+**Subscribe callback capture (normative):**
+When analyzing a handler body (or a transitively-followed same-class callee), if a call expression matches `.subscribe(callback)` where `callback` is an arrow function or function expression, inspect the callback body for the same call-context kinds: Navigate, ServiceCall, DialogOpen, StateUpdate. This captures post-async effects that are otherwise invisible to static analysis.
+
+Constraints:
+* The subscribe call must be on a call chain rooted in `this.<expr>` (e.g., `this.service.doSomething().subscribe(...)`, `this.dialogRef.afterClosed().subscribe(...)`).
+* Only the first argument to `.subscribe()` is inspected (the "next" callback). Error and complete callbacks are not followed.
+* If the first argument is an object literal with a `next` property (e.g., `.subscribe({ next: fn })`), the `next` function is inspected.
+* Maximum depth: the callback body is analyzed at `depth + 1`, sharing the same depth limit and cycle-safety as same-class following.
+* Pipe operators (`.pipe(tap(...), switchMap(...))`) are NOT followed. Only the terminal `.subscribe()` callback is captured.
+* The callback body may contain `this.<method>(...)` calls that trigger further same-class following under the existing depth rules.
+* Determinism: callback extraction is syntactic (arrow function or function expression as first argument to `.subscribe()`); no type inference or runtime analysis.
+
+This rule captures the common Angular pattern: `this.service.action().subscribe(result => { this.router.navigate(['/success']); })` and `this.dialogRef.afterClosed().subscribe(result => { if (result) this.refresh(); })`.
+
 **Service name resolution (normative):**
 When resolving a `ServiceCall` context's member name to a known `ServiceNode`, the implementation must attempt resolution using both the constructor parameter field name and the **TypeScript type** of the constructor parameter. Specifically: if `capitalize(fieldName)` does not match any `ServiceNode.meta.name`, inspect the constructor parameter's declared type annotation and match that type name against `ServiceNode.meta.name`. This handles cases where developers abbreviate field names (e.g., `authenticateService: AuthenticationServiceService`).
 
@@ -1503,6 +1517,7 @@ SubjectManifest {
   skipWorkflows?: string[]               // Workflow IDs to exclude from execution
   authSetup?: AuthSetup                  // How to authenticate (required if accounts present)
   executionConfig?: ExecutionConfig      // Execution-readiness settings (B3 only)
+  seedRequirements?: SeedRequirements    // Wizard-generated seed summary (B0-validated)
 }
 
 AuthSetup {
@@ -1510,12 +1525,27 @@ AuthSetup {
   usernameField: string                  // CSS selector for username input
   passwordField: string                  // CSS selector for password input
   submitButton: string                   // CSS selector for submit button
+  authSuccessSelector: string            // CSS selector for post-login element confirming auth success
 }
 
 ExecutionConfig {
   readinessEndpoint?: string             // URL to GET for readiness check (defaults to baseUrl)
   readinessTimeoutMs?: number            // Max wait for readiness in ms (default: 30000)
+  seedCommand?: string                   // Idempotent shell command run ONCE before test suite (transitional mechanism)
   seedDataNotes?: string[]               // Human-readable notes about required seed data/fixtures
+  preAttemptCommand?: string             // Shell command to run before each test attempt (e.g., DB reset)
+  batchResetCommand?: string             // Shell command run at batch boundaries (e.g., Docker restart for rate-limit reset)
+  timeoutProfile?: { implicitWait?: number; navigationWait?: number; authWait?: number }  // B2 emitter timeout overrides
+  enableNetworkEvidence?: boolean        // Enable CDP network capture for I2 instrumentation (default: false)
+}
+
+/** Wizard-generated seed requirement summary. Validated by B0 against manifest declarations. */
+SeedRequirements {
+  authGuards: string[]                   // Auth guard names requiring accounts (excludes NoAuthGuard)
+  negativeGuards: string[]               // Negative guards (e.g., NoAuthGuard — requires NOT being logged in)
+  routeParams: string[]                  // Route param names inferred from A2 workflows
+  hasFormWorkflows: boolean              // Whether any A2 workflow is WSF (implies backend data validation)
+  seedStatus: 'pre-seeded' | 'needs-command' | 'none'  // User-declared seed data status
 }
 ```
 
@@ -1564,6 +1594,11 @@ RealizationIntent {
     formControlName?: string
     routerLinkText?: string
     containingFormId?: string      // If inside a form (via WIDGET_CONTAINS_WIDGET)
+    text?: string                  // Visible text content of the trigger element
+    insideNgFor?: boolean          // True if widget is inside an *ngFor repeater
+    insideNgForOrdinal?: number    // Positional index within the repeater (0-based)
+    ngForItemTag?: string          // Tag name of each repeater item (e.g., "tr", "li")
+    compositionGates?: string[]    // Structural directives gating widget visibility (e.g., ["*ngIf=..."])
   }
   formSchema?: Array<{            // Only for WSF triggers
     fieldNodeId: string
@@ -1579,6 +1614,8 @@ RealizationIntent {
     min?: number
     max?: number
     pattern?: string
+    dateFormat?: string          // Expected date format (e.g., "YYYY/MM/DD") when inputType is "date"
+    firstOptionValue?: string    // First <option> value for <select> elements (used as default)
   }>
   effectSteps: TaskStep[]          // From TaskWorkflow.steps
   terminalNodeId: string
@@ -1606,6 +1643,13 @@ ActionPlan {
   preConditions: PreCondition[]
   steps: ActionStep[]
   postConditions: PostCondition[]
+  triggerContext?: TriggerContext   // B5.2: structural context for wait derivation
+}
+
+TriggerContext {
+  insideNgFor?: boolean            // Widget is inside a repeater
+  compositionGates?: string[]      // Structural directives gating visibility
+  asyncPipe?: boolean              // Data source involves async pipe
 }
 
 Assignment {
@@ -1760,13 +1804,15 @@ This is necessary because `mat-select` renders its options in a CDK overlay port
 ---
 
 ## B3 — Execution and Bounded Retry
-B3 executes generated tests against a running subject application. Bounded retry with escalation:
+B3 executes generated tests against a running subject application. Bounded flat retry:
 
-1. **Level 1:** Execute as-is. If pass → done.
-2. **Level 2:** Retry with increased timeouts / wait strategies.
-3. **Level 3:** LLM-assisted locator or plan repair. Re-generate and retry.
+- Each test is attempted up to `maxRetries` times (default: 3). Each attempt executes the same generated test identically.
+- If any attempt passes → done (PASS). If all attempts fail → the last attempt's failure is recorded.
+- Certain failure modes (e.g., `FAIL_APP_NOT_READY`) terminate retry immediately.
 
-Maximum 3 attempts per workflow. Each attempt produces an `ExecutionResult` entry.
+**Future escalation (not yet implemented):** Level 2 (retry with increased timeouts) and Level 3 (LLM-assisted locator/plan repair) are designed but deferred. The current implementation uses flat retry only.
+
+Each attempt produces an `ExecutionAttempt` entry; the final `ExecutionResult` aggregates all attempts.
 
 ### B3 — App Readiness
 The framework assumes the target application is already running at `SubjectManifest.baseUrl`. Users are responsible for starting the application and provisioning any required seed data (entities referenced by `routeParamValues`).
@@ -1782,15 +1828,27 @@ type ExecutionOutcome =
   | 'FAIL_ELEMENT_NOT_FOUND'  // Locator did not match any element
   | 'FAIL_ASSERTION'          // PostCondition assertion failed
   | 'FAIL_TIMEOUT'            // Operation timed out
+  | 'FAIL_INTEGRITY'          // Per-test log missing, stale, or disagrees with exit code
   | 'FAIL_UNKNOWN';           // Unclassified error
+
+interface ExecutionAttempt {
+  attemptNumber: number;       // 1-based attempt index
+  outcome: ExecutionOutcome;
+  durationMs: number;
+  error?: string;              // Error message if not PASS
+  stderr?: string;             // Raw stderr (truncated to 2000 chars)
+  screenshots: string[];       // Paths to screenshots captured during this attempt
+}
 
 interface ExecutionResult {
   workflowId: string;
   testFile: string;
-  outcome: ExecutionOutcome;
+  outcome: ExecutionOutcome;   // Final outcome (best attempt)
   attempts: number;            // 1–3 (bounded retry)
-  durationMs: number;
+  durationMs: number;          // Total duration across all attempts
   error?: string;              // Error message if not PASS
+  attemptDetails: ExecutionAttempt[];  // Per-attempt evidence
+  screenshots: string[];       // Paths to captured screenshots
 }
 ```
 
@@ -1800,6 +1858,16 @@ Route parameter values in `routeParamValues` (e.g., `id=1`, `projectId=test-proj
 The optional `executionConfig.seedDataNotes` field documents what entities or fixtures the user must provision. These notes are informational and are not validated or enforced by B0 or B3.
 
 ---
+
+### B3 — Operational Features
+B3 supports the following execution modes via CLI flags:
+
+- **`--resume`**: Continue an interrupted run from the last saved checkpoint (`b3-progress.json`). Already-completed tests are preserved; only remaining tests are re-executed.
+- **`--failed-only`**: Rerun only tests that failed in a prior complete run (`b3-results.json`). Prior PASS results are merged into the new result set.
+- **`--only <ids>`**: Run only specific workflow IDs (comma-separated). Useful for targeted debugging.
+- **`--batch-size <N>`**: Process tests in batches of N, with Chrome cleanup between batches.
+
+Progress is persisted to `b3-progress.json` after every test completion, enabling crash recovery without re-executing passed tests.
 
 ### B3 — Execution Environment
 B3 executes each generated test file as an isolated subprocess. The normative execution model:
@@ -1983,26 +2051,52 @@ B0–B4 constitute the core Phase B pipeline. B5 covers execution-layer enhancem
 | **Debugging** | Step-level causality, route context, failure classification | B5.0 logs | Sufficient for classification; network/framework evidence deferred |
 | **Timing analysis** | Per-step timestamps, auth duration, postcondition wait duration | B5.0 timestamps | Sufficient; CDP would add network-level timing |
 
-### B5 Instrumentation Architecture (Layered)
+### B5 Canonical Layer Model (I / L / O)
 
-| Layer | Scope | Mechanism | Status |
+Three orthogonal layer systems structure the B5 observability and correctness model.
+
+#### I — Instrumentation Layers (where evidence is captured)
+
+| Tier | Scope | Mechanism | Status |
 |---|---|---|---|
-| **L1: Test instrumentation** | Generated test code | B2 emits logStep()/captureScreenshot() calls | Implemented (B5.0) |
-| **L2: Browser instrumentation** | Selenium WebDriver | CDP network/performance domains | Deferred (B5.3) |
-| **L3: Application instrumentation** | Target Angular app | Zone.js/testability API hooks | Deferred (B5.3) |
+| **I1: Test instrumentation** | Generated test code | B2 emits logStep()/captureScreenshot() calls | Implemented (B5.0) |
+| **I2: Browser instrumentation** | Selenium WebDriver | CDP network/performance domains (optional `enableNetworkEvidence`) | Partially implemented (B5.1) |
+| **I3: Application instrumentation** | Target Angular app | Zone.js/testability API hooks | Deferred |
 
-L1 is generic (works with any subject). L2 requires Chrome/Chromium. L3 requires Angular-specific runtime hooks and may be subject-specific.
+I1 is generic (works with any subject). I2 requires Chrome/Chromium. I3 requires Angular-specific runtime hooks and may be subject-specific.
 
-### B5 Oracle Tiers
+#### L — Correctness Layers (where a failure belongs semantically)
 
-| Tier | What it asserts | Current implementation | Status |
+| Layer | Precondition | Postcondition | Evidence source |
 |---|---|---|---|
-| **O1: Execution oracle** | Test runs without crash or timeout | assert-no-crash postcondition | Implemented |
-| **O2: Navigation oracle** | URL matches expected route after interaction | assert-url-matches postcondition | Implemented |
-| **O3: UI state oracle** | Expected DOM elements/text appear after interaction | Not implemented | Deferred (B5.5) |
-| **O4: Semantic state oracle** | Backend state changed as expected (entity CRUD) | Not implemented | Deferred (B5.5) |
+| **L1: Execution** | App reachable; test process completes | No crash, no unhandled exception | I1: exit code, step outcomes |
+| **L2: Navigation** | Route exists; params valid; auth satisfied | URL matches expected route/pattern after action | I1: `driver.getCurrentUrl()` |
+| **L3: DOM/materialization** | Target widget exists in DOM and is interactable | Expected DOM mutation occurred after action | I1: `findElement` success/failure, implicit wait |
+| **L4: Backend state** | Seed data exists; constraints satisfied | Backend accepted/rejected mutation | I2: CDP `networkEvidence` HTTP status |
 
+L-layers are diagnostic: they classify WHERE a failure originates, guiding remediation to the correct subsystem.
+
+#### O — Oracle Tiers (what success is asserted to mean)
+
+| Tier | What it asserts | PostConditionType | Status |
+|---|---|---|---|
+| **O1: Execution oracle** | Test runs without crash or timeout | `assert-no-crash` | Implemented |
+| **O2: Navigation oracle** | URL matches expected route after interaction | `assert-url-matches` | Implemented |
+| **O3: UI state oracle** | Expected DOM elements/text appear after interaction | Not implemented | Deferred |
+| **O4: Semantic state oracle** | Backend state changed as expected (entity CRUD) | Not implemented | Deferred |
+
+**Mapping:** O1 operates at L1. O2 operates at L2. O3 would operate at L3. O4 would operate at L4.
 C3 coverage uses O1+O2. C4 coverage (deferred) requires O3+O4.
+
+#### Separation of concerns
+
+- **I** answers: "where do we get evidence?" (technical plumbing)
+- **L** answers: "where does the failure belong?" (diagnostic classification)
+- **O** answers: "what does the test assert?" (oracle contract)
+
+Waits are L3 precondition-support mechanisms, not oracles.
+URL assertions are L2/O2 postconditions, not waits.
+CDP network evidence is I2 evidence used to diagnose L4, not an oracle by itself.
 
 ### B5 Logging Architecture
 
@@ -2057,35 +2151,40 @@ B2-generated tests emit a structured JSON execution log per test run.
 
 **Visualization:** `npm run viz -- output/<subject>` generates `vis/b3-execution.html` consuming B1/B2/B3/B4/B5.0/manifest artifacts. Enumerates from B2 canonical test set. Pure consumer.
 
-### B5.1 — Network-Aware Wait Strategies (Deferred)
+### B5.1 — Network-Aware Wait Strategies (Partially Implemented)
 
 **Problem:** B3's current wait model uses fixed timeouts (IMPLICIT_WAIT 10s, NAVIGATION_WAIT 15s). For applications with backend API round-trips (HTTP POST → server processing → redirect), the fixed window is insufficient when the server response exceeds the timeout.
 
-**Evidence:** spring-petclinic-angular (10 tests), airbus-inventory (2 tests) exhibit postcondition timeouts where the test action is correct but the backend response + Angular routing pipeline exceeds 15s.
+**Evidence:** spring-petclinic-angular (10 tests), airbus-inventory (2 tests) exhibit postcondition timeouts where the test action is correct but the backend response + Angular routing pipeline exceeds 15s. ever-traduora (8 tests) exhibit auth transition timeouts exceeding 45s.
 
-**Strategies:**
+**Implemented:**
+- Configurable per-subject timeout profiles via `manifest.executionConfig.timeoutProfile`
+- Fields: `implicitWait` (default 5s), `navigationWait` (default 10s), `authWait` (default 15s)
+- B2 emits `IMPLICIT_WAIT`, `NAVIGATION_WAIT`, `AUTH_WAIT` constants from manifest profile
+
+**Outcome:** Auth transition timeouts (8 traduora tests) fully eliminated by AUTH_WAIT=60s. However, those tests fail at subsequent structural steps (B5.6 inline components), producing zero net C3 improvement. Petclinic postcondition timeouts (9 tests) proved to be **not timing issues** — the backend does not produce the expected redirect regardless of wait duration. These are reclassified as B5.4 (oracle/postcondition).
+
+**Deferred within B5.1:**
 1. Wait-for-network-idle via Chrome DevTools Protocol (CDP)
 2. Per-step retry with exponential backoff
-3. Configurable per-subject timeout profiles (manifest.executionConfig)
 
-**Expected impact:** ~12 timing failures across petclinic + airbus.
+**Dependencies:** B5.0 (for timing evidence from step logs).
 
-**Dependencies:** B5.0 (for timing evidence from step logs). No spec changes needed.
+### B5.2 — Component-Ready and Data-Ready Waits (Partially Implemented)
 
-### B5.2 — Component-Ready and Data-Ready Waits (Deferred)
+**Problem:** Angular components that fetch data from APIs render their interactive elements (buttons, links inside `*ngFor` loops) only after the HTTP response arrives and change detection completes. B3's implicit wait finds the element only if it renders within the timeout window. Permission-gated widgets (behind `| async` and `| can:` pipes) have similar materialization delays.
 
-**Problem:** Angular components that fetch data from APIs render their interactive elements (buttons, links inside `*ngFor` loops) only after the HTTP response arrives and change detection completes. B3's implicit wait finds the element only if it renders within the timeout window.
+**Evidence:** spring-petclinic-angular (7 tests) exhibit element-timeout failures for buttons inside `*ngFor` list items. ever-traduora (57 tests) fail because widgets behind async/permission composition gates do not materialize within the 10s implicit wait. CDP evidence confirms all backend responses are 200/204/304 — no rejection.
 
-**Evidence:** spring-petclinic-angular (6 tests) exhibit element-timeout failures for buttons inside `*ngFor` list items. The data loads eventually (confirmed by screenshots of later page states) but not within the 10s implicit wait. ever-traduora (8 tests) exhibit auth timing failures where Angular transition exceeds 45s for authSuccessSelector.
+**Implemented strategies:**
+1. **Async/permission gate waits:** B2 emits an explicit `wait-for-element` step before the first interaction step when the trigger widget has `compositionGates` containing `async` or `can:` expressions. Wait timeout = IMPLICIT_WAIT (10s default). The wait targets the trigger widget's own locator via zero-implicit-wait polling.
+2. **Repeater data-readiness waits:** B2 emits an explicit `wait-for-element` step before the first interaction step when the trigger widget has `insideNgFor` set. The wait targets the trigger widget's locator. Wait timeout = IMPLICIT_WAIT (10s default). This is additive: the subsequent `findElement` in the action step adds another IMPLICIT_WAIT of implicit waiting.
 
-**Strategies:**
-1. Wait-for-specific-element after navigation (targeted CSS selector wait)
-2. Polling with application-specific readiness signals
-3. Wait-for-Angular-stability via CDP or `testability` API
+**Structural derivation:** Both wait families use metadata already extracted by A1 and propagated through B1 intents: `compositionGates` (from transitive CCC insideNgIf propagation) and `insideNgFor` (from WidgetProcessor repeater tracking). No new A1 extraction is required.
 
-**Expected impact:** ~14 timing failures across petclinic + traduora.
+**Expected impact:** ~20-40 recoveries across traduora (async/permission) and petclinic (repeater lists).
 
-**Dependencies:** B5.0 (step timing evidence). CDP integration optional but beneficial.
+**Dependencies:** B5.0 (step timing evidence). A1 structural metadata (compositionGates, insideNgFor).
 
 ### B5.3 — Repeater-Aware Locator Semantics (Deferred)
 

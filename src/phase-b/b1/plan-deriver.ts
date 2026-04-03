@@ -106,14 +106,31 @@ function bindRouteParams(
  * Generate a deterministic default value for a form field by examining
  * the full extracted constraint surface.
  */
-function defaultFormValue(field: IntentFormField): string {
+/**
+ * Generate a short deterministic suffix from a workflowId.
+ * Uses FNV-1a 32-bit hash → 4-char hex. Same workflowId always produces
+ * the same suffix, but different workflows get different suffixes.
+ * This prevents uniqueness collisions across workflows and subjects
+ * while keeping B2 determinism intact.
+ */
+function _workflowSuffix(workflowId: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < workflowId.length; i++) {
+    h ^= workflowId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).slice(0, 4);
+}
+
+function defaultFormValue(field: IntentFormField, workflowId = ''): string {
   const key = field.formControlName ?? field.nameAttr ?? field.idAttr ?? field.fieldNodeId;
   const t = field.inputType?.toLowerCase();
+  const suffix = _workflowSuffix(workflowId);
 
   // ── P3: Semantic widget/type evidence ──────────────────────────────
   // InputType is the strongest signal — browsers enforce type-specific formats.
 
-  if (t === 'email') return 'test@example.com';
+  if (t === 'email') return `test-${suffix}@example.com`;
   if (t === 'password') return 'Test123!';
   if (t === 'number') return _synthNumber(field);
   if (t === 'tel') return '1234567890';
@@ -137,7 +154,7 @@ function defaultFormValue(field: IntentFormField): string {
     return 'option-1';
   }
 
-  if (field.tagName === 'textarea') return `test-${key}`;
+  if (field.tagName === 'textarea') return `test-${key}-${suffix}`;
 
   // ── P5: Date-format evidence (Angular date pipe) ───────────────────
   // Detected from ngModelText containing "| date:'format'" — stronger than name heuristic.
@@ -152,12 +169,12 @@ function defaultFormValue(field: IntentFormField): string {
 
   // minLength/maxLength — pad or truncate the base value.
   if (field.minLength !== undefined && field.minLength > 0) {
-    const base = `test-${key}`;
+    const base = `test-${key}-${suffix}`;
     if (base.length < field.minLength) return base.padEnd(field.minLength, 'x');
     return field.maxLength !== undefined ? base.slice(0, field.maxLength) : base;
   }
   if (field.maxLength !== undefined) {
-    const base = `test-${key}`;
+    const base = `test-${key}-${suffix}`;
     return base.slice(0, field.maxLength);
   }
 
@@ -167,7 +184,7 @@ function defaultFormValue(field: IntentFormField): string {
   if (nameHint !== undefined) return nameHint;
 
   // ── P8: Deterministic fallback ─────────────────────────────────────
-  return `test-${key}`;
+  return `test-${key}-${suffix}`;
 }
 
 /** Synthesize a number respecting min/max constraints. */
@@ -211,8 +228,9 @@ function _synthFromPattern(field: IntentFormField): string | undefined {
     return '1234567890'.slice(0, safeLen);
   }
 
-  // Email patterns
-  if (/email|@/i.test(p)) return 'test@example.com';
+  // Email patterns — return undefined to fall through to suffixed P8 fallback.
+  // P3 (inputType=email) already handles emails with workflow-unique suffix.
+  if (/email|@/i.test(p)) return undefined;
 
   // URL patterns
   if (/^https?|url/i.test(p)) return 'https://example.com';
@@ -288,7 +306,7 @@ function buildFormData(
                loginCredentials[field.formControlName] !== undefined) {
       data[key] = loginCredentials[field.formControlName]!;
     } else {
-      data[key] = defaultFormValue(field);
+      data[key] = defaultFormValue(field, workflowId);
     }
   }
 
@@ -591,7 +609,32 @@ export function resolveWidgetLocator(
     strategy = 'custom';
     value = attrs['class'].split(/\s+/).map(c => `.${c}`).join('');
     _locatorDebug = 'fallback: semantic CSS class';
-  // (j) tag-position — LAST fallback
+  // (j) Repeater-relative locator — for widgets inside *ngFor
+  // Uses A1 repeater metadata: insideNgFor, insideNgForOrdinal, ngForItemTag.
+  // Targets the first repeater instance and uses ordinal within the repeater template.
+  } else if (w.insideNgFor !== undefined && w.ngForItemTag !== undefined && w.insideNgForOrdinal !== undefined) {
+    const tag = w.tagName ?? 'element';
+    const itemTag = w.ngForItemTag;
+    strategy = 'custom';
+    if (tag === itemTag) {
+      // Case A: widget IS the repeater item root (e.g., *ngFor on <button>).
+      // Ordinal 0 → first instance. Ordinal > 0 is ambiguous — fall through to tag-position.
+      if (w.insideNgForOrdinal === 0) {
+        value = `${tag}:nth-of-type(1)`;
+        _locatorDebug = `repeater: widget-is-item-root (ngFor: ${w.insideNgFor}, itemTag: ${itemTag})`;
+      } else {
+        strategy = 'tag-position';
+        value = _tagPositionFromNodeId(w.nodeId, w.tagName);
+        _locatorDebug = `fallback: tag-position (repeater widget-is-item-root with ordinal > 0)`;
+      }
+    } else {
+      // Case B: widget is a descendant of the repeater item root.
+      // Locator: itemTag:nth-of-type(1) widgetTag:nth-of-type(ordinal+1)
+      // Uses descendant combinator (space), not direct-child (>).
+      value = `${itemTag}:nth-of-type(1) ${tag}:nth-of-type(${w.insideNgForOrdinal + 1})`;
+      _locatorDebug = `repeater: item-scoped (ngFor: ${w.insideNgFor}, itemTag: ${itemTag}, ord: ${w.insideNgForOrdinal})`;
+    }
+  // (k) tag-position — LAST fallback (non-repeater widgets)
   } else {
     strategy = 'tag-position';
     value = _tagPositionFromNodeId(w.nodeId, w.tagName);
@@ -935,6 +978,84 @@ function resolvePreConditions(
                 openerWidgetSelector: openerLocator,
               },
             });
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Handler→property opener for local-state composition gates.
+  // When compositionGates contains a simple identifier E matching a CCC insideNgIf,
+  // and the parent has a non-repeater button opener with static text content,
+  // use the text content for a robust locator (not positional).
+  if (!pcs.some(pc => pc.type === 'trigger-dialog-open')) {
+    const gates = intent.triggerWidget.compositionGates ?? [];
+    const simpleGates = gates.filter(g => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(g));
+    if (simpleGates.length > 0) {
+      const triggerCompSelector = intent.triggerWidget.componentSelector;
+      if (triggerCompSelector !== undefined) {
+        const triggerCompId = findComponentIdBySelector(triggerCompSelector, index);
+        if (triggerCompId !== undefined) {
+          for (const [sourceId, edgeList] of index.edgesByFrom) {
+            for (const edge of edgeList) {
+              if (edge.kind !== 'COMPONENT_COMPOSES_COMPONENT' || edge.to !== triggerCompId) continue;
+              const ngIf = edge.compositionContext?.insideNgIf;
+              if (ngIf === undefined || !simpleGates.includes(ngIf)) continue;
+              const parentNode = index.nodeMap.get(sourceId);
+              if (parentNode?.kind !== 'Component') continue;
+              const parentSelector = (parentNode as ComponentNode).meta.selector;
+              if (parentSelector === undefined) continue;
+
+              // Find non-template, non-repeater buttons with WTH edges and static text
+              const openerCandidates = ([...index.nodeMap.values()].filter(
+                n => n.kind === 'Widget' && (n as WidgetNode).meta.componentId === sourceId
+                  && (n as WidgetNode).meta.isTemplateContent !== true
+                  && (n as WidgetNode).meta.insideNgFor === undefined
+                  && (n as WidgetNode).meta.widgetKind === 'Button'
+                  && (n as WidgetNode).meta.text !== undefined
+                  && (n as WidgetNode).meta.text !== '',
+              ) as WidgetNode[]).filter(w => {
+                return (index.edgesByFrom.get(w.id) ?? []).some(e => e.kind === 'WIDGET_TRIGGERS_HANDLER');
+              });
+
+              if (openerCandidates.length === 0) break;
+              // Pick the last candidate (deterministic: sorted by node id)
+              const opener = openerCandidates[openerCandidates.length - 1]!;
+              const openerText = opener.meta.text!;
+
+              // Route rerouting: navigate to the PARENT's route
+              for (const [nodeId, node] of index.nodeMap) {
+                if (node.kind !== 'Route') continue;
+                const routeEdges = index.edgesByFrom.get(nodeId) ?? [];
+                if (routeEdges.some(e => e.kind === 'ROUTE_ACTIVATES_COMPONENT' && e.to === sourceId)) {
+                  const routeUrl = substituteParams((node as RouteNode).meta.fullPath, assignment.routeParams);
+                  const navPc = pcs.find(pc => pc.type === 'navigate-to-route');
+                  if (navPc !== undefined) navPc.config['url'] = routeUrl;
+                  break;
+                }
+              }
+
+              // Text-content-based opener selector: structurally grounded in the
+              // extracted template text, not a heuristic. The opener's CSS selector
+              // uses the text content to disambiguate from repeater siblings.
+              // Format: custom CSS selector using XPath-style text matching via
+              // Selenium's By.xpath() — but since B2 emitter uses By.css(), we
+              // emit the text as a data attribute that B2 will handle specially.
+              // Actually: use the existing openerWidgetSelector mechanism which
+              // is resolved by B2 emitter via findElement. Emit a CSS selector
+              // that can work: scope to parent + use :not([insideNgFor]) — but
+              // CSS can't do text matching. Use a special prefix that B2 recognizes.
+              pcs.push({
+                type: 'trigger-dialog-open',
+                config: {
+                  openerSelector: parentSelector,
+                  dialogSelector: triggerCompSelector,
+                  openerWidgetSelector: `text:${openerText}`,
+                },
+              });
+              break;
+            }
+            if (pcs.some(pc => pc.type === 'trigger-dialog-open')) break;
           }
         }
       }
@@ -1301,6 +1422,14 @@ export function derivePlans(
     const steps = generateSteps(intent, assignment, index);
     const postConditions = resolvePostConditions(intent, assignment, index, manifest, startRoute?.fullPath);
 
+    // B5.2: propagate trigger context for wait emission in B2
+    const triggerContext: import('./plan-types.js').TriggerContext = {};
+    const gates = intent.triggerWidget.compositionGates;
+    if (gates !== undefined && gates.length > 0) triggerContext.compositionGates = gates;
+    if (intent.triggerWidget.insideNgFor !== undefined) triggerContext.insideNgFor = intent.triggerWidget.insideNgFor;
+    if (intent.triggerWidget.componentSelector !== undefined) triggerContext.componentSelector = intent.triggerWidget.componentSelector;
+    const hasTriggerContext = Object.keys(triggerContext).length > 0;
+
     plans.push({
       workflowId: intent.workflowId,
       planVersion: 1,
@@ -1308,6 +1437,7 @@ export function derivePlans(
       preConditions,
       steps,
       postConditions,
+      ...(hasTriggerContext ? { triggerContext } : {}),
     });
   }
 

@@ -279,6 +279,16 @@ export type WidgetNode = NodeBase & {
      * Used by B1 for per-region positional locator computation inside modals.
      */
     templateRegionId?: string;
+    /** *ngFor repeater expression if this widget is inside a repeater container. */
+    insideNgFor?: string;
+    /** 0-based ordinal among same-tag widgets within the same *ngFor repeater. */
+    insideNgForOrdinal?: number;
+    /** Static text content of the widget element (e.g., button label "Add", "Home"). */
+    text?: string;
+    /** Aggregated visibility/composition gates from ancestor CCC edges (insideNgIf expressions). */
+    compositionGates?: string[];
+    /** Tag name of the *ngFor host element (repeater item root, e.g., "tr", "div", "li"). */
+    ngForItemTag?: string;
   };
 };
 

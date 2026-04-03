@@ -105,6 +105,20 @@ export interface Assignment {
 // ActionPlan — fully bound plan for one workflow
 // ---------------------------------------------------------------------------
 
+/**
+ * Structural context of the trigger widget, propagated from B1 intent
+ * for B2 wait emission (B5.2). Determines whether pre-action waits
+ * are needed for async/permission gates or repeater data readiness.
+ */
+export interface TriggerContext {
+  /** Composition gates from ancestor CCC insideNgIf expressions (e.g., "project$ | async"). */
+  compositionGates?: string[];
+  /** NgFor iteration variable if trigger widget is inside a repeater. */
+  insideNgFor?: string;
+  /** Component selector containing the trigger widget (for scoped waits). */
+  componentSelector?: string;
+}
+
 export interface ActionPlan {
   workflowId: string;
   planVersion: number;
@@ -112,6 +126,8 @@ export interface ActionPlan {
   preConditions: PreCondition[];
   steps: ActionStep[];
   postConditions: PostCondition[];
+  /** B5.2: structural context for pre-action wait derivation. */
+  triggerContext?: TriggerContext;
 }
 
 // ---------------------------------------------------------------------------

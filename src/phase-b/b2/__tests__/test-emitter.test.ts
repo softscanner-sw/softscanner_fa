@@ -183,7 +183,7 @@ describe('emitPreCondition', () => {
     // Auth success: polls for authSuccessSelector as sole success signal
     expect(code).toContain('app-bar');
     expect(code).toContain('findElements');
-    expect(code).toContain('NAVIGATION_WAIT * 3');
+    expect(code).toContain('AUTH_WAIT');
     // No URL-based detection, no form-disappearance, no fixed sleep (Promise setTimeout)
     expect(code).not.toContain('url.includes');
     expect(code).not.toContain('new Promise');

@@ -26,7 +26,7 @@
   ],
   "routeParamValues": {
     "localeCode": "en",
-    "projectId": "ee752941-79f4-4d7a-b05c-38e627820e10"
+    "projectId": "879e879c-1b69-4c07-b9ec-f7b246610d79"
   },
   "authSetup": {
     "loginRoute": "/login",
@@ -36,6 +36,24 @@
     "authSuccessSelector": "app-bar [routerLink='/projects']"
   },
   "executionConfig": {
-    "preAttemptCommand": "docker exec mysqldb mysql -u tr -pchange_me tr_dev -e \"UPDATE user SET loginAttempts = 0, lastLogin = NULL;\""
+    "seedCommand": "node scripts/seed-traduora.mjs",
+    "preAttemptCommand": "docker exec mysqldb mysql -u tr -pchange_me tr_dev -e \"UPDATE user SET loginAttempts = 0, lastLogin = NULL;\"",
+    "batchResetCommand": "docker restart traduora && sleep 10",
+    "enableNetworkEvidence": true
+  },
+  "seedRequirements": {
+    "authGuards": [
+      "AuthGuard",
+      "CanGuard"
+    ],
+    "negativeGuards": [
+      "NoAuthGuard"
+    ],
+    "routeParams": [
+      "localeCode",
+      "projectId"
+    ],
+    "hasFormWorkflows": true,
+    "seedStatus": "needs-command"
   }
 }

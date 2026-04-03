@@ -1661,7 +1661,15 @@
         "preConditions": [
           {
             "type": "navigate-to-route",
-            "url": "/pettypes/add"
+            "url": "/pettypes"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
           }
         ],
         "steps": [
@@ -1701,7 +1709,15 @@
         "preConditions": [
           {
             "type": "navigate-to-route",
-            "url": "/pettypes/add"
+            "url": "/pettypes"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
           }
         ],
         "steps": [
@@ -2017,6 +2033,14 @@
           {
             "type": "navigate-to-route",
             "url": "/specialties"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
           }
         ],
         "steps": [
@@ -2062,6 +2086,14 @@
           {
             "type": "navigate-to-route",
             "url": "/specialties"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
           }
         ],
         "steps": [

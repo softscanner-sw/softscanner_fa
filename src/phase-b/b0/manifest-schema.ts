@@ -64,6 +64,13 @@ export interface ExecutionConfig {
   readinessEndpoint?: string;
   /** Maximum wait time (ms) for app readiness. Defaults to 30000. */
   readinessTimeoutMs?: number;
+  /**
+   * Idempotent shell command run ONCE before the test suite for this subject.
+   * Transitional mechanism for seed provisioning (create accounts, entities, fixtures).
+   * Runs after readiness check passes, before any test attempt.
+   * Must be safe to run multiple times without creating duplicate data.
+   */
+  seedCommand?: string;
   /** Human-readable notes about required seed data or fixtures.
    *  Informational only — not validated by B0 or B3. */
   seedDataNotes?: string[];
@@ -71,8 +78,57 @@ export interface ExecutionConfig {
    * Shell command to run before each test attempt.
    * Used to reset application state that would otherwise cascade between attempts
    * (e.g., login lockout counters for rate-limited auth APIs).
+   * Different from seedCommand (one-time) — this runs before EVERY attempt.
    */
   preAttemptCommand?: string;
+  /**
+   * Shell command run at each batch boundary (every batchSize tests).
+   * Used for heavier resets (e.g., Docker container restart) that are
+   * too expensive per-test but needed periodically to clear in-memory
+   * rate limiters or accumulated state.
+   */
+  batchResetCommand?: string;
+  /**
+   * B5.1: Subject-level timeout profile. Overrides the default constants
+   * emitted into generated tests by B2.
+   * - implicitWait: element resolution timeout (default 5000ms)
+   * - navigationWait: route navigation / postcondition timeout (default 10000ms)
+   * - authWait: auth success polling timeout (default 15000ms)
+   */
+  timeoutProfile?: {
+    implicitWait?: number;
+    navigationWait?: number;
+    authWait?: number;
+  };
+  /**
+   * Enable CDP network evidence capture in generated tests.
+   * When true, B2 emits Chrome performance logging and network request/response
+   * recording. Adds runtime overhead (~10-15% slower execution).
+   * Default: false (off). Enable only for diagnostic runs.
+   */
+  enableNetworkEvidence?: boolean;
+}
+
+/**
+ * SeedRequirements — wizard-generated summary of structurally inferred seed needs.
+ * B0 validates these against the manifest's actual declarations.
+ */
+export interface SeedRequirements {
+  /** Auth guard class names that require accounts (excludes negative guards like NoAuthGuard). */
+  authGuards: string[];
+  /** Negative/no-auth guard names (e.g., NoAuthGuard — require NOT being logged in). */
+  negativeGuards: string[];
+  /** Route parameter names inferred from A2 workflows (e.g., ["id", "projectId"]). */
+  routeParams: string[];
+  /** Whether any A2 workflow uses WIDGET_SUBMITS_FORM trigger (implies backend data validation). */
+  hasFormWorkflows: boolean;
+  /**
+   * Seed status:
+   * - "pre-seeded": backend has static seed data (e.g., Docker image with H2/data.sql)
+   * - "needs-command": requires an executable seed command before testing
+   * - "none": no seed data needed (no auth, no params, no forms)
+   */
+  seedStatus: 'pre-seeded' | 'needs-command' | 'none';
 }
 
 export interface SubjectManifest {
@@ -107,4 +163,6 @@ export interface SubjectManifest {
   authSetup?: AuthSetup;
   /** Execution-readiness configuration. Consumed only by B3. */
   executionConfig?: ExecutionConfig;
+  /** Wizard-generated seed requirement summary. Validated by B0. */
+  seedRequirements?: SeedRequirements;
 }

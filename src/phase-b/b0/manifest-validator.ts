@@ -130,6 +130,82 @@ function validateSchema(manifest: SubjectManifest, expectedSubjectName?: string)
           }
         }
       }
+      // Validate optional string fields
+      for (const field of ['seedCommand', 'preAttemptCommand', 'batchResetCommand'] as const) {
+        const val = (manifest.executionConfig as Record<string, unknown>)[field];
+        if (val !== undefined && typeof val !== 'string') {
+          issues.push({ severity: 'error', message: `executionConfig.${field} must be a string.` });
+        }
+      }
+      // Validate enableNetworkEvidence
+      if (manifest.executionConfig.enableNetworkEvidence !== undefined && typeof manifest.executionConfig.enableNetworkEvidence !== 'boolean') {
+        issues.push({ severity: 'error', message: 'executionConfig.enableNetworkEvidence must be a boolean.' });
+      }
+      // Validate timeoutProfile
+      if (manifest.executionConfig.timeoutProfile !== undefined) {
+        const tp = manifest.executionConfig.timeoutProfile;
+        if (typeof tp !== 'object' || tp === null) {
+          issues.push({ severity: 'error', message: 'executionConfig.timeoutProfile must be an object.' });
+        } else {
+          for (const f of ['implicitWait', 'navigationWait', 'authWait'] as const) {
+            if ((tp as Record<string, unknown>)[f] !== undefined && typeof (tp as Record<string, unknown>)[f] !== 'number') {
+              issues.push({ severity: 'error', message: `executionConfig.timeoutProfile.${f} must be a number.` });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // seedRequirements (optional, wizard-generated, validated against manifest declarations)
+  if (manifest.seedRequirements !== undefined) {
+    const sr = manifest.seedRequirements;
+    if (typeof sr !== 'object' || sr === null || Array.isArray(sr)) {
+      issues.push({ severity: 'error', message: 'seedRequirements must be a plain object.' });
+    } else {
+      if (!Array.isArray(sr.authGuards)) {
+        issues.push({ severity: 'error', message: 'seedRequirements.authGuards must be an array.' });
+      }
+      if (!Array.isArray(sr.negativeGuards)) {
+        issues.push({ severity: 'error', message: 'seedRequirements.negativeGuards must be an array.' });
+      }
+      if (!Array.isArray(sr.routeParams)) {
+        issues.push({ severity: 'error', message: 'seedRequirements.routeParams must be an array.' });
+      }
+      if (typeof sr.hasFormWorkflows !== 'boolean') {
+        issues.push({ severity: 'error', message: 'seedRequirements.hasFormWorkflows must be a boolean.' });
+      }
+      if (!['pre-seeded', 'needs-command', 'none'].includes(sr.seedStatus)) {
+        issues.push({ severity: 'error', message: 'seedRequirements.seedStatus must be "pre-seeded", "needs-command", or "none".' });
+      }
+
+      // Cross-validate: auth guards require matching accounts
+      if (Array.isArray(sr.authGuards) && sr.authGuards.length > 0) {
+        const satisfiedGuards = new Set<string>();
+        (manifest.accounts ?? []).forEach((a: { guardSatisfies?: string[] }) => {
+          (a.guardSatisfies ?? []).forEach(g => satisfiedGuards.add(g));
+        });
+        for (const g of sr.authGuards) {
+          if (!satisfiedGuards.has(g)) {
+            issues.push({ severity: 'warning', message: `seedRequirements.authGuards includes "${g}" but no account satisfies it.` });
+          }
+        }
+      }
+
+      // Cross-validate: route params require matching values
+      if (Array.isArray(sr.routeParams) && sr.routeParams.length > 0) {
+        const declaredParams = new Set(Object.keys(manifest.routeParamValues ?? {}));
+        for (const p of sr.routeParams) {
+          if (!declaredParams.has(p)) {
+            issues.push({ severity: 'warning', message: `seedRequirements.routeParams includes "${p}" but routeParamValues does not provide a value.` });
+          }
+        }
+      }
+
+      // Cross-validate: seedCommand vs seedStatus
+      if (sr.seedStatus === 'needs-command' && !manifest.executionConfig?.seedCommand) {
+        issues.push({ severity: 'warning', message: 'seedRequirements.seedStatus is "needs-command" but no executionConfig.seedCommand is provided.' });
+      }
     }
   }
 
@@ -204,7 +280,9 @@ function crossCheckA2(manifest: SubjectManifest, a2: A2WorkflowSet): ValidationI
     });
   }
 
-  // Check that every guard referenced by workflows has at least one account satisfying it
+  // Check that every POSITIVE auth guard has at least one account satisfying it.
+  // Negative guards (e.g., NoAuthGuard) require the user to NOT be logged in —
+  // they do not need an account and should not produce a warning.
   if (allGuards.size > 0 && Array.isArray(manifest.accounts)) {
     const satisfiedGuards = new Set<string>();
     for (const acct of manifest.accounts) {
@@ -215,6 +293,10 @@ function crossCheckA2(manifest: SubjectManifest, a2: A2WorkflowSet): ValidationI
       }
     }
     for (const guard of [...allGuards].sort()) {
+      // Skip negative/no-auth guards — they don't require accounts
+      if (guard.toLowerCase().includes('noauth') || guard.toLowerCase().includes('unauth')) {
+        continue;
+      }
       if (!satisfiedGuards.has(guard)) {
         issues.push({
           severity: 'warning',

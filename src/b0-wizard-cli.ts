@@ -27,7 +27,7 @@ import * as path from 'node:path';
 import * as readline from 'node:readline';
 import type { A1Multigraph, RouteNode } from './models/multigraph.js';
 import type { A2WorkflowSet } from './models/workflow.js';
-import type { SubjectManifest } from './phase-b/b0/manifest-schema.js';
+import type { SubjectManifest, SeedRequirements, ExecutionConfig } from './phase-b/b0/manifest-schema.js';
 import {
   buildWizardContext,
   deriveAuthSetupFromA1,
@@ -541,43 +541,130 @@ async function runWizard(): Promise<void> {
   printSubjectSummary();
   printRequirementSummary();
 
-  // No fields needed — trivially complete
-  if (ctx.guards.length === 0 && ctx.params.length === 0) {
-    const manifest: SubjectManifest = { subjectName, baseUrl, accounts: [], routeParamValues: {} };
-    writeManifest(manifest);
-    return;
-  }
-
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   try {
     process.stdout.write(`${BOLD}Starting field-by-field collection.${RESET} Press Ctrl+C to abort.\n`);
 
-    // Collect accounts
+    // --- 1. Accounts (only for positive/auth guards — skip NoAuth guards) ---
     const accounts: SubjectManifest['accounts'] = [];
-    for (let i = 0; i < ctx.guards.length; i++) {
-      const gctx = ctx.guards[i];
+    const positiveGuards = ctx.guards.filter(g => !g.isNoAuth);
+    for (let i = 0; i < positiveGuards.length; i++) {
+      const gctx = positiveGuards[i];
       if (gctx !== undefined) {
         accounts.push(await promptAccount(rl, i, gctx));
       }
     }
+    // Note negative guards for informational display
+    const negGuards = ctx.guards.filter(g => g.isNoAuth);
+    if (negGuards.length > 0) {
+      process.stdout.write(`\n  ${DIM}Note: ${negGuards.length} negative guard(s) detected (${negGuards.map(g=>g.name).join(', ')}).${RESET}\n`);
+      process.stdout.write(`  ${DIM}These require the user to NOT be logged in (login/signup pages).${RESET}\n`);
+      process.stdout.write(`  ${DIM}No account is needed — B3 runs these workflows without authentication.${RESET}\n\n`);
+    }
 
-    // Collect authSetup (only if at least one non-NoAuth guard exists)
+    // --- 2. authSetup (only if at least one non-NoAuth guard exists) ---
     const needsAuthSetup = ctx.guards.some((g) => !g.isNoAuth);
     let authSetup: SubjectManifest['authSetup'] | undefined;
     if (needsAuthSetup) {
       authSetup = await promptAuthSetup(rl, ctx.guardedWorkflowCount);
     }
 
-    // Collect route params (entity-family aware)
+    // --- 3. Route params (entity-family aware) ---
     const { routeParamValues, routeParamOverrides } = await collectRouteParams(rl);
 
-    // Assemble manifest
+    // --- 4. Auto-generate seedRequirements from A2 artifacts ---
+    const authGuards = ctx.guards.filter(g => !g.isNoAuth).map(g => g.name).sort();
+    const negativeGuards = ctx.guards.filter(g => g.isNoAuth).map(g => g.name).sort();
+    const routeParams = [...new Set(paramGroups.map(g => g.paramName))].sort();
+    const hasAuth = authGuards.length > 0;
+    const hasParams = routeParams.length > 0;
+
+    // Check A2 workflows for actual WSF triggers using A1 edge lookup
+    let actualHasWSF = false;
+    if (fs.existsSync(a1Path)) {
+      try {
+        const a1Data = JSON.parse(fs.readFileSync(a1Path, 'utf-8')) as A1Multigraph;
+        const edgeKindMap = new Map<string, string>();
+        a1Data.multigraph.edges.forEach(e => edgeKindMap.set(e.id, e.kind));
+        actualHasWSF = a2.workflows.some(w => edgeKindMap.get(w.triggerEdgeId) === 'WIDGET_SUBMITS_FORM');
+      } catch { actualHasWSF = hasAuth || hasParams; }
+    } else {
+      actualHasWSF = hasAuth || hasParams;
+    }
+
+    // Determine seed status
+    let seedStatus: SeedRequirements['seedStatus'] = 'none';
+    if (hasAuth || hasParams) {
+      // Ask the user whether the backend is pre-seeded or needs a command
+      process.stdout.write(`\n  ${BOLD}Seed data status:${RESET}\n`);
+      process.stdout.write(`  ${DIM}This subject requires auth accounts or route param entities.${RESET}\n`);
+      process.stdout.write(`  ${DIM}  1. pre-seeded — backend has static seed data (e.g., Docker image, data.sql)${RESET}\n`);
+      process.stdout.write(`  ${DIM}  2. needs-command — requires an executable seed command before testing${RESET}\n`);
+      const seedAnswer = await prompt(rl, 'Seed status (1=pre-seeded, 2=needs-command)', '1');
+      seedStatus = seedAnswer === '2' ? 'needs-command' : 'pre-seeded';
+    }
+
+    const seedRequirements: SeedRequirements = {
+      authGuards,
+      negativeGuards,
+      routeParams,
+      hasFormWorkflows: actualHasWSF,
+      seedStatus,
+    };
+
+    // --- 5. executionConfig prompts ---
+    header('Execution Configuration');
+    process.stdout.write('\n');
+    note('These settings control B3 test execution behavior.');
+    note('Press Enter to skip optional fields.\n');
+
+    const executionConfig: ExecutionConfig = {};
+
+    // seedCommand (transitional, only when seed status is 'needs-command')
+    if (seedRequirements.seedStatus === 'needs-command') {
+      process.stdout.write(`  ${YELLOW}This subject has auth guards or route params that require seed data.${RESET}\n`);
+      process.stdout.write(`  ${DIM}A seed command provisions the database with required accounts/entities.${RESET}\n`);
+      process.stdout.write(`  ${DIM}Example: node scripts/seed-mysubject.mjs${RESET}\n`);
+      const seedCmd = await prompt(rl, 'executionConfig.seedCommand  (shell command, or Enter to skip)', '');
+      if (seedCmd !== '') executionConfig.seedCommand = seedCmd;
+    }
+
+    // preAttemptCommand
+    if (needsAuthSetup) {
+      process.stdout.write(`\n  ${DIM}This subject has auth — some apps rate-limit login attempts.${RESET}\n`);
+      process.stdout.write(`  ${DIM}A per-attempt command resets state before each test (e.g., clear DB lockout).${RESET}\n`);
+      process.stdout.write(`  ${DIM}Example: docker exec mydb mysql -u root -ppass db -e "UPDATE user SET attempts=0;"${RESET}\n`);
+      const preCmd = await prompt(rl, 'executionConfig.preAttemptCommand  (shell command, or Enter to skip)', '');
+      if (preCmd !== '') executionConfig.preAttemptCommand = preCmd;
+    }
+
+    // batchResetCommand
+    if (needsAuthSetup) {
+      process.stdout.write(`\n  ${DIM}For apps with in-memory rate limiters, a batch reset restarts the backend${RESET}\n`);
+      process.stdout.write(`  ${DIM}between test batches (every 10 tests). Only needed if preAttemptCommand${RESET}\n`);
+      process.stdout.write(`  ${DIM}cannot clear the rate limiter.${RESET}\n`);
+      process.stdout.write(`  ${DIM}Example: docker restart myapp && sleep 10${RESET}\n`);
+      const batchCmd = await prompt(rl, 'executionConfig.batchResetCommand  (shell command, or Enter to skip)', '');
+      if (batchCmd !== '') executionConfig.batchResetCommand = batchCmd;
+    }
+
+    // enableNetworkEvidence
+    process.stdout.write(`\n  ${DIM}CDP network evidence captures HTTP request/response data for failure diagnosis.${RESET}\n`);
+    process.stdout.write(`  ${DIM}Recommended for subjects with backend APIs. Adds ~5% runtime overhead.${RESET}\n`);
+    const cdpAnswer = await prompt(rl, 'executionConfig.enableNetworkEvidence  (yes/no)', needsAuthSetup || actualHasWSF ? 'yes' : 'no');
+    if (cdpAnswer.toLowerCase() === 'yes' || cdpAnswer === 'y') {
+      executionConfig.enableNetworkEvidence = true;
+    }
+
+    // --- 6. Assemble manifest ---
     const manifest: SubjectManifest = { subjectName, baseUrl, accounts, routeParamValues };
     if (authSetup !== undefined) manifest.authSetup = authSetup;
     if (Object.keys(routeParamOverrides).length > 0) manifest.routeParamOverrides = routeParamOverrides;
+    if (Object.keys(executionConfig).length > 0) manifest.executionConfig = executionConfig;
+    manifest.seedRequirements = seedRequirements;
 
-    // Summary
+    // --- Summary ---
     header('Manifest Complete');
     process.stdout.write('\n');
     info('subjectName',          manifest.subjectName);
@@ -592,6 +679,11 @@ async function runWizard(): Promise<void> {
     if (manifest.authSetup !== undefined) {
       info('authSetup.loginRoute', manifest.authSetup.loginRoute);
     }
+    info('seedRequirements',     `authGuards=${seedRequirements.authGuards.length} negGuards=${seedRequirements.negativeGuards.length} params=${seedRequirements.routeParams.length} forms=${seedRequirements.hasFormWorkflows} seed=${seedRequirements.seedStatus}`);
+    if (executionConfig.seedCommand) info('seedCommand', executionConfig.seedCommand);
+    if (executionConfig.preAttemptCommand) info('preAttemptCommand', '(set)');
+    if (executionConfig.batchResetCommand) info('batchResetCommand', '(set)');
+    if (executionConfig.enableNetworkEvidence) info('enableNetworkEvidence', 'true');
     process.stdout.write('\n');
 
     writeManifest(manifest);

@@ -370,9 +370,9 @@ Must emit:
 * Determinism scripts: `scripts/verify-b0-determinism.mjs`, `scripts/verify-b1-determinism.mjs`, `scripts/verify-b1-plan-determinism.mjs`, `scripts/verify-b2-determinism.mjs`.
 * Subject manifests: `subjects/<subject>/subject-manifest.json`.
 * Ground truth: `docs/analysis/phase-b/gt/<subject>.json`.
-* Subject runbooks: `docs/validation/<subject>-setup.md`.
+* Subject runbooks: `docs/validation/runbooks/<subject>-setup.md`.
 
-## Logging Architecture (Two Contracts)
+## Logging Architecture (Three Contracts)
 **A. Framework/system logs** — Pipeline behavior across phases.
 * Format: JSONL (PipelineLogEvent) at `logs/<phase>-pipeline.jsonl`
 * Schema: timestamp, phase, operation, subject, severity, event, message, duration, outcome, error, context
@@ -393,12 +393,22 @@ These three categories must never be collapsed. See `docs/paper/approach.md` §B
 
 ## Documentation Structure
 * `docs/paper/approach.md` — normative spec (authoritative)
+* `docs/paper/scientific-report.md` — scientific/technical report
 * `docs/ROADMAP.md` — work sequencing (authoritative)
-* `docs/analysis/foundations/` — current system behavior descriptions
-* `docs/analysis/decisions/` — compressed evolution log
-* `docs/analysis/runtime/` — per-subject execution reports
 * `docs/analysis/phase-b/gt/` — ground truth JSON data
-* `docs/validation/` — corpus registry, evaluation reports, subject runbooks
+* `docs/analysis/phase-b/diagnostic-reclassification-report.md` — current residual catalog
+* `docs/validation/protocols/` — benchmark execution protocol, diagnostic protocol
+* `docs/validation/manifest/` — B0 manifest guide, subject onboarding guide
+* `docs/validation/runbooks/` — per-subject setup runbooks
+* `docs/validation/empirical reports/` — AutoE2E comparison, subject registry
+* `docs/archive/` — historical/forensic docs (read-only)
+
+## B3 Execution Invariants
+* Canonical B3 invocation: `node node_modules/tsx/dist/cli.mjs src/b3-cli.ts <subject> [flags]`
+* `npm run b3` is PROHIBITED for benchmark claims (npm Windows process lifecycle kills grandchild subprocess event loops)
+* Per-test logs are mandatory: FAIL_INTEGRITY if log missing, stale, or disagrees with exit code
+* Stale logs/screenshots cleaned before full benchmark runs
+* Benchmark validity requires: app identity verified, seed executed, full run mode, 0 FAIL_INTEGRITY
 
 ---
 

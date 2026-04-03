@@ -1,0 +1,29 @@
+@startuml B5 Dependency Graph
+!theme plain
+top to bottom direction
+title B5 Substage Dependencies (Strict DAG)
+
+legend right
+  |= Color |= Status |
+  | <#90EE90> | Implemented |
+  | <#B0E0E6> | Partial |
+  | <#FFFACD> | Deferred |
+  | <#E6E6FA> | Deferred (A1/B1) |
+  | <#FFE4B5> | Deferred (oracle) |
+  Edge: requires (hard dependency)
+endlegend
+
+rectangle "B5.0\nObservability" as B50 #90EE90
+
+rectangle "B5.1\nNetwork Waits" as B51 #B0E0E6
+rectangle "B5.2\nData-Ready Waits" as B52 #FFFACD
+rectangle "B5.3\nRepeater Locators" as B53 #B0E0E6
+rectangle "B5.4\nOracle / C4" as B54 #FFE4B5
+rectangle "B5.5\nSeed Data" as B55 #E6E6FA
+rectangle "B5.6\nInline Components" as B56 #E6E6FA
+
+B50 --> B51 : requires
+B50 --> B52 : requires
+B50 --> B54 : requires
+
+@enduml
