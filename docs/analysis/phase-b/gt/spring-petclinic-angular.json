@@ -1,0 +1,3188 @@
+{
+  "subject": "spring-petclinic-angular",
+  "generatedDate": "2026-03-19",
+  "totalEntries": 74,
+  "entries": [
+    {
+      "gtId": "petclinic-GT-01",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:28:7|Link|1::WIDGET_NAVIGATES_ROUTE::/welcome@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app-routing.module.ts::0",
+      "a2WorkflowIndex": 0,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "welcome"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/welcome"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-02",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:28:7|Link|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 1,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "welcome"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-03",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:35:7|Link|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 2,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c2-navbar-owners"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/**"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-04",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:40:13|Link|3::WIDGET_NAVIGATES_ROUTE::/owners@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owners-routing.module.ts::0",
+      "a2WorkflowIndex": 3,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-05",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:40:13|Link|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 4,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-06",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:42:13|Link|4::WIDGET_NAVIGATES_ROUTE::/owners/add@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owners-routing.module.ts::0",
+      "a2WorkflowIndex": 5,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners/add"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-07",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:42:13|Link|4::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 6,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners/add"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-08",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:47:7|Link|5::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 7,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c5-navbar-vets"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/**"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-09",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:52:13|Link|6::WIDGET_NAVIGATES_ROUTE::/vets@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vets-routing.module.ts::0",
+      "a2WorkflowIndex": 8,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/vets"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-10",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:52:13|Link|6::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 9,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/vets"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-11",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:54:13|Link|7::WIDGET_NAVIGATES_ROUTE::/vets/add@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vets-routing.module.ts::0",
+      "a2WorkflowIndex": 10,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/vets/add"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-12",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:54:13|Link|7::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 11,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/vets/add"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-13",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:59:7|Link|8::WIDGET_NAVIGATES_ROUTE::/pettypes@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettypes-routing.module.ts::0",
+      "a2WorkflowIndex": 12,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/pettypes"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-14",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:59:7|Link|8::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 13,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/pettypes"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-15",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:65:7|Link|9::WIDGET_NAVIGATES_ROUTE::/specialties@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialties-routing.module.ts::0",
+      "a2WorkflowIndex": 14,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/specialties"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-16",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\app.component.html:65:7|Link|9::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/app.component.ts#AppComponent::0",
+      "a2WorkflowIndex": 15,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/specialties"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-17",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-add\\owner-add.component.html:26:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent::0",
+      "a2WorkflowIndex": 16,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "firstName",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "lastName",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "address",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "city",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "telephone",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "firstName": "test-firstName",
+            "lastName": "test-lastName",
+            "address": "test-address",
+            "city": "test-city",
+            "telephone": "test-telephone"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "firstName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "lastName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "address"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "city"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "telephone"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/owners"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-18",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-add\\owner-add.component.html:76:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent::0",
+      "a2WorkflowIndex": 17,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-19",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-add\\owner-add.component.html:77:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-add/owner-add.component.ts#OwnerAddComponent::0",
+      "a2WorkflowIndex": 18,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c31-owner-add-add-owner-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-20",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-detail\\owner-detail.component.html:44:5|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent::0",
+      "a2WorkflowIndex": 19,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-21",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-detail\\owner-detail.component.html:45:5|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent::0",
+      "a2WorkflowIndex": 20,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-22",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-detail\\owner-detail.component.html:46:5|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-detail/owner-detail.component.ts#OwnerDetailComponent::0",
+      "a2WorkflowIndex": 21,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1/pets/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-23",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-edit\\owner-edit.component.html:218:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent::0",
+      "a2WorkflowIndex": 22,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c16-owner-edit-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-24",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-edit\\owner-edit.component.html:221:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent::0",
+      "a2WorkflowIndex": 23,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c17-owner-edit-update-owner-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-25",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-edit\\owner-edit.component.html:25:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-edit/owner-edit.component.ts#OwnerEditComponent::0",
+      "a2WorkflowIndex": 24,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "address",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "city",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "telephone",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "firstName",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "lastName",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "address": "test-address",
+            "city": "test-city",
+            "telephone": "test-telephone",
+            "firstName": "test-firstName",
+            "lastName": "test-lastName"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "address"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "city"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "telephone"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "firstName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "lastName"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-26",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-list\\owner-list.component.html:36:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent::0",
+      "a2WorkflowIndex": 25,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-27",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-list\\owner-list.component.html:58:37|Link|0::WIDGET_NAVIGATES_ROUTE::/owners/:id@C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owners-routing.module.ts::0",
+      "a2WorkflowIndex": 26,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_NAVIGATES_ROUTE",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners/{{owner.id}}"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-28",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-list\\owner-list.component.html:58:37|Link|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent::0",
+      "a2WorkflowIndex": 27,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "/owners/{{owner.id}}"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "assert-no-crash"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-29",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\owners\\owner-list\\owner-list.component.html:72:9|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/owners/owner-list/owner-list.component.ts#OwnerListComponent::0",
+      "a2WorkflowIndex": 28,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/owners"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-30",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-add\\pet-add.component.html:24:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent::0",
+      "a2WorkflowIndex": 29,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "owner_name",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "birthDate",
+            "tagName": "input"
+          },
+          {
+            "name": "type",
+            "tagName": "select"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "owner_name": "test-owner_name",
+            "name": "test-name",
+            "birthDate": "test-birthDate",
+            "type": "option-1"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "owner_name"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "birthDate"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "type"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-31",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-add\\pet-add.component.html:87:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent::0",
+      "a2WorkflowIndex": 30,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c20-pet-add-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-32",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-add\\pet-add.component.html:88:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-add/pet-add.component.ts#PetAddComponent::0",
+      "a2WorkflowIndex": 31,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c21-pet-add-save-pet-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pets/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-33",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-edit\\pet-edit.component.html:25:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent::0",
+      "a2WorkflowIndex": 32,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "owner_name",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "birthDate",
+            "tagName": "input"
+          },
+          {
+            "name": "type1",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "pettype",
+            "tagName": "select"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "owner_name": "test-owner_name",
+            "name": "test-name",
+            "birthDate": "test-birthDate",
+            "type1": "test-type1",
+            "pettype": "option-1"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "owner_name"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "birthDate"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "type1"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "pettype"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-34",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-edit\\pet-edit.component.html:84:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent::0",
+      "a2WorkflowIndex": 33,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c18-pet-edit-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-35",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-edit\\pet-edit.component.html:85:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-edit/pet-edit.component.ts#PetEditComponent::0",
+      "a2WorkflowIndex": 34,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c19-pet-edit-update-pet-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pets/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-36",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-list\\pet-list.component.html:29:9|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent::0",
+      "a2WorkflowIndex": 35,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pets/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-37",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-list\\pet-list.component.html:30:9|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent::0",
+      "a2WorkflowIndex": 36,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-38",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pets\\pet-list\\pet-list.component.html:31:9|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pets/pet-list/pet-list.component.ts#PetListComponent::0",
+      "a2WorkflowIndex": 37,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pets/1/visits/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-39",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-add/pettype-add.component.ts#PettypeAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-add\\pettype-add.component.html:22:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-add/pettype-add.component.ts#PettypeAddComponent::0",
+      "a2WorkflowIndex": 38,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "name": "test-name"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/pettypes/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-40",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-add/pettype-add.component.ts#PettypeAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-add\\pettype-add.component.html:34:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-add/pettype-add.component.ts#PettypeAddComponent::0",
+      "a2WorkflowIndex": 39,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c46-pettype-add-save-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-41",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-edit\\pettype-edit.component.html:22:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent::0",
+      "a2WorkflowIndex": 40,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "name": "test-name"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/pettypes"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-42",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-edit\\pettype-edit.component.html:34:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent::0",
+      "a2WorkflowIndex": 41,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c44-pettype-edit-update-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-43",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-edit\\pettype-edit.component.html:35:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-edit/pettype-edit.component.ts#PettypeEditComponent::0",
+      "a2WorkflowIndex": 42,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c45-pettype-edit-cancel"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-44",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-list\\pettype-list.component.html:37:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent::0",
+      "a2WorkflowIndex": 43,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-45",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-list\\pettype-list.component.html:38:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent::0",
+      "a2WorkflowIndex": 44,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-46",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-list\\pettype-list.component.html:47:7|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent::0",
+      "a2WorkflowIndex": 45,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/welcome"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-47",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\pettypes\\pettype-list\\pettype-list.component.html:48:7|Button|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/pettypes/pettype-list/pettype-list.component.ts#PettypeListComponent::0",
+      "a2WorkflowIndex": 46,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/pettypes"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/pettypes"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-48",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-add/specialty-add.component.ts#SpecialtyAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-add\\specialty-add.component.html:23:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-add/specialty-add.component.ts#SpecialtyAddComponent::0",
+      "a2WorkflowIndex": 47,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c53-specialty-add-save-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-49",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-add/specialty-add.component.ts#SpecialtyAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-add\\specialty-add.component.html:4:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-add/specialty-add.component.ts#SpecialtyAddComponent::0",
+      "a2WorkflowIndex": 48,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "name": "test-name"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener: isInsert toggle via compositionGates"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "Handler-property opener via text-content locator"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-50",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-edit\\specialty-edit.component.html:22:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent::0",
+      "a2WorkflowIndex": 49,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "name",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "name": "test-name"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "name"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-51",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-edit\\specialty-edit.component.html:34:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent::0",
+      "a2WorkflowIndex": 50,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c51-specialty-list-update-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-52",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-edit\\specialty-edit.component.html:35:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-edit/specialty-edit.component.ts#SpecialtyEditComponent::0",
+      "a2WorkflowIndex": 51,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c52-specialty-list-cancel"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-53",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-list\\specialty-list.component.html:37:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent::0",
+      "a2WorkflowIndex": 52,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-54",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-list\\specialty-list.component.html:38:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent::0",
+      "a2WorkflowIndex": 53,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-55",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-list\\specialty-list.component.html:47:7|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent::0",
+      "a2WorkflowIndex": 54,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/welcome"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-56",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\specialties\\specialty-list\\specialty-list.component.html:48:7|Button|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/specialties/specialty-list/specialty-list.component.ts#SpecialtyListComponent::0",
+      "a2WorkflowIndex": 55,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/specialties"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/specialties"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-57",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-add\\vet-add.component.html:22:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent::0",
+      "a2WorkflowIndex": 56,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "firstName",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "lastName",
+            "tagName": "input",
+            "type": "text"
+          },
+          {
+            "name": "specialties",
+            "tagName": "select"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "firstName": "test-firstName",
+            "lastName": "test-lastName",
+            "specialties": "option-1"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "firstName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "lastName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "specialties"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-58",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-add\\vet-add.component.html:59:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent::0",
+      "a2WorkflowIndex": 57,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c38-vet-add-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-59",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-add\\vet-add.component.html:60:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-add/vet-add.component.ts#VetAddComponent::0",
+      "a2WorkflowIndex": 58,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c39-vet-add-save-vet-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-60",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-edit\\vet-edit.component.html:22:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent::0",
+      "a2WorkflowIndex": 59,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "firstName",
+            "tagName": "input",
+            "type": "text",
+            "formControlName": "firstName"
+          },
+          {
+            "name": "lastName",
+            "tagName": "input",
+            "type": "text",
+            "formControlName": "lastName"
+          },
+          {
+            "name": "specialties",
+            "tagName": "mat-select",
+            "formControlName": "specialties"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "firstName": "test-firstName",
+            "lastName": "test-lastName",
+            "specialties": "option-1"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "firstName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "lastName"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "specialties"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-61",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-edit\\vet-edit.component.html:59:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent::0",
+      "a2WorkflowIndex": 60,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c36-vet-edit-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-62",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-edit\\vet-edit.component.html:60:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-edit/vet-edit.component.ts#VetEditComponent::0",
+      "a2WorkflowIndex": 61,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c37-vet-edit-save-vet-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-63",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-list\\vet-list.component.html:44:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent::0",
+      "a2WorkflowIndex": 62,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-64",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-list\\vet-list.component.html:45:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent::0",
+      "a2WorkflowIndex": 63,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-65",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-list\\vet-list.component.html:51:7|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent::0",
+      "a2WorkflowIndex": 64,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/welcome"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-66",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\vets\\vet-list\\vet-list.component.html:52:7|Button|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/vets/vet-list/vet-list.component.ts#VetListComponent::0",
+      "a2WorkflowIndex": 65,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/vets"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/vets/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-67",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-add\\visit-add.component.html:43:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent::0",
+      "a2WorkflowIndex": 66,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "date",
+            "tagName": "input"
+          },
+          {
+            "name": "description",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "date": "test-date",
+            "description": "test-description"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "date"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "description"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/pets/1/visits/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-68",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-add\\visit-add.component.html:75:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent::0",
+      "a2WorkflowIndex": 67,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c27-visit-add-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-69",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-add\\visit-add.component.html:76:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-add/visit-add.component.ts#VisitAddComponent::0",
+      "a2WorkflowIndex": 68,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c28-visit-add-add-visit-submit"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/visits/add"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-70",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-edit\\visit-edit.component.html:43:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent::0",
+      "a2WorkflowIndex": 69,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_SUBMITS_FORM",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "formFields": [
+          {
+            "name": "date",
+            "tagName": "input"
+          },
+          {
+            "name": "description",
+            "tagName": "input",
+            "type": "text"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "date": "test-date",
+            "description": "test-description"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "date"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "description"
+              }
+            ]
+          },
+          {
+            "type": "submit"
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-71",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-edit\\visit-edit.component.html:73:11|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent::0",
+      "a2WorkflowIndex": 70,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c28-visit-edit-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/owners/1"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-72",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-edit\\visit-edit.component.html:74:11|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-edit/visit-edit.component.ts#VisitEditComponent::0",
+      "a2WorkflowIndex": 71,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "c28-visit-edit-back"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/visits/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-73",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-list/visit-list.component.ts#VisitListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-list\\visit-list.component.html:31:7|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-list/visit-list.component.ts#VisitListComponent::0",
+      "a2WorkflowIndex": 72,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/visits/1/edit"
+      }
+    },
+    {
+      "gtId": "petclinic-GT-74",
+      "workflowId": "C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-list/visit-list.component.ts#VisitListComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\pet-clinic\\spring-petclinic-angular\\src\\app\\visits\\visit-list\\visit-list.component.html:32:7|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/autoe2e/benchmark/pet-clinic/spring-petclinic-angular/src/app/visits/visit-list/visit-list.component.ts#VisitListComponent::0",
+      "a2WorkflowIndex": 73,
+      "expectedIntent": {
+        "triggerKind": "WIDGET_TRIGGERS_HANDLER",
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/visits"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": ".btn.btn-default"
+              }
+            ]
+          }
+        ],
+        "terminalUrl": "/visits"
+      }
+    }
+  ]
+}

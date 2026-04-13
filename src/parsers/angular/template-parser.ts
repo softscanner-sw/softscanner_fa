@@ -38,6 +38,26 @@ export interface TemplateAstNode {
   children?: TemplateAstNode[];
   /** Character offsets into the original template text (0-based). */
   span?: { start: number; end: number };
+  /**
+   * Template reference variable names for structural (ng-template) nodes.
+   * E.g., `<ng-template #content>` → `["content"]`.
+   * Used to derive templateRegionId for widgets inside explicit ng-template blocks.
+   */
+  references?: string[];
+  /**
+   * Structural directive names on this structural node.
+   * E.g., `*ngIf` → `["ngIf"]`, `*ngFor` → `["ngForOf"]`.
+   * Used to determine composition-site context for CCC edges.
+   */
+  structuralDirectives?: string[];
+  /**
+   * *ngFor iterable expression text.
+   * E.g., `*ngFor="let pt of petTypes"` → `"petTypes"`.
+   * Captures the data collection being iterated. Used for:
+   * - repeater context propagation to descendant widgets (insideNgFor)
+   * - future seed-data dependency analysis (identifying required data collections)
+   */
+  ngForExpression?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -135,8 +155,49 @@ export class AngularTemplateParser {
       const span = AngularTemplateParser._extractSpan(n);
       if (span !== undefined) structural.span = span;
 
+      // Extract template reference variables (e.g., <ng-template #content> → ["content"])
+      const refs = n['references'] as Array<{ name: string }> | undefined;
+      if (refs !== undefined && refs.length > 0) {
+        structural.references = refs.map(r => r.name);
+      }
+
+      // Extract structural directive names and *ngFor expression from templateAttrs
+      const templateAttrs = (n['templateAttrs'] as Array<{ name?: string; value?: string }> | undefined) ?? [];
+      const dirNames = templateAttrs
+        .filter(a => a.name !== undefined && a.name !== '')
+        .map(a => a.name!);
+      if (dirNames.length > 0) {
+        structural.structuralDirectives = dirNames;
+      }
+      // Capture *ngFor iterable expression (e.g., "petTypes", "owner.pets | async")
+      // for repeater context propagation to descendant widgets.
+      // The Angular compiler stores *ngFor="let x of expr" as templateAttr name="ngForOf" with
+      // the expression text accessible via the AST value property.
+      if (dirNames.includes('ngForOf') || dirNames.includes('ngFor')) {
+        const ngForOfAttr = templateAttrs.find(a => a.name === 'ngForOf');
+        if (ngForOfAttr !== undefined) {
+          // The value is on the BoundAttribute AST node — extract via the value property
+          // which contains the expression source text
+          const rawValue = (ngForOfAttr as Record<string, unknown>)['value'];
+          let exprText: string | undefined;
+          if (typeof rawValue === 'string' && rawValue !== '') {
+            exprText = rawValue;
+          } else if (rawValue !== null && rawValue !== undefined && typeof rawValue === 'object') {
+            // Angular compiler represents the value as an AST expression node
+            // with a .source property containing the original text
+            const source = (rawValue as Record<string, unknown>)['source'];
+            if (typeof source === 'string' && source !== '') {
+              exprText = source;
+            }
+          }
+          if (exprText !== undefined) {
+            structural.ngForExpression = exprText;
+          }
+        }
+      }
+
       const children: TemplateAstNode[] = [];
-      for (const attr of (n['templateAttrs'] as unknown[] | undefined) ?? []) {
+      for (const attr of templateAttrs) {
         children.push(...AngularTemplateParser._convertAttr(attr));
       }
       for (const input of (n['inputs'] as unknown[] | undefined) ?? []) {

@@ -64,6 +64,18 @@ export class WidgetProcessor {
       return a.id.localeCompare(b.id);
     });
 
+    // Compute insideNgForOrdinal: for each repeater-scoped widget, assign a 0-based
+    // ordinal among same-tag siblings with the same insideNgFor expression.
+    // This enables repeater-relative locators: "in row N, find the (ordinal+1)th button".
+    const ngForOrdinalCounters = new Map<string, number>();
+    for (const w of widgets) {
+      if (w.insideNgFor === undefined) continue;
+      const key = `${w.componentId}|${w.kind === 'Unknown' ? w.tagName : w.kind}|${w.insideNgFor}`;
+      const ord = ngForOrdinalCounters.get(key) ?? 0;
+      w.insideNgForOrdinal = ord;
+      ngForOrdinalCounters.set(key, ord + 1);
+    }
+
     return widgets;
   }
 
@@ -77,6 +89,10 @@ export class WidgetProcessor {
     out: WidgetInfo[],
     kindCounters: Map<WidgetKind, number>,
     parentWidgetId: string | undefined,
+    insideTemplate = false,
+    templateRegionId: string | undefined = undefined,
+    insideNgFor: string | undefined = undefined,
+    ngForItemTag: string | undefined = undefined,
   ): void {
     for (const node of nodes) {
       const kind = classifyWidget(node, this._componentSelectors);
@@ -118,6 +134,10 @@ export class WidgetProcessor {
           bindings,
           visibilityPredicates: [],   // filled by TemplateConstraintExtractor
           enablementPredicates: [],   // filled by TemplateConstraintExtractor
+          ...(insideTemplate ? { isTemplateContent: true } : {}),
+          ...(templateRegionId !== undefined ? { templateRegionId } : {}),
+          ...(insideNgFor !== undefined ? { insideNgFor } : {}),
+          ...(ngForItemTag !== undefined ? { ngForItemTag } : {}),
         };
         const textLabel = extractTextLabel(node, maxLen);
         if (textLabel !== undefined) widget.text = textLabel;
@@ -133,15 +153,45 @@ export class WidgetProcessor {
           out,
           kindCounters,
           widgetId,
+          insideTemplate,
+          templateRegionId,
+          insideNgFor,
+          ngForItemTag,
         );
       } else {
-        // Non-widget element: recurse, pass through current parent
+        // Non-widget element: recurse, pass through current parent.
+        // If this is an explicit <ng-template> (not a structural directive like *ngIf/*ngFor),
+        // mark descendants as template content and derive the template region ID
+        // from the reference variable name (e.g., <ng-template #content> → "content").
+        const enteringTemplate = node.kind === 'structural' && node.name === 'ng-template';
+        const newRegionId = enteringTemplate && node.references?.length
+          ? node.references[0]
+          : templateRegionId;
+
+        // Detect *ngFor structural directive: propagate the repeater expression
+        // and host element tag to all descendant widgets.
+        let newNgFor = insideNgFor;
+        let newNgForItemTag = ngForItemTag;
+        if (node.kind === 'structural' && node.structuralDirectives !== undefined) {
+          const hasNgFor = node.structuralDirectives.some(d => d === 'ngFor' || d === 'ngForOf');
+          if (hasNgFor) {
+            newNgFor = node.ngForExpression ?? 'repeater';
+            // The *ngFor host element tag is the structural node's name
+            // (e.g., <tr *ngFor="..."> → name="tr")
+            newNgForItemTag = node.name ?? undefined;
+          }
+        }
+
         this._walk(
           node.children ?? [],
           [...ancestorNames, node.name ?? ''],
           out,
           kindCounters,
           parentWidgetId,
+          insideTemplate || enteringTemplate,
+          enteringTemplate ? newRegionId : templateRegionId,
+          newNgFor,
+          newNgForItemTag,
         );
       }
     }

@@ -1,0 +1,46 @@
+{
+  "subjectName": "spring-petclinic-angular",
+  "baseUrl": "http://localhost:4200",
+  "accounts": [],
+  "routeParamValues": {
+    "id": "1"
+  },
+  "routeParamOverrides": {
+    "/owners/:id": {
+      "id": "1"
+    },
+    "/owners/:id/edit": {
+      "id": "1"
+    },
+    "/owners/:id/pets/add": {
+      "id": "1"
+    },
+    "/pets/:id/edit": {
+      "id": "1"
+    },
+    "/pets/:id/visits/add": {
+      "id": "1"
+    },
+    "/pettypes/:id/edit": {
+      "id": "1"
+    },
+    "/specialties/:id/edit": {
+      "id": "1"
+    },
+    "/vets/:id/edit": {
+      "id": "1"
+    },
+    "/visits/:id/edit": {
+      "id": "1"
+    }
+  },
+  "seedRequirements": {
+    "authGuards": [],
+    "negativeGuards": [],
+    "routeParams": [
+      "id"
+    ],
+    "hasFormWorkflows": true,
+    "seedStatus": "pre-seeded"
+  }
+}

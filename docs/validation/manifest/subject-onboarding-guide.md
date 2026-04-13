@@ -1,0 +1,189 @@
+# Subject Onboarding Guide
+
+**Purpose:** Concrete per-subject input reference for manifest generation via the B0 wizard.
+**Usage:** Read this before running the wizard for a subject. It tells you exactly what values to enter and why.
+
+---
+
+## posts-users-ui-ng
+
+### What the wizard infers
+- Route param `id` needed (6 CONDITIONAL workflows depend on it)
+- Form workflows present (WSF triggers exist)
+- No auth guards
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:4200` | Confirmed | Standard Angular dev server |
+| routeParamValues.id | `3f57c674-52eb-48f7-b067-3254fdba47ff` | Confirmed | Alice Johnson's UUID from the Docker seed SQL |
+| seedStatus | `pre-seeded` | Confirmed | Docker Compose runs seed SQL automatically on first boot |
+
+### Known pitfalls
+- The backend is Express, NOT Angular — it runs on port 5000. The frontend proxies to it.
+- The `id` value is a UUID, not a numeric ID. Use the first seeded user's UUID.
+- `formDataOverrides` may be needed for NewUser WSF — the backend rejects duplicate emails (POST 400).
+
+### Execution config
+- **seedCommand:** Not needed (Docker auto-seeds)
+- **preAttemptCommand:** Not needed (no rate limiting)
+- **batchResetCommand:** Not needed
+- **enableNetworkEvidence:** Recommended (has WSF workflows + backend API)
+
+---
+
+## heroes-angular
+
+### What the wizard infers
+- No auth guards
+- No route params
+- No form workflows
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:7626` | Confirmed | NOT port 4200 — heroes uses 7626 |
+| seedStatus | `none` | Confirmed | json-server with static db.json |
+
+### Known pitfalls
+- **Port 7626**, not 4200. The manifest baseUrl must match.
+- json-server modifies `db.json` on disk during tests. Run `git checkout db.json` after test runs to reset.
+- Requires `NODE_OPTIONS=--openssl-legacy-provider` for Angular 11 on Node 17+.
+- Two WNE (external link) workflows will always fail because twitter.com→x.com and aka.ms→azure redirect.
+
+### Execution config
+- None needed. This is the simplest subject.
+
+---
+
+## airbus-inventory
+
+### What the wizard infers
+- Auth guard `CanActivateRouteGuard` (11 CONDITIONAL workflows)
+- Form workflows present
+- No route params (entity ID is embedded in runtime state, not route)
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:4200` | Confirmed | Standard Angular dev server |
+| accounts[0].username | `airbus02@gmail.com` | Confirmed | Email format required by frontend Validators.email |
+| accounts[0].password | `1234` | Confirmed | Bcrypt hash in DB matches this plain text |
+| accounts[0].roles | `["user"]` | Confirmed | |
+| accounts[0].guardSatisfies | `["CanActivateRouteGuard"]` | Confirmed | |
+| authSetup.loginRoute | `/login` | Confirmed | Angular route config |
+| authSetup.usernameField | `input[formcontrolname='emailid']` | Confirmed | login-page.component.html |
+| authSetup.passwordField | `input[formcontrolname='password']` | Confirmed | login-page.component.html |
+| authSetup.submitButton | `button[type='submit']` | Confirmed | login-page.component.html |
+| authSetup.authSuccessSelector | `mat-sidenav-container` | Confirmed | Post-login Material layout element |
+| seedStatus | `needs-command` | Confirmed | MySQL must be seeded with schema + users |
+
+### Known pitfalls
+- The DB username is `airbus02@gmail.com` (email format), NOT `airbus02` (which is in the original SQL). The frontend form has email validation.
+- Backend (Spring Boot) runs on port 8080 — conflicts with traduora. Do not run both simultaneously.
+- MySQL runs on port 3306 — also conflicts with traduora. Use separate Docker containers.
+- Angular 12 requires `NODE_OPTIONS=--openssl-legacy-provider` on Node 17+.
+
+### Execution config
+- **seedCommand:** `docker exec -i airbus-mysql mysql -u root -ppassword Product < scripts/airbus-seed.sql` (or equivalent inline SQL)
+- **preAttemptCommand:** Not needed (no rate limiting)
+- **batchResetCommand:** Not needed
+- **enableNetworkEvidence:** Recommended
+
+---
+
+## spring-petclinic-angular
+
+### What the wizard infers
+- Route param `id` needed (34 CONDITIONAL workflows — all entity CRUD routes)
+- Form workflows present (12 WSF triggers)
+- No auth guards
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:4200` | Confirmed | Standard Angular dev server |
+| routeParamValues.id | `1` | Confirmed | All seeded entities start at id=1 |
+| routeParamOverrides | See below | Confirmed | Multiple entity families share `:id` |
+| seedStatus | `pre-seeded` | Confirmed | Docker image includes H2 in-memory DB with seed data |
+
+### Route param overrides (9 templates, all `id=1`)
+```json
+{
+  "/owners/:id": { "id": "1" },
+  "/owners/:id/edit": { "id": "1" },
+  "/owners/:id/pets/add": { "id": "1" },
+  "/pets/:id/edit": { "id": "1" },
+  "/pets/:id/visits/add": { "id": "1" },
+  "/pettypes/:id": { "id": "1" },
+  "/specialties/:id": { "id": "1" },
+  "/vets/:id/edit": { "id": "1" },
+  "/visits/:id/edit": { "id": "1" }
+}
+```
+
+### Known pitfalls
+- **Base href must be changed before `ng serve`.** The source `index.html` has `<base href="/petclinic/">` which breaks asset loading. Change to `<base href="/">` before starting, revert after.
+- Backend runs on port 9966 (Docker). The Angular app proxies API calls to `http://localhost:9966/petclinic/api/`.
+- Some form submissions fail with HTTP 400 due to backend DTO validation being stricter than frontend. Consider `formDataOverrides` for PetAdd and VisitAdd.
+
+### Execution config
+- **seedCommand:** Not needed (Docker image is pre-seeded)
+- **preAttemptCommand:** Not needed
+- **batchResetCommand:** Not needed
+- **enableNetworkEvidence:** Recommended (has complex form submissions + entity API)
+
+---
+
+## ever-traduora
+
+### What the wizard infers
+- Auth guards: `AuthGuard` (most routes), `CanGuard` (admin routes)
+- Negative guard: `NoAuthGuard` (login/signup pages — require NOT being logged in)
+- Route params: `projectId`, `localeCode`
+- Form workflows present
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:4200` | Confirmed | Angular 12 dev server |
+| accounts[0].username | `admin@test.com` | Confirmed | Created by seed script |
+| accounts[0].password | `Test1234!` | Confirmed | Seed script value |
+| accounts[0].roles | `["admin"]` | Confirmed | |
+| accounts[0].guardSatisfies | `["AuthGuard", "CanGuard"]` | Confirmed | Project admin satisfies both |
+| accounts[1].username | `user@test.com` | Confirmed | Created by seed script |
+| accounts[1].password | `Test1234!` | Confirmed | Seed script value |
+| accounts[1].roles | `["user"]` | Confirmed | |
+| accounts[1].guardSatisfies | `["AuthGuard"]` | Confirmed | Regular user, no CanGuard |
+| routeParamValues.projectId | `<UUID from seed>` | **Tentative** | UUID generated by seed — changes on each seed run |
+| routeParamValues.localeCode | `en` | Confirmed | Created by seed script |
+| authSetup.loginRoute | `/login` | Confirmed | Angular route |
+| authSetup.usernameField | `input[formcontrolname='email']` | Confirmed | login.component.html |
+| authSetup.passwordField | `input[formcontrolname='password']` | Confirmed | login.component.html |
+| authSetup.submitButton | `button[type='submit']` | Confirmed | login.component.html |
+| authSetup.authSuccessSelector | `app-bar [routerLink='/projects']` | Confirmed | Post-login nav element |
+| seedStatus | `needs-command` | Confirmed | Accounts + project + locale must be provisioned |
+
+### Known pitfalls
+- **Node 16 required for frontend.** Angular 12 + TypeScript 4.2.3 do not compile on Node 22.
+- **projectId is dynamic.** The seed script creates a project and gets a UUID back. You must update `routeParamValues.projectId` after seeding, then regenerate B1/B2.
+- **Rate limiting.** The traduora backend has an in-memory NestJS rate limiter. `preAttemptCommand` resets DB lockout but NOT the in-memory limiter. `batchResetCommand` restarts the container to clear it.
+- **Port conflicts.** Backend on 8080 (conflicts with airbus), MySQL on 3306 (conflicts with airbus). Never run both simultaneously.
+
+### Execution config
+- **seedCommand:** `node scripts/seed-traduora.mjs` (transitional — creates accounts, project, locale, terms)
+- **preAttemptCommand:** `docker exec mysqldb mysql -u tr -pchange_me tr_dev -e "UPDATE user SET loginAttempts = 0, lastLogin = NULL;"`
+- **batchResetCommand:** `docker restart traduora && sleep 10`
+- **enableNetworkEvidence:** Yes (auth-heavy, complex API interactions)
+
+---
+
+## Values summary table
+
+| Subject | Auth | Params | Seed status | CDP | Rate-limit mitigation |
+|---|---|---|---|---|---|
+| posts-users-ui-ng | No | id (UUID) | pre-seeded | Yes | None needed |
+| heroes-angular | No | None | none | No | None needed |
+| airbus-inventory | Yes (1 account) | None | needs-command | Yes | None needed |
+| spring-petclinic-angular | No | id=1 (9 overrides) | pre-seeded | Yes | None needed |
+| ever-traduora | Yes (2 accounts) | projectId (UUID), localeCode | needs-command | Yes | preAttemptCommand + batchResetCommand |

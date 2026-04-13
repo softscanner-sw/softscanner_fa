@@ -64,6 +64,10 @@ export interface EventHandlerCallContext {
     url?: string;
     /** Component class name opened as a dialog (e.g. "EditUserComponent"). */
     componentClassName?: string;
+    /** Template reference variable name for template-ref modal opens (e.g., "content"). */
+    templateRef?: string;
+    /** Component property name mutated by `this.<prop> = ...` in the handler body. */
+    mutatedProperty?: string;
   };
 
   /** Raw argument expressions, bounded. */

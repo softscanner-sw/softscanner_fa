@@ -11,8 +11,8 @@
  *
  * These tests verify:
  *   1. Output directory is created on disk when outputDir option is set
- *   2. phase1-bundle.json is written to the output directory
- *   3. phase1-bundle.json is valid JSON and parseable as Phase1Bundle
+ *   2. a1-multigraph.json is written to the output directory
+ *   3. a1-multigraph.json is valid JSON and parseable as A1Multigraph
  *   4. Bundle has the expected structure (multigraph + stats)
  *   5. All 6 node kinds present where applicable
  *   6. External node IDs are stable hashed strings (__ext__XXXXXXXX)
@@ -27,7 +27,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { Phase1Orchestrator } from '../phase1-orchestrator.js';
 import type { AnalyzerConfig } from '../../models/analyzer-config.js';
-import type { Phase1Bundle } from '../../models/multigraph.js';
+import type { A1Multigraph } from '../../models/multigraph.js';
 import { STRUCTURAL_EDGE_KINDS } from '../../models/multigraph.js';
 
 // ---------------------------------------------------------------------------
@@ -59,9 +59,9 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-function runOrchestrator(outputDir: string): Phase1Bundle {
+function runOrchestrator(outputDir: string): A1Multigraph {
   return new Phase1Orchestrator(makeConfig(), {
-    outputPath: path.join(outputDir, 'phase1-bundle.json'),
+    outputPath: path.join(outputDir, 'a1-multigraph.json'),
     debugOutputDir: outputDir,
     skipValidation: false,
   }).run();
@@ -80,9 +80,9 @@ describe('Phase1Orchestrator — integration (minimal-ng fixture)', () => {
       expect(fs.existsSync(newDir)).toBe(true);
     });
 
-    it('writes phase1-bundle.json to the output directory', () => {
+    it('writes a1-multigraph.json to the output directory', () => {
       runOrchestrator(tmpDir);
-      const bundlePath = path.join(tmpDir, 'phase1-bundle.json');
+      const bundlePath = path.join(tmpDir, 'a1-multigraph.json');
       expect(fs.existsSync(bundlePath)).toBe(true);
     });
 
@@ -94,31 +94,31 @@ describe('Phase1Orchestrator — integration (minimal-ng fixture)', () => {
       }
     });
 
-    it('phase1-bundle.json is parseable JSON with multigraph+stats', () => {
+    it('a1-multigraph.json is parseable JSON with multigraph+stats', () => {
       runOrchestrator(tmpDir);
-      const raw = fs.readFileSync(path.join(tmpDir, 'phase1-bundle.json'), 'utf-8');
-      const parsed = JSON.parse(raw) as Phase1Bundle;
+      const raw = fs.readFileSync(path.join(tmpDir, 'a1-multigraph.json'), 'utf-8');
+      const parsed = JSON.parse(raw) as A1Multigraph;
       expect(parsed).toHaveProperty('multigraph');
       expect(parsed).toHaveProperty('stats');
       expect(parsed.multigraph).toHaveProperty('nodes');
       expect(parsed.multigraph).toHaveProperty('edges');
     });
 
-    it('phase1-bundle.json is byte-identical across two runs (determinism)', () => {
+    it('a1-multigraph.json is byte-identical across two runs (determinism)', () => {
       const out1 = path.join(tmpDir, 'run1');
       const out2 = path.join(tmpDir, 'run2');
       fs.mkdirSync(out1);
       fs.mkdirSync(out2);
       runOrchestrator(out1);
       runOrchestrator(out2);
-      const b1 = fs.readFileSync(path.join(out1, 'phase1-bundle.json'), 'utf-8');
-      const b2 = fs.readFileSync(path.join(out2, 'phase1-bundle.json'), 'utf-8');
+      const b1 = fs.readFileSync(path.join(out1, 'a1-multigraph.json'), 'utf-8');
+      const b2 = fs.readFileSync(path.join(out2, 'a1-multigraph.json'), 'utf-8');
       expect(b1).toBe(b2);
     });
   });
 
   describe('Bundle structure', () => {
-    let bundle: Phase1Bundle;
+    let bundle: A1Multigraph;
 
     beforeEach(() => {
       bundle = runOrchestrator(tmpDir);

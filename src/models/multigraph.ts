@@ -237,6 +237,13 @@ export interface WidgetUIProps {
   pattern?: string;
   /** Catch-all for any other possibly-relevant attributes/directives as raw text. */
   rawAttrsText: Record<string, string>;
+  /**
+   * Heuristic CSS visibility hint.
+   * Set to false when CSS class tokens include known hiding patterns
+   * (hide, hidden, d-none, visually-hidden, sr-only).
+   * This is NOT ground truth — it is a best-effort signal for downstream consumers.
+   */
+  cssVisibilityHint?: boolean;
 }
 
 /** Widget node: an interactive or grouping element instance in a component template. */
@@ -261,8 +268,43 @@ export type WidgetNode = NodeBase & {
     attributes?: Record<string, string>;
     /** UI-relevant widget properties for feasibility/pruning (A1 extraction only). */
     ui: WidgetUIProps;
+    /**
+     * True when this widget originates inside an `<ng-template>` subtree.
+     * Template-backed content is not in the DOM until the template is instantiated
+     * (e.g., ng-bootstrap modals). B1 uses this to derive opener preconditions.
+     */
+    isTemplateContent?: boolean;
+    /**
+     * Template region ID: reference variable name of the enclosing `<ng-template>`.
+     * Used by B1 for per-region positional locator computation inside modals.
+     */
+    templateRegionId?: string;
+    /** *ngFor repeater expression if this widget is inside a repeater container. */
+    insideNgFor?: string;
+    /** 0-based ordinal among same-tag widgets within the same *ngFor repeater. */
+    insideNgForOrdinal?: number;
+    /** Static text content of the widget element (e.g., button label "Add", "Home"). */
+    text?: string;
+    /** Aggregated visibility/composition gates from ancestor CCC edges (insideNgIf expressions). */
+    compositionGates?: string[];
+    /** Tag name of the *ngFor host element (repeater item root, e.g., "tr", "div", "li"). */
+    ngForItemTag?: string;
   };
 };
+
+/**
+ * Composition context describing the structural environment of a CCC composition site.
+ * Indicates whether the `<app-child>` tag in the parent's template is inside
+ * a structural directive that gates its rendering.
+ */
+export interface CompositionContext {
+  /** The composition site is inside an explicit `<ng-template>`. */
+  insideNgTemplate?: boolean;
+  /** The `*ngIf` predicate expression gating the composition site, if any. */
+  insideNgIf?: string;
+  /** The `*ngFor` expression gating the composition site, if any. */
+  insideNgFor?: string;
+}
 
 /** Service node: class-based service identity. */
 export type ServiceNode = NodeBase & {
@@ -350,6 +392,13 @@ export interface Edge {
 
   /** Index of the service call within the handler (0-based, CCS edges only). */
   callsiteOrdinal?: number;
+
+  /**
+   * Composition context for COMPONENT_COMPOSES_COMPONENT edges.
+   * Describes whether the composition site in the parent template is inside
+   * a structural directive (ng-template, *ngIf, *ngFor).
+   */
+  compositionContext?: CompositionContext;
 }
 
 // ---------------------------------------------------------------------------
@@ -365,11 +414,11 @@ export interface Multigraph {
 }
 
 // ---------------------------------------------------------------------------
-// Phase1Bundle — the sole A1 output artifact
+// A1Multigraph — the sole A1 output artifact
 // ---------------------------------------------------------------------------
 
 /** Phase A1 output bundle. */
-export interface Phase1Bundle {
+export interface A1Multigraph {
   /** Primary artifact: the multigraph. */
   multigraph: Multigraph;
 

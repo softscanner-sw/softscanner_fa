@@ -182,3 +182,97 @@ export class SilentLogger implements Logger {
   warn(_message: string, _context?: Record<string, unknown>): void {}
   error(_message: string, _context?: Record<string, unknown>): void {}
 }
+
+// ---------------------------------------------------------------------------
+// PipelineLogger — structured JSONL framework/system logging
+// ---------------------------------------------------------------------------
+
+/**
+ * Structured framework/system log event.
+ * Distinct from per-test B5.0 observability logs.
+ * Written as one JSON object per line (JSONL) to `logs/<phase>-pipeline.jsonl`.
+ */
+export interface PipelineLogEvent {
+  timestamp: string;
+  phase: string;
+  operation: string;
+  subject?: string;
+  severity: 'info' | 'warn' | 'error' | 'debug';
+  event: string;
+  message: string;
+  duration?: number;
+  outcome?: string;
+  workflowId?: string;
+  testFile?: string;
+  error?: string;
+  context?: Record<string, unknown>;
+}
+
+/**
+ * PipelineLogger writes structured JSONL events for framework/system logging.
+ * One instance per CLI invocation. Accumulates events and flushes to file.
+ *
+ * Separate from per-test B5.0 observability logs (output/<subject>/logs/).
+ * This logs the behavior of the analyzer/generator/executor itself.
+ */
+export class PipelineLogger {
+  private readonly _phase: string;
+  private readonly _operation: string;
+  private readonly _events: PipelineLogEvent[] = [];
+
+  constructor(phase: string, operation: string) {
+    this._phase = phase;
+    this._operation = operation;
+  }
+
+  log(
+    severity: PipelineLogEvent['severity'],
+    event: string,
+    message: string,
+    extra?: Partial<Pick<PipelineLogEvent, 'subject' | 'duration' | 'outcome' | 'workflowId' | 'testFile' | 'error' | 'context'>>,
+  ): void {
+    this._events.push({
+      timestamp: new Date().toISOString(),
+      phase: this._phase,
+      operation: this._operation,
+      severity,
+      event,
+      message,
+      ...extra,
+    });
+  }
+
+  info(event: string, message: string, extra?: Partial<Pick<PipelineLogEvent, 'subject' | 'duration' | 'outcome' | 'workflowId' | 'testFile' | 'error' | 'context'>>): void {
+    this.log('info', event, message, extra);
+  }
+
+  warn(event: string, message: string, extra?: Partial<Pick<PipelineLogEvent, 'subject' | 'duration' | 'outcome' | 'workflowId' | 'testFile' | 'error' | 'context'>>): void {
+    this.log('warn', event, message, extra);
+  }
+
+  error(event: string, message: string, extra?: Partial<Pick<PipelineLogEvent, 'subject' | 'duration' | 'outcome' | 'workflowId' | 'testFile' | 'error' | 'context'>>): void {
+    this.log('error', event, message, extra);
+  }
+
+  /**
+   * Flush accumulated events to a JSONL file.
+   *
+   * Append mode: successive CLI invocations append to the same file,
+   * building a cumulative log across subjects/runs. This is intentional —
+   * multi-subject pipelines (e.g., A1 run for 6 subjects) produce one
+   * JSONL file with all events.
+   *
+   * For a clean regeneration pass, delete `logs/*.jsonl` before re-running
+   * CLIs. The `logs:clean` npm script removes the entire logs/ directory.
+   */
+  flush(filePath: string): void {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    const lines = this._events.map(e => JSON.stringify(e)).join('\n') + '\n';
+    fs.appendFileSync(filePath, lines, 'utf-8');
+  }
+
+  /** Get accumulated events (for programmatic access). */
+  getEvents(): readonly PipelineLogEvent[] {
+    return this._events;
+  }
+}

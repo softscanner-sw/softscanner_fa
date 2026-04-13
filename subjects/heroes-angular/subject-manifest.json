@@ -1,0 +1,13 @@
+{
+  "subjectName": "heroes-angular",
+  "baseUrl": "http://localhost:7626",
+  "accounts": [],
+  "routeParamValues": {},
+  "seedRequirements": {
+    "authGuards": [],
+    "negativeGuards": [],
+    "routeParams": [],
+    "hasFormWorkflows": false,
+    "seedStatus": "none"
+  }
+}

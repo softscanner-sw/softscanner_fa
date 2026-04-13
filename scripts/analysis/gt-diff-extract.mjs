@@ -14,8 +14,8 @@ const SUBJECTS = [
 ];
 
 for (const subj of SUBJECTS) {
-  const bundlePath = join(OUTPUT_DIR, subj, 'json', 'phase1-bundle.json');
-  const taskPath = join(OUTPUT_DIR, subj, 'json', 'phaseA2-taskworkflows.final.json');
+  const bundlePath = join(OUTPUT_DIR, subj, 'json', 'a1-multigraph.json');
+  const taskPath = join(OUTPUT_DIR, subj, 'json', 'a2-workflows.json');
 
   let bundle, tasks;
   try {

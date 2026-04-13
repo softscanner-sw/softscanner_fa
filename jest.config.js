@@ -8,5 +8,5 @@ export default {
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { useESM: true, tsconfig: 'tsconfig.test.json' }],
   },
-  testMatch: ['**/__tests__/**/*.test.ts', '**/*.test.ts'],
+  testMatch: ['**/src/**/__tests__/**/*.test.ts', '**/src/**/*.test.ts'],
 };

@@ -1,0 +1,45 @@
+@startuml B5 Impact Mapping
+!theme plain
+left to right direction
+title B5 Substage → Subsystem Impact (Bipartite)
+
+legend bottom
+  Edges: modifies / depends on
+endlegend
+
+package "B5 Substages" {
+  rectangle "B5.1 Waits" as B51 #FFFACD
+  rectangle "B5.2 Data-Ready" as B52 #FFFACD
+  rectangle "B5.3 Repeaters" as B53 #E6E6FA
+  rectangle "B5.4 Oracle/C4" as B54 #FFE4B5
+  rectangle "B5.5 Seed Data" as B55 #E6E6FA
+  rectangle "B5.6 Inline Comp" as B56 #E6E6FA
+}
+
+package "Subsystems" {
+  rectangle "A1 Extraction" as A1
+  rectangle "B1 Plan" as B1
+  rectangle "B2 Codegen" as B2
+  rectangle "B3 Execution" as B3
+  rectangle "B4 Coverage" as B4
+  rectangle "approach.md" as SPEC
+}
+
+B51 --> B3 : modifies
+B52 --> B3 : modifies
+
+B53 --> A1 : modifies
+B53 --> B1 : modifies
+B53 --> SPEC : depends on
+
+B54 --> B1 : modifies
+B54 --> B2 : modifies
+B54 --> B4 : modifies
+B54 --> SPEC : depends on
+
+B55 --> B1 : modifies
+B55 --> SPEC : depends on
+
+B56 --> B1 : modifies
+
+@enduml

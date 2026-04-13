@@ -101,3 +101,13 @@ export function extractNestedComponentsFromAst(
 ): string[] {
   return TemplateAstUtils.extractNestedComponentSelectors(ast, selectorPrefix);
 }
+
+/**
+ * Extract composition-site structural contexts for nested component selectors.
+ */
+export function extractNestedComponentContextsFromAst(
+  ast: TemplateAstNode[],
+  selectorPrefix = 'app-',
+): Record<string, { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string }> {
+  return TemplateAstUtils.extractNestedComponentContexts(ast, selectorPrefix);
+}

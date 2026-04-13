@@ -1,0 +1,102 @@
+@startuml Term Relationships
+!theme plain
+top to bottom direction
+title Canonical Term Relationship Model
+
+legend right
+  Edges: produces / consumes /
+         requires / executes only
+  <<structural>> = static, deterministic
+  <<runtime>> = produced at execution
+  <<oracle>> = assertion/coverage layer
+endlegend
+
+' --- Phase A (structural) ---
+package "Phase A <<structural>>" #LightBlue {
+  class Multigraph <<structural>> {
+    nodes[], edges[]
+  }
+  class Workflow <<structural>> {
+    workflowId, triggerEdge
+    steps[], verdict
+  }
+  Multigraph --> Workflow : enumerates
+}
+
+' --- Phase B structural ---
+package "Phase B Plan <<structural>>" #PaleGreen {
+  class Manifest <<structural>> {
+    baseUrl, accounts
+    routeParamValues
+    authSetup
+  }
+  class RealizationIntent <<structural>> {
+    triggerWidget, formSchema
+    startRoutes, verdict
+  }
+  class ActionPlan <<structural>> {
+    assignment
+  }
+  class Precondition <<structural>> {
+    auth | navigate | dialog
+  }
+  class ActionStep <<structural>> {
+    locator, edgeId, type
+  }
+  class Postcondition <<structural>> {
+    url-match | no-crash
+  }
+  class GeneratedTest <<structural>> {
+    fileName, testCode
+  }
+
+  Workflow --> RealizationIntent : derives
+  RealizationIntent --> ActionPlan : binds
+  Manifest --> ActionPlan : consumes
+  ActionPlan *-- Precondition
+  ActionPlan *-- ActionStep
+  ActionPlan *-- Postcondition
+  ActionPlan --> GeneratedTest : produces
+}
+
+' --- Runtime evidence ---
+package "Runtime <<runtime>>" #Salmon {
+  class ExecutionResult <<runtime>> {
+    outcome, duration, attempts
+  }
+  class ExecutionEvidence <<runtime>> {
+    stepId, elementFound
+    domEvidence, failureKind
+    routeBefore/After
+  }
+  class Screenshot <<runtime>> {
+    milestone | step-failure
+  }
+  class Environment <<runtime>> {
+    running app, backend, DB
+  }
+
+  GeneratedTest --> ExecutionResult : executes
+  Environment --> ExecutionResult : requires
+  ExecutionResult --> ExecutionEvidence : produces
+  ExecutionResult --> Screenshot : produces
+}
+
+' --- Oracle / Coverage ---
+package "Oracle + Coverage <<oracle>>" #Wheat {
+  class Oracle <<oracle>> {
+    L1 execution, L2 navigation
+    L3 DOM/materialization
+    L4 backend state
+  }
+  class Coverage <<oracle>> {
+    C1 plan, C2 code
+    C3 execution, C4 oracle
+  }
+
+  Postcondition --> Oracle : produces
+  Oracle --> Coverage : produces
+  ExecutionResult --> Coverage : consumes
+}
+
+@enduml

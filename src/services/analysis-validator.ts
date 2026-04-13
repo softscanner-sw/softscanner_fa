@@ -15,11 +15,11 @@
  *   9. stats consistency.
  */
 
-import type { Phase1Bundle } from '../models/multigraph.js';
+import type { A1Multigraph } from '../models/multigraph.js';
 import { STRUCTURAL_EDGE_KINDS } from '../models/multigraph.js';
 
 export class AnalysisValidator {
-  static validatePhase1(bundle: Phase1Bundle): void {
+  static validatePhase1(bundle: A1Multigraph): void {
     const { multigraph, stats } = bundle;
     const { nodes, edges } = multigraph;
 

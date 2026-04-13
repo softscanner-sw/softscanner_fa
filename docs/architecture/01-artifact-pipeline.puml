@@ -1,0 +1,99 @@
+@startuml Artifact Pipeline
+!theme plain
+top to bottom direction
+title Phase A + Phase B Artifact/Dataflow Pipeline
+
+legend right
+  |= Shape |= Type |
+  | hexagon | <<process>> |
+  | artifact | <<artifact>> |
+  | cloud | <<env>> |
+  Edges: produces / consumes only
+endlegend
+
+' --- Environment ---
+cloud "Angular Source Code" <<env>> as SRC
+cloud "Running Application" <<env>> as APP
+
+' --- Phase A Processes ---
+hexagon "A1 Extraction" <<process>> as A1
+hexagon "A2 Enumeration" <<process>> as A2
+
+' --- Phase A Artifacts ---
+artifact "a1-multigraph.json" <<artifact>> as A1_OUT
+artifact "a2-workflows.json" <<artifact>> as A2_OUT
+
+' --- Phase B Environment ---
+artifact "subject-manifest.json" <<artifact>> as MANIFEST
+artifact "ground-truth/*.json" <<artifact>> as GT
+
+' --- Phase B Processes ---
+hexagon "B0 Validation" <<process>> as B0
+hexagon "B1.1 Intent Derivation" <<process>> as B1I
+hexagon "B1.2 Plan Generation" <<process>> as B1P
+hexagon "B2 Code Generation" <<process>> as B2
+hexagon "B3 Execution" <<process>> as B3
+hexagon "B4 Coverage" <<process>> as B4
+hexagon "VIZ Generation" <<process>> as VIZ
+
+' --- Phase B Artifacts ---
+artifact "b1-intents.json" <<artifact>> as B1I_OUT
+artifact "b1-plans.json" <<artifact>> as B1P_OUT
+artifact "*.test.ts\nb2-tests.json" <<artifact>> as B2_OUT
+artifact "b3-results.json" <<artifact>> as B3_OUT
+artifact "*.log.json\n*.png" <<artifact>> as B5_OUT
+artifact "b4-coverage.json" <<artifact>> as B4_OUT
+artifact "vis/*.html" <<artifact>> as VIZ_OUT
+
+' --- Phase A dataflow ---
+SRC --> A1 : produces
+A1 --> A1_OUT : produces
+A1_OUT --> A2 : consumes
+A2 --> A2_OUT : produces
+
+' --- B0 ---
+A2_OUT --> B0 : consumes
+MANIFEST --> B0 : consumes
+
+' --- B1 ---
+A1_OUT --> B1I : consumes
+A2_OUT --> B1I : consumes
+B1I --> B1I_OUT : produces
+B1I_OUT --> B1P : consumes
+MANIFEST --> B1P : consumes
+B1P --> B1P_OUT : produces
+GT --> B1I : consumes
+GT --> B1P : consumes
+
+' --- B2 ---
+B1P_OUT --> B2 : consumes
+MANIFEST --> B2 : consumes
+A2_OUT --> B2 : consumes
+B2 --> B2_OUT : produces
+
+' --- B3 ---
+B2_OUT --> B3 : consumes
+APP --> B3 : requires
+MANIFEST --> B3 : consumes
+B3 --> B3_OUT : produces
+B3 --> B5_OUT : produces
+
+' --- B4 ---
+B3_OUT --> B4 : consumes
+A2_OUT --> B4 : consumes
+B1P_OUT --> B4 : consumes
+B2_OUT --> B4 : consumes
+B4 --> B4_OUT : produces
+
+' --- VIZ ---
+A1_OUT --> VIZ : consumes
+A2_OUT --> VIZ : consumes
+B1P_OUT --> VIZ : consumes
+B2_OUT --> VIZ : consumes
+B3_OUT --> VIZ : consumes
+B4_OUT --> VIZ : consumes
+B5_OUT --> VIZ : consumes
+MANIFEST --> VIZ : consumes
+VIZ --> VIZ_OUT : produces
+
+@enduml

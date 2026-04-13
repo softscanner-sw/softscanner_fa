@@ -1,0 +1,1479 @@
+{
+  "subject": "airbus-inventory",
+  "generatedDate": "2026-03-10",
+  "a2Source": "output/airbus-inventory/json/a2-workflows.json",
+  "totalEntries": 21,
+  "difficultyBreakdown": {
+    "D1": 11,
+    "D2": 4,
+    "D3": 3,
+    "D5": 1,
+    "D6": 2
+  },
+  "entries": [
+    {
+      "gtId": "airbus-GT-01",
+      "workflowId": "AddProductComponent|add-product.component.html:7:5|Form|0::WSF",
+      "a2WorkflowIndex": 0,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "app-add-product",
+        "startRouteFullPaths": [
+          "/add"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/add",
+        "formFields": [
+          {
+            "name": "productid",
+            "tagName": "input",
+            "type": "text",
+            "id": "pid"
+          },
+          {
+            "name": "productname",
+            "tagName": "input",
+            "type": "text",
+            "id": "pname"
+          },
+          {
+            "name": "category",
+            "tagName": "select",
+            "id": "category",
+            "requiredLiteral": true
+          },
+          {
+            "name": "units",
+            "tagName": "input",
+            "type": "number",
+            "id": "units"
+          },
+          {
+            "name": "description",
+            "tagName": "textarea",
+            "id": "description"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; /add is guard-protected"
+          },
+          "routeParams": {},
+          "formData": {
+            "productid": "PROD-001",
+            "productname": "Test Product",
+            "category": "Electronics",
+            "units": "10",
+            "description": "Test description"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required; /add has CanActivateRouteGuard"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "#pid",
+                "value": "PROD-001"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "#pname",
+                "value": "Test Product"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "#category",
+                "value": "Electronics"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "#units",
+                "value": "10"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "#description",
+                "value": "Test description"
+              }
+            ]
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "css",
+            "locatorValue": "app-add-product form",
+            "componentScope": "app-add-product",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/add"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/add"
+      },
+      "locatorNotes": "Form fields have id attributes (pid, pname, category, units, description); handler: addProduct()",
+      "knownChallenges": [
+        "Route /add is guard-protected (CanActivateRouteGuard) — must authenticate first",
+        "FormValid constraint — all required fields must be filled"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-02",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:13:13|Unknown|1::WTH::sort",
+      "a2WorkflowIndex": 1,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; routes are guard-protected"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required; /dashboard and /getAllProducts have CanActivateRouteGuard"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products th:nth-child(2)",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Column header th at line 13; handler: sort(); sorts table by column",
+      "knownChallenges": [
+        "Guard-protected start routes"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-03",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:18:13|Unknown|2::WTH::sort",
+      "a2WorkflowIndex": 2,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products th:nth-child(3)",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Column header th at line 18; handler: sort(); sorts table by column",
+      "knownChallenges": [
+        "Guard-protected start routes"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-04",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:23:13|Unknown|3::WTH::sort",
+      "a2WorkflowIndex": 3,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products th:nth-child(4)",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Column header th at line 23; handler: sort(); sorts table by column",
+      "knownChallenges": [
+        "Guard-protected start routes"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-05",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:28:13|Unknown|4::WTH::sort",
+      "a2WorkflowIndex": 4,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products th:nth-child(5)",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Column header th at line 28; handler: sort(); sorts table by column",
+      "knownChallenges": [
+        "Guard-protected start routes"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-06",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:60:17|Unknown|5::WTH::updateProduct",
+      "a2WorkflowIndex": 5,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "span",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/update",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "precondition",
+            "note": "At least one product must exist in the list"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products span.material-icons:has-text('edit')",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/update"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Edit icon span with class=material-icons; handler: updateProduct() navigates via RouterService to /update; CSS may need nth-row scoping",
+      "knownChallenges": [
+        "Guard-protected start routes",
+        "Handler navigates via RouterService indirection",
+        "Per-row action — requires data in table"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-07",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:66:17|Unknown|6::WTH::deleteProduct",
+      "a2WorkflowIndex": 6,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "span",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "precondition",
+            "note": "At least one product must exist in the list"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products span.material-icons:has-text('delete')",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Delete icon span with class=material-icons; handler: deleteProduct() opens confirmation dialog; CSS may need nth-row scoping",
+      "knownChallenges": [
+        "Guard-protected start routes",
+        "Opens dialog for confirmation",
+        "Per-row action — requires data in table",
+        "Destructive action (delete)"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-08",
+      "workflowId": "GetAllProductsComponent|get-all-products.component.html:7:13|Unknown|0::WTH::sort",
+      "a2WorkflowIndex": 7,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "Unknown",
+        "componentSelector": "app-get-all-products",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/dashboard",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-all-products th:nth-child(1)",
+            "componentScope": "app-get-all-products",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "First column header th at line 7; handler: sort(); sorts table by column",
+      "knownChallenges": [
+        "Guard-protected start routes"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-09",
+      "workflowId": "GetProductByCategoryComponent|get-product-by-category.component.html:7:17|Form|0::WSF",
+      "a2WorkflowIndex": 8,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "app-get-product-by-category",
+        "startRouteFullPaths": [
+          "/productByCategory"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/productByCategory",
+        "formFields": [
+          {
+            "name": "category",
+            "tagName": "select",
+            "formControlName": "category",
+            "class": "drop",
+            "requiredLiteral": true
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; /productByCategory is guard-protected"
+          },
+          "routeParams": {},
+          "formData": {
+            "category": "Electronics"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required; CanActivateRouteGuard"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/productByCategory"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-get-product-by-category select.drop",
+                "value": "Electronics"
+              }
+            ]
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "css",
+            "locatorValue": "app-get-product-by-category form",
+            "componentScope": "app-get-product-by-category",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/productByCategory"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/productByCategory"
+      },
+      "locatorNotes": "Single select field with class=drop and formcontrolname=category; handler: getProductByCategory()",
+      "knownChallenges": [
+        "Route is guard-protected (CanActivateRouteGuard)",
+        "FormValid constraint — category must be selected"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-10",
+      "workflowId": "LoginPageComponent|login-page.component.html:13:29|Form|0::WSF",
+      "a2WorkflowIndex": 9,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "app-login-page",
+        "startRouteFullPaths": [
+          "/login"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/dashboard",
+        "formFields": [
+          {
+            "name": "emailid",
+            "tagName": "input",
+            "type": "email",
+            "formControlName": "emailid",
+            "requiredLiteral": true
+          },
+          {
+            "name": "password",
+            "tagName": "input",
+            "type": "password",
+            "formControlName": "password",
+            "requiredLiteral": true
+          },
+          {
+            "name": "rememberMe",
+            "tagName": "input",
+            "type": "checkbox",
+            "id": "customCheck1"
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "customCheck1": "true",
+            "emailid": "admin@airbus.com",
+            "password": "password123"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/login"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-login-page input[formcontrolname='emailid']",
+                "value": "admin@airbus.com"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-login-page input[formcontrolname='password']",
+                "value": "password123"
+              },
+              {
+                "locatorStrategy": "id",
+                "locatorValue": "customCheck1",
+                "action": "click"
+              }
+            ]
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "css",
+            "locatorValue": "app-login-page form",
+            "componentScope": "app-login-page",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/dashboard"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/login"
+      },
+      "locatorNotes": "Reactive form with formControlName attributes; handler: login() calls AuthenticationService then RouterService",
+      "knownChallenges": [
+        "FormValid constraint — email and password required",
+        "Handler navigates via RouterService after successful auth"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-11",
+      "workflowId": "MainNavComponent|main-nav.component.html:11:7|Link|0::WNR::/productByCategory",
+      "a2WorkflowIndex": 10,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/productByCategory",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav a.nav2:nth-of-type(1)",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/productByCategory"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/productByCategory"
+      },
+      "locatorNotes": "Sidenav link with class=nav2; first nav link; shared on all 6 routes",
+      "knownChallenges": [
+        "Target route has CanActivateRouteGuard — navigation will fail without authentication"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-12",
+      "workflowId": "MainNavComponent|main-nav.component.html:19:7|Link|1::WNR::/getAllProducts",
+      "a2WorkflowIndex": 11,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/getAllProducts",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav a.nav2:nth-of-type(2)",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/getAllProducts"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/getAllProducts"
+      },
+      "locatorNotes": "Sidenav link with class=nav2; second nav link",
+      "knownChallenges": [
+        "Target route has CanActivateRouteGuard"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-13",
+      "workflowId": "MainNavComponent|main-nav.component.html:26:7|Link|2::WNR::/add",
+      "a2WorkflowIndex": 12,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/add",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav a.nav2:nth-of-type(3)",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/add"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/add"
+      },
+      "locatorNotes": "Sidenav link with class=nav2; third nav link",
+      "knownChallenges": [
+        "Target route has CanActivateRouteGuard"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-14",
+      "workflowId": "MainNavComponent|main-nav.component.html:39:7|Button|0::WTH::toggle-sidenav",
+      "a2WorkflowIndex": 13,
+      "difficultyClass": "D5",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/add",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "precondition",
+            "note": "Must be in handset/mobile viewport — button visibility gated by 'isHandset$ | async'"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav button[aria-label='Toggle sidenav']",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/add"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/login"
+      },
+      "locatorNotes": "Button with aria-label='Toggle sidenav' and type=button; only visible on handset viewport",
+      "knownChallenges": [
+        "WidgetVisibleExpr gate: 'isHandset$ | async' — button only rendered in mobile/handset viewport",
+        "Test must set viewport to mobile breakpoint"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-15",
+      "workflowId": "MainNavComponent|main-nav.component.html:52:7|Link|3::WNR::/login",
+      "a2WorkflowIndex": 14,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "span",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/login",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav span.material-icons.home.myDIV",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/login"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/login"
+      },
+      "locatorNotes": "Span with class='material-icons home myDIV'; dual-trigger element (WNR + WTH logout); Link|3 at line 52",
+      "knownChallenges": [
+        "Dual-trigger element — this is the WNR (navigation) portion; also has (click)='logout()' handler"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-16",
+      "workflowId": "MainNavComponent|main-nav.component.html:52:7|Link|3::WTH::logout",
+      "a2WorkflowIndex": 15,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "span",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/add",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav span.material-icons.home.myDIV",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/add"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Same element as GT-15; dual-trigger — this is the WTH (handler) portion; handler: logout()",
+      "knownChallenges": [
+        "Dual-trigger element — same click triggers both navigation and handler",
+        "Handler clears auth state"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-17",
+      "workflowId": "MainNavComponent|main-nav.component.html:53:7|Link|4::WNR::/login",
+      "a2WorkflowIndex": 16,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "div",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/login",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav div.hide",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/login"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/login"
+      },
+      "locatorNotes": "Div with class=hide; Link|4 at line 53; dual-trigger (WNR + WTH logout)",
+      "knownChallenges": [
+        "Dual-trigger element — WNR portion",
+        "class=hide suggests element may be conditionally visible"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-18",
+      "workflowId": "MainNavComponent|main-nav.component.html:53:7|Link|4::WTH::logout",
+      "a2WorkflowIndex": 17,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "div",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "app-main-nav",
+        "startRouteFullPaths": [
+          "/add",
+          "/dashboard",
+          "/getAllProducts",
+          "/login",
+          "/productByCategory",
+          "/update"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/add",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "username": "airbus02@gmail.com",
+            "password": "1234"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/add"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-main-nav div.hide",
+            "componentScope": "app-main-nav",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/add"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Same element as GT-17; dual-trigger — WTH portion; handler: logout()",
+      "knownChallenges": [
+        "Dual-trigger element — handler clears auth state"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-19",
+      "workflowId": "SuccessfulDialogComponent|successful-dialog.component.html:5:7|Button|0::WTH::refreshPage",
+      "a2WorkflowIndex": 18,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-successful-dialog",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts",
+          "/update"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/getAllProducts",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; start routes are guard-protected"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "SuccessfulDialog must be opened first via a successful CRUD operation (e.g., update or delete product)"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-successful-dialog button.btn1",
+            "componentScope": "app-successful-dialog",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/getAllProducts"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Button with class=btn1 inside dialog component; handler: refreshPage() calls RouterService",
+      "knownChallenges": [
+        "Dialog must be triggered first — requires a successful CRUD operation",
+        "Guard-protected start routes",
+        "Handler navigates via RouterService"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-20",
+      "workflowId": "UnSuccessfulDialogComponent|un-successful-dialog.component.html:5:7|Button|0::WTH::refreshPage",
+      "a2WorkflowIndex": 19,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "app-un-successful-dialog",
+        "startRouteFullPaths": [
+          "/dashboard",
+          "/getAllProducts",
+          "/update"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/getAllProducts",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; start routes are guard-protected"
+          },
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/dashboard"
+          },
+          {
+            "type": "trigger-dialog",
+            "note": "UnSuccessfulDialog must be opened first via a failed CRUD operation"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "css",
+            "locatorValue": "app-un-successful-dialog button.btn1",
+            "componentScope": "app-un-successful-dialog",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/getAllProducts"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/dashboard"
+      },
+      "locatorNotes": "Button with class=btn1 inside dialog component; handler: refreshPage() calls RouterService",
+      "knownChallenges": [
+        "Dialog must be triggered first — requires a failed CRUD operation",
+        "Guard-protected start routes",
+        "Handler navigates via RouterService"
+      ]
+    },
+    {
+      "gtId": "airbus-GT-21",
+      "workflowId": "UpdateProductComponent|update-product.component.html:6:5|Form|0::WSF",
+      "a2WorkflowIndex": 20,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "app-update-product",
+        "startRouteFullPaths": [
+          "/update"
+        ],
+        "requiresAuth": true,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/update",
+        "formFields": [
+          {
+            "name": "productname",
+            "tagName": "input",
+            "type": "text",
+            "requiredLiteral": true
+          },
+          {
+            "name": "category",
+            "tagName": "select",
+            "requiredLiteral": true
+          },
+          {
+            "name": "units",
+            "tagName": "input",
+            "type": "number",
+            "requiredLiteral": true
+          },
+          {
+            "name": "description",
+            "tagName": "textarea",
+            "requiredLiteral": true
+          }
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": {
+            "note": "Must be logged in; /update is guard-protected"
+          },
+          "routeParams": {},
+          "formData": {
+            "productname": "Updated Product",
+            "category": "Electronics",
+            "units": "20",
+            "description": "Updated description"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "authenticate",
+            "note": "Login required; /update has CanActivateRouteGuard"
+          },
+          {
+            "type": "precondition",
+            "note": "Must navigate here via edit action from product list — form is pre-populated with product data"
+          },
+          {
+            "type": "navigate-to-route",
+            "url": "/update"
+          }
+        ],
+        "steps": [
+          {
+            "type": "fill-form",
+            "fields": [
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-update-product input[type='text']",
+                "value": "Updated Product"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-update-product select",
+                "value": "Electronics"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-update-product input[type='number']",
+                "value": "20"
+              },
+              {
+                "locatorStrategy": "css",
+                "locatorValue": "app-update-product textarea",
+                "value": "Updated description"
+              }
+            ]
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "css",
+            "locatorValue": "app-update-product form",
+            "componentScope": "app-update-product",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/update"
+      },
+      "expectedSuccessCriterion": {
+        "level": "execution-success",
+        "terminalUrlPattern": "/update"
+      },
+      "locatorNotes": "Form fields use required attribute; no id attributes — use tag+type selectors; handler: updateProduct()",
+      "knownChallenges": [
+        "Route /update is guard-protected (CanActivateRouteGuard)",
+        "FormValid constraint — all required fields must be filled",
+        "Form is pre-populated — must navigate via edit action first"
+      ]
+    }
+  ]
+}

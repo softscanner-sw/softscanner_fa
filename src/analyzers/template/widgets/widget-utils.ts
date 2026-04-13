@@ -17,12 +17,15 @@ const TAG_TO_KIND: Record<string, WidgetKind> = {
   a: 'Link',
   input: 'Input',
   select: 'Select',
+  option: 'Option',
   textarea: 'Textarea',
   form: 'Form',
   'mat-menu-item': 'MenuItem',
   'p-menuitem': 'MenuItem',
   // Angular Material form controls
   'mat-select': 'Select',
+  'mat-option': 'Option',
+  'mat-radio-group': 'RadioGroup',
   'mat-radio-button': 'Radio',
   'mat-checkbox': 'Checkbox',
   'mat-slide-toggle': 'Checkbox',
@@ -136,8 +139,8 @@ export function hasAttr(node: TemplateAstNode, attrName: string): boolean {
  */
 export function extractBoundedAttributes(node: TemplateAstNode, maxLen = 200): Record<string, string> {
   const INTERESTING = new Set([
-    'id', 'class', 'name', 'type', 'aria-label', 'data-testid',
-    'role', 'formcontrolname', 'placeholder', 'title',
+    'id', 'class', 'name', 'type', 'value', 'href', 'target', 'hidden', 'readonly',
+    'aria-label', 'data-testid', 'role', 'formcontrolname', 'placeholder', 'title',
   ]);
   const result: Record<string, string> = {};
 

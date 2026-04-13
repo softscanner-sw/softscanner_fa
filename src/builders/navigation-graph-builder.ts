@@ -96,8 +96,10 @@ function mapWidgetKind(kind: string): SpecWidgetKind {
     case 'Form': return 'Form';
     case 'Input': return 'Input';
     case 'Select': return 'Select';
+    case 'Option': return 'Option';
     case 'Textarea': return 'TextArea';
     case 'Checkbox': return 'Checkbox';
+    case 'RadioGroup': return 'RadioGroup';
     case 'Radio': return 'Radio';
     default: return 'OtherInteractive';
   }
@@ -257,6 +259,25 @@ function buildWidgetUIProps(widget: WidgetInfo): WidgetUIProps {
   rawEntries.sort((a, b) => a[0].localeCompare(b[0]));
   for (const [k, v] of rawEntries) {
     ui.rawAttrsText[k] = v;
+  }
+
+  // Static HTML hidden attribute: <input hidden="true"> or <div hidden>
+  const hiddenAttr = widget.attributes['hidden'];
+  if (hiddenAttr !== undefined) {
+    // hidden="" or hidden="true" or hidden="hidden" — all mean hidden
+    if (hiddenAttr === '' || hiddenAttr === 'true' || hiddenAttr === 'hidden') {
+      ui.visibleLiteral = false;
+    }
+  }
+
+  // F3: Heuristic CSS visibility hint from class tokens.
+  // Known CSS hiding patterns: hide, hidden, d-none, visually-hidden, sr-only.
+  const classAttr = widget.attributes['class'];
+  if (classAttr !== undefined) {
+    const CSS_HIDDEN_PATTERNS = /\b(hide|hidden|d-none|visually-hidden|sr-only)\b/i;
+    if (CSS_HIDDEN_PATTERNS.test(classAttr)) {
+      ui.cssVisibilityHint = false;
+    }
   }
 
   return ui;
@@ -517,7 +538,13 @@ export class NavigationGraphBuilder {
             : {}),
           ...(hrefBinding?.value !== undefined ? { staticHref: hrefBinding.value } : {}),
           ...(Object.keys(widget.attributes).length > 0 ? { attributes: widget.attributes } : {}),
+          ...(widget.text !== undefined ? { text: widget.text } : {}),
           ui: widgetUI,
+          ...(widget.isTemplateContent === true ? { isTemplateContent: true } : {}),
+          ...(widget.templateRegionId !== undefined ? { templateRegionId: widget.templateRegionId } : {}),
+          ...(widget.insideNgFor !== undefined ? { insideNgFor: widget.insideNgFor } : {}),
+          ...(widget.insideNgForOrdinal !== undefined ? { insideNgForOrdinal: widget.insideNgForOrdinal } : {}),
+          ...(widget.ngForItemTag !== undefined ? { ngForItemTag: widget.ngForItemTag } : {}),
         },
       };
       nodes.push(node);
@@ -577,11 +604,11 @@ export class NavigationGraphBuilder {
       to: string | null,
       refs: SourceRef[],
       extras?: Partial<Edge>,
-    ): void => {
+    ): Edge | undefined => {
       // Validate from exists
-      if (!nodeIds.has(from)) return;
+      if (!nodeIds.has(from)) return undefined;
       // Validate to exists (if non-null)
-      if (to !== null && !nodeIds.has(to) && !externalNodes.has(to)) return;
+      if (to !== null && !nodeIds.has(to) && !externalNodes.has(to)) return undefined;
 
       const toKey = to ?? '__null__';
       const groupKey = `${from}::${kind}::${toKey}`;
@@ -603,6 +630,7 @@ export class NavigationGraphBuilder {
       // Ensure constraints is always present (override any spread)
       edge.constraints = constraints;
       edges.push(edge);
+      return edge;
     };
 
     // ─── 7a. STRUCTURAL EDGES ─────────────────────────────────────────────
@@ -671,9 +699,14 @@ export class NavigationGraphBuilder {
       for (const usedSelector of comp.usesComponentIds) {
         const usedComp = compBySelectorLower.get(usedSelector.toLowerCase());
         if (usedComp !== undefined && nodeIds.has(usedComp.id) && usedComp.id !== comp.id) {
-          addEdge('COMPONENT_COMPOSES_COMPONENT', comp.id, usedComp.id, [
+          const edge = addEdge('COMPONENT_COMPOSES_COMPONENT', comp.id, usedComp.id, [
             toRef(comp.origin, projectRoot),
           ]);
+          // Attach composition-site structural context if available
+          const ctx = comp.compositionContexts?.[usedSelector.toLowerCase()];
+          if (ctx !== undefined && edge !== undefined) {
+            edge.compositionContext = ctx;
+          }
         }
       }
     }
@@ -1029,6 +1062,51 @@ export class NavigationGraphBuilder {
       if (meta.ui.requiredLiteral !== undefined) uiFields['requiredLiteral'] = meta.ui.requiredLiteral;
       if (meta.ui.requiredExprText !== undefined) uiFields['requiredExprText'] = meta.ui.requiredExprText;
       this._log.debug(`  widget UI: ${wn.id}`, uiFields);
+    }
+
+    // ── 10. Transitive composition-gate propagation ──────────────────────
+    // Collect insideNgIf expressions from CCC edges and propagate them to
+    // all widgets owned by the target component (and transitively deeper).
+    // This enables downstream classification of MATERIALIZATION_UNKNOWN failures.
+    {
+      // Build component → gates map from CCC edges
+      const compGates = new Map<string, string[]>();
+      for (const e of edges) {
+        if (e.kind !== 'COMPONENT_COMPOSES_COMPONENT') continue;
+        const ngIf = e.compositionContext?.insideNgIf;
+        if (ngIf === undefined || e.to === undefined || e.to === null) continue;
+        const existing = compGates.get(e.to) ?? [];
+        existing.push(ngIf);
+        compGates.set(e.to, existing);
+      }
+      // Propagate transitively: if comp C is gated and C composes D, D inherits C's gates
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const e of edges) {
+          if (e.kind !== 'COMPONENT_COMPOSES_COMPONENT') continue;
+          if (e.to === undefined || e.to === null) continue;
+          const parentGates = compGates.get(e.from);
+          if (parentGates === undefined || parentGates.length === 0) continue;
+          const childGates = compGates.get(e.to) ?? [];
+          for (const g of parentGates) {
+            if (!childGates.includes(g)) {
+              childGates.push(g);
+              changed = true;
+            }
+          }
+          compGates.set(e.to, childGates);
+        }
+      }
+      // Assign gates to widget nodes
+      for (const n of nodes) {
+        if (n.kind !== 'Widget') continue;
+        const wn = n as WidgetNode;
+        const gates = compGates.get(wn.meta.componentId);
+        if (gates !== undefined && gates.length > 0) {
+          wn.meta.compositionGates = [...gates].sort();
+        }
+      }
     }
 
     return { nodes, edges };

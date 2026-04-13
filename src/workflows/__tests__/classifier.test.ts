@@ -6,10 +6,10 @@
  * Covers:
  *   - Constraint merge (set union, concat, evidence dedup)
  *
- * Isolation: uses only Phase1Bundle fixtures. No AST, parsers, or A1 internals.
+ * Isolation: uses only A1Multigraph fixtures. No AST, parsers, or A1 internals.
  */
 
-import type { Atom, ConstraintSurface, Edge, Node, Phase1Bundle, SourceRef, SpecWidgetKind } from '../../models/multigraph.js';
+import type { Atom, ConstraintSurface, Edge, Node, A1Multigraph, SourceRef, SpecWidgetKind } from '../../models/multigraph.js';
 import { buildGraphIndex } from '../graph-index.js';
 import { mergeConstraints } from '../classifier.js';
 
@@ -76,7 +76,7 @@ function edge(
   return result;
 }
 
-function makeBundle(nodes: Node[], edges: Edge[]): Phase1Bundle {
+function makeBundle(nodes: Node[], edges: Edge[]): A1Multigraph {
   return {
     multigraph: {
       nodes: [...nodes].sort((a, b) => a.id.localeCompare(b.id)),

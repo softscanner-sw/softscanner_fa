@@ -108,11 +108,11 @@ Goal:
 Implement Phase A2 TaskWorkflow mode exactly as `docs/paper/approach.md` defines, consuming only the serialized A1 bundle artifact; A2 must not access AST, source files, or extraction logic.
 
 Isolation constraint (hard requirement):
-A2 must consume exactly and only the serialized Phase1Bundle JSON artifact.
-The Phase1Bundle.multigraph is the single source of truth.
+A2 must consume exactly and only the serialized A1Multigraph JSON artifact.
+The A1Multigraph.multigraph is the single source of truth.
 
 Deliverables:
-- `phaseA2-taskworkflows.final.json` (stable contract; classified TaskWorkflows + partitions/stats)
+- `a2-workflows.json` (stable contract; classified TaskWorkflows + partitions/stats)
 - Determinism verification for A2 outputs
 - Tests covering enabledness, redirect-closure behavior, classification rules, handler-scoped effects
 - Visualization for A1 graph and A2 task workflows
@@ -145,10 +145,118 @@ Exit criteria:
 
 ---
 
-## Stage 4 — Phase B planning (BLOCKED until Stage 3 DONE)
+## Stage 4 — Phase B implementation (DONE)
 Constraint:
-- Phase B may only consume frozen Phase A artifacts.
+- Phase B may only consume frozen Phase A artifacts (`a1-multigraph.json`, `a2-workflows.json`).
 
-Entry criteria:
+Entry criteria (MET):
 - A1/A2 complete, deterministic, and validated across **all declared subjects**.
 - No open “temporary” code paths or compatibility scaffolds remain from Phase A implementation.
+- Naming migration complete: `A1Multigraph`, `A2WorkflowSet`, `a1-multigraph.json`, `a2-workflows.json`.
+- Phase B normative spec frozen in `docs/paper/approach.md`.
+
+### Stage 4a — B0 SubjectManifest validation (DONE)
+- Schema: `src/phase-b/b0/manifest-schema.ts`
+- Validator: `src/phase-b/b0/manifest-validator.ts`
+- CLI: `npm run b0:validate` — 6/6 subjects VALID
+- Determinism: `npm run verify:b0-determinism` — byte-identical
+
+### Stage 4b — B1.1 RealizationIntent derivation (DONE)
+- Deriver: `src/phase-b/b1/intent-deriver.ts`
+- Types: `src/phase-b/b1/intent-types.ts`
+- CLI: `npm run b1:intents` — 257 intents derived
+- GT validation: 257/257 matched, 0 mismatches
+- Determinism: `npm run verify:b1-determinism` — byte-identical
+
+### Stage 4c — B1.2 ActionPlan generation (DONE)
+- Deriver: `src/phase-b/b1/plan-deriver.ts`
+- Types: `src/phase-b/b1/plan-types.ts`
+- CLI: `npm run b1:plans` — 257 plans generated
+- GT validation: 257/257 matched, 0 mismatches
+- Determinism: `npm run verify:b1-plan-determinism` — byte-identical
+- Tests: 41 unit tests in `src/phase-b/b1/__tests__/plan-deriver.test.ts`
+- Spec amendments: Start Route Selection, Route Param Scope, Form Field Scope, Auth Materialization, Dialog Precondition (all in `approach.md`)
+
+### Stage 4d — B2 Code Generation (DONE)
+- Emitter: `src/phase-b/b2/test-emitter.ts`
+- Types: `src/phase-b/b2/codegen-types.ts`
+- Runner: `src/phase-b/b2/b2-runner.ts`
+- CLI: `npm run b2:codegen` — 257 tests generated across 6 subjects
+- Generation coverage: 257/257 = 100% (all plans → test files)
+- Determinism: `npm run verify:b2-determinism` — byte-identical
+- Tests: 40 unit tests (49 after correction pass) in `src/phase-b/b2/__tests__/test-emitter.test.ts`
+- Output: `output/<subject>/tests/<hash>_<class>_<kind>.test.ts` + `output/<subject>/json/b2-tests.json`
+- **B5.0 Observability:** Each generated test emits a structured execution log (`output/<subject>/logs/<testFile>.log.json`) with per-step timing, locator metadata, elementFound, domEvidence (outerHTML snippet), failureKind classification, route context, and failure screenshots. See Stage 6.
+
+### Stage 4d (addendum) — Executability Contract Correction (DONE)
+Pre-B3 execution-readiness audit and correction pass. All executability contract gaps closed:
+- **E-02:** C3 denominator tightened — FAIL_APP_NOT_READY never reclassified as skip; B3 must not autonomously add to skipWorkflows.
+- **E-03:** Auth wait fixed — waits for redirect away from loginRoute (`!url.includes(loginRoute)`) instead of trivially-true `urlContains('/')`.
+- **E-04:** Form submit fixed — generates `.submit()` instead of `.click()` for submit ActionSteps.
+- **E-05:** mat-select fixed — B1 generates `select-option` step; B2 generates CDK overlay interaction (click mat-select → wait for mat-option → click first mat-option).
+- **E-09:** B0 subjectName cross-check — manifest.subjectName validated against directory name.
+- **B0 wizard:** `npm run b0:wizard` scaffolds SubjectManifest skeleton from A2 artifacts.
+- **B4 schema frozen:** `B4CoverageReport` / `B4WorkflowEntry` / `B4Summary` added to approach.md.
+- **approach.md restructured:** Subject Manifest (B0) section moved before B1; B4 schema and B2 Material widget note added.
+- Closure report: `docs/analysis/phase-b/executability-readiness-report.md`
+
+### Stage 4e — B3 Test Execution (DONE)
+- B3 runner: readiness check → subprocess execution → bounded retry (max 3) → failure classification.
+- Subprocess: `node tsx/dist/cli.mjs <testFile>` with cleaned PATH (npm `node_modules` stripped).
+- Failure classifier: 7 ordered rules per spec §B3.
+- Screenshot capture: B2 emits `driver.takeScreenshot()` checkpoints; screenshots at `output/<subject>/screenshots/`.
+- File provisioning: `/tmp/test-file.txt` created at B3 runtime for file-input workflows.
+- Report generation: markdown + PDF (pandoc → Chrome headless print).
+- CLI: `npm run b3 -- <subjectName>`.
+
+### Stage 4f — B4 Coverage Reporting (DONE)
+- B4 aggregates B3 results with A2/B1/B2 artifacts into tiered coverage (C1/C2/C3/C4).
+- Denominator rules: PRUNED, FAIL_APP_NOT_READY, skipWorkflows excluded from C3.
+- Output: `output/<subject>/json/b4-coverage.json`.
+
+### Stage 4g — B1/B2 Hardening (DONE)
+- Auth-aware start route selection (S1)
+- Extended failure classifier (S2)
+- CSS class locator fallback (S3)
+- Login credential materialization (S4)
+- Login WSF oracle (S5)
+- Dynamic-ID postcondition for WSF create workflows
+- Chrome viewport `--window-size=1920,1080`; JS click for all click steps
+- routerLink locator fix (non-anchor elements); tag-position stableIndex
+
+### Stage 4h — Documentation Consolidation (DONE)
+- Analysis docs collapsed: 15 files → 5 files (foundations/decisions/runtime) + 6 GT JSONs.
+- Validation docs: subject runbooks, runtime conventions, README added.
+- Documentation alignment audit completed; spec amendments S1–S5 applied to approach.md.
+
+### Stage 5 — Multi-Subject B3/B4 Rollout (IN PROGRESS)
+Sequential single-subject rollout with per-subject runbooks, hardening, and residual adjudication.
+
+| Subject | C3 | Pass/Total | Status |
+|---|---|---|---|
+| posts-users-ui-ng | 88.9% | 16/18 | CLOSED — 2 residuals (1 *ngIf precondition, 1 parameterized postcondition) |
+| heroes-angular | 89.5% | 17/19 | CLOSED — 2 residuals (AboutComponent external URL assertion) |
+| airbus-inventory | 90.5% | 19/21 | CLOSED — 2 residuals (dialog componentSelector gap) |
+| spring-petclinic-angular | 74.3% | 55/74 | CLOSED — 19 residuals (B5: timing, *ngFor, data-dependent, non-navigating) |
+| ever-traduora | 45.0% | 49/109 | CLOSED — 60 residuals (env-clean: 0 rate-limit, 53 async-gate/timeout, 7 locator/other) |
+| softscanner-cqa-frontend | — | — | NOT EXECUTED (out of scope) |
+| **Aggregate (5 subjects)** | **64.7%** | **156/241** | **85 total residuals (env-clean baseline)** |
+
+B5 deferred work formalized in `docs/paper/approach.md` §B5.
+
+### Stage 6 — B5 Execution Enhancements (B5.0 DONE, B5.1–B5.6 NOT STARTED)
+
+**B5.0 — Observability Contract (DONE)**
+- Per-test structured JSON logs (`output/<subject>/logs/*.log.json`)
+- Unified screenshot contract via `captureScreenshot()`
+- Framework/system pipeline logs (`logs/<phase>-pipeline.jsonl`) — structured JSONL with PipelineLogEvent schema
+- Visualization: `npm run viz` generates `vis/b3-execution.html` consuming B1/B2/B3/B4/B5.0/manifest
+- Two distinct logging contracts: framework logs (pipeline behavior) vs per-test logs (execution evidence)
+- See `docs/paper/approach.md` §B5 for canonical I/L/O layer model, vocabulary, evidence classes, oracle tiers, and instrumentation layers
+
+**B5.1 — Network-Aware Wait Strategies (PARTIAL)** — Configurable timeout profiles implemented (implicitWait, navigationWait, authWait via manifest). CDP network evidence capture implemented as optional I2 instrumentation (`enableNetworkEvidence`). 8 auth timeouts eliminated; 0 net C3 gain (structural failures downstream). CDP-based retry deferred.
+**B5.2 — Component-Ready / Data-Ready Waits (PARTIAL)** — First slice: B1 propagates `TriggerContext` (compositionGates, insideNgFor, componentSelector) to ActionPlan. B2 emits structurally-derived `pre-wait` steps for async/permission-gated and repeater-hosted widgets. L3 precondition support, not oracle logic. Awaits traduora baseline restoration for C3 measurement.
+**B5.3 — Repeater-Aware Locator Semantics (PARTIAL)** — A1 extracts `insideNgFor`, `insideNgForOrdinal`, `ngForItemTag`. B1 emits repeater-relative locators (`itemTag:nth-of-type(1) widgetTag:nth-of-type(ord+1)`). Broader repeater disambiguation deferred.
+**B5.4 — Stronger Oracle / C4 (NOT STARTED)** — DOM/state assertions, C4 coverage. ~3 oracle failures.
+**B5.5 — Data-Aware Preconditions (NOT STARTED)** — API seeding, data-dependency analysis. ~4 seed/data failures.
+**B5.6 — Inline Component Materialization (NOT STARTED)** — *ngIf visibility, toggle detection. ~17 inline-component failures.

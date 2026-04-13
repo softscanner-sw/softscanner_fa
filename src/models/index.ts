@@ -79,7 +79,7 @@ export type {
   HandlerRef,
   Edge,
   Multigraph,
-  Phase1Bundle,
+  A1Multigraph,
 } from './multigraph.js';
 
 export { emptyConstraintSurface, STRUCTURAL_EDGE_KINDS } from './multigraph.js';
@@ -93,5 +93,5 @@ export type {
   WorkflowExplanation,
   TaskStep,
   TaskWorkflow,
-  TaskWorkflowBundle,
+  A2WorkflowSet,
 } from './workflow.js';

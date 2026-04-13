@@ -97,7 +97,7 @@ export interface TaskWorkflow {
 }
 
 /** Output artifact for task-mode A2. */
-export interface TaskWorkflowBundle {
+export interface A2WorkflowSet {
   /** Reference to the A1 input used. */
   input: PhaseAInputRef;
   /** Configuration. */

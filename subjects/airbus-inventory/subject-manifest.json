@@ -1,0 +1,33 @@
+{
+  "subjectName": "airbus-inventory",
+  "baseUrl": "http://localhost:4200",
+  "accounts": [
+    {
+      "username": "airbus02@gmail.com",
+      "password": "1234",
+      "roles": [
+        "user"
+      ],
+      "guardSatisfies": [
+        "CanActivateRouteGuard"
+      ]
+    }
+  ],
+  "routeParamValues": {},
+  "authSetup": {
+    "loginRoute": "/login",
+    "usernameField": "input[formcontrolname='emailid']",
+    "passwordField": "input[formcontrolname='password']",
+    "submitButton": "button[type='submit']",
+    "authSuccessSelector": "mat-sidenav-container"
+  },
+  "seedRequirements": {
+    "authGuards": [
+      "CanActivateRouteGuard"
+    ],
+    "negativeGuards": [],
+    "routeParams": [],
+    "hasFormWorkflows": true,
+    "seedStatus": "needs-command"
+  }
+}

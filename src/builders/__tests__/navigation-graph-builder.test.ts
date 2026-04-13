@@ -24,7 +24,7 @@ import type { ModuleRegistry, ModuleInfo } from '../../models/module.js';
 import type { WidgetEventMap } from '../../models/events.js';
 import type { WidgetInfo } from '../../models/widgets.js';
 import type { AnalyzerConfig } from '../../models/analyzer-config.js';
-import type { RouteNode, ComponentNode, Phase1Bundle } from '../../models/multigraph.js';
+import type { RouteNode, ComponentNode, A1Multigraph } from '../../models/multigraph.js';
 import { STRUCTURAL_EDGE_KINDS } from '../../models/multigraph.js';
 import { extractVizData } from '../../visualization/data-extractor.js';
 
@@ -1226,11 +1226,11 @@ describe('NavigationGraphBuilder', () => {
         makeInterpolationModuleRegistry(),
       );
 
-      // Build a Phase1Bundle from the multigraph
+      // Build a A1Multigraph from the multigraph
       const structuralCount = g.edges.filter(
         (e) => STRUCTURAL_EDGE_KINDS.has(e.kind),
       ).length;
-      const bundle: Phase1Bundle = {
+      const bundle: A1Multigraph = {
         multigraph: g,
         stats: {
           nodeCount: g.nodes.length,

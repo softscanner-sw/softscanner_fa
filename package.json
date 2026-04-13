@@ -31,12 +31,22 @@
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "clean": "rimraf dist",
-    "phase1": "tsx src/cli.ts",
-    "phase2": "tsx src/a2-cli.ts",
+    "a1": "tsx src/a1-cli.ts",
+    "a2": "tsx src/a2-cli.ts",
     "viz": "tsx src/viz-cli.ts",
     "verify:determinism": "node scripts/verify-determinism.mjs",
     "run:all": "node scripts/run-all-subjects.mjs",
-    "logs:clean": "rimraf logs"
+    "b0:validate": "tsx src/b0-cli.ts",
+    "verify:b0-determinism": "node scripts/verify-b0-determinism.mjs",
+    "b1:intents": "tsx src/b1-intent-cli.ts",
+    "b1:plans": "tsx src/b1-plan-cli.ts",
+    "verify:b1-determinism": "node scripts/verify-b1-determinism.mjs",
+    "verify:b1-plan-determinism": "node scripts/verify-b1-plan-determinism.mjs",
+    "b2:codegen": "tsx src/b2-cli.ts",
+    "verify:b2-determinism": "node scripts/verify-b2-determinism.mjs",
+    "logs:clean": "rimraf logs",
+    "b0:wizard": "tsx src/b0-wizard-cli.ts",
+    "b3": "node scripts/b3-launcher.mjs"
   },
   "keywords": [
     "static-analysis",
@@ -53,11 +63,14 @@
   },
   "dependencies": {
     "@angular/compiler": "^18.0.0",
+    "chromedriver": "^145.0.6",
+    "selenium-webdriver": "^4.41.0",
     "ts-morph": "^23.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.0.0",
+    "@types/selenium-webdriver": "^4.35.5",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",

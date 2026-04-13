@@ -37,7 +37,7 @@ const WIDGET_ORIGIN_KINDS = new Set([
 
 function analyzeSubject(name) {
   const jsonDir = path.join(OUTPUT_DIR, name, 'json');
-  const bundlePath = path.join(jsonDir, 'phase1-bundle.json');
+  const bundlePath = path.join(jsonDir, 'a1-multigraph.json');
   const rawPath = path.join(jsonDir, 'phaseA2-workflows.raw.json');
   const finalPath = path.join(jsonDir, 'phaseA2-workflows.final.json');
   const summaryPath = path.join(jsonDir, 'phaseA2.summary.json');
@@ -238,7 +238,7 @@ if (requestedSubjects.length > 0) {
 } else {
   subjects = readdirSync(OUTPUT_DIR).filter(name => {
     const jsonDir = path.join(OUTPUT_DIR, name, 'json');
-    return existsSync(path.join(jsonDir, 'phase1-bundle.json'));
+    return existsSync(path.join(jsonDir, 'a1-multigraph.json'));
   }).sort();
 }
 

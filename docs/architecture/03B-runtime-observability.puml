@@ -1,0 +1,39 @@
+@startuml Runtime Observability
+!theme plain
+top to bottom direction
+title Contract B: Per-Test Runtime Observability (B5.0)
+
+legend right
+  Edges: produces / consumes /
+         requires / executes only
+endlegend
+
+hexagon "B2 Code Generation" <<process>> as B2
+artifact "*.test.ts" <<artifact>> as TEST
+hexagon "B3 Subprocess" <<process>> as B3RT
+cloud "Running Application" <<env>> as APP
+
+artifact "output/<s>/logs/\n<test>.log.json" <<artifact>> as TLOG
+artifact "output/<s>/screenshots/\n*.png" <<artifact>> as TSCR
+artifact "b3-results.json" <<artifact>> as B3RES
+
+hexagon "VIZ Generation" <<process>> as VIZ
+
+B2 --> TEST : produces
+TEST --> B3RT : executes
+APP --> B3RT : requires
+B3RT --> TLOG : produces
+B3RT --> TSCR : produces
+B3RT --> B3RES : produces
+TLOG --> VIZ : consumes
+TSCR --> VIZ : consumes
+
+note right of TLOG
+  Schema: ExecutionLog
+  {workflowId, testFile, outcome,
+   failedStepId, failureKind,
+   duration, screenshots[], steps[],
+   steps[].networkEvidence[]}
+end note
+
+@enduml

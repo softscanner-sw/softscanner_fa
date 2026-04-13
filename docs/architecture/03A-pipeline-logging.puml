@@ -1,0 +1,50 @@
+@startuml Pipeline Logging
+!theme plain
+top to bottom direction
+title Contract A: Framework/System Pipeline Logs
+
+legend right
+  Edges: produces only
+  All outputs are JSONL (append mode)
+  Cleanup: npm run logs:clean
+endlegend
+
+package "Processes <<process>>" {
+  hexagon "A1 CLI" <<process>> as A1
+  hexagon "A2 CLI" <<process>> as A2
+  hexagon "B0 CLI" <<process>> as B0
+  hexagon "B1 Intent CLI" <<process>> as B1I
+  hexagon "B1 Plan CLI" <<process>> as B1P
+  hexagon "B2 CLI" <<process>> as B2
+  hexagon "B3 CLI" <<process>> as B3
+  hexagon "VIZ CLI" <<process>> as VIZ
+}
+
+package "Pipeline JSONL <<artifact>>" #LightBlue {
+  artifact "a1-pipeline.jsonl" as LA1
+  artifact "a2-pipeline.jsonl" as LA2
+  artifact "b0-pipeline.jsonl" as LB0
+  artifact "b1-intent-pipeline.jsonl" as LB1I
+  artifact "b1-plan-pipeline.jsonl" as LB1P
+  artifact "b2-pipeline.jsonl" as LB2
+  artifact "b3-pipeline.jsonl" as LB3
+  artifact "viz-pipeline.jsonl" as LVIZ
+}
+
+A1 --> LA1 : produces
+A2 --> LA2 : produces
+B0 --> LB0 : produces
+B1I --> LB1I : produces
+B1P --> LB1P : produces
+B2 --> LB2 : produces
+B3 --> LB3 : produces
+VIZ --> LVIZ : produces
+
+note bottom of LA1
+  Schema: PipelineLogEvent
+  {timestamp, phase, operation,
+   subject, severity, event,
+   message, duration, outcome}
+end note
+
+@enduml

@@ -15,10 +15,10 @@
  *  11. Classification integration
  *  12. Determinism
  *
- * Isolation: uses only Phase1Bundle fixtures. No AST, parsers, or A1 internals.
+ * Isolation: uses only A1Multigraph fixtures. No AST, parsers, or A1 internals.
  */
 
-import type { Edge, Node, Phase1Bundle, SourceRef, ConstraintSurface, SpecWidgetKind } from '../../models/multigraph.js';
+import type { Edge, Node, A1Multigraph, SourceRef, ConstraintSurface, SpecWidgetKind } from '../../models/multigraph.js';
 import { enumerateTaskWorkflows } from '../task-enumerator.js';
 
 // ---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ function edge(
   return result;
 }
 
-function bundle(nodes: Node[], edges: Edge[]): Phase1Bundle {
+function bundle(nodes: Node[], edges: Edge[]): A1Multigraph {
   const sorted = [...nodes].sort((a, b) => a.id.localeCompare(b.id));
   const sortedEdges = [...edges].sort((a, b) => {
     if (a.from !== b.from) return a.from.localeCompare(b.from);

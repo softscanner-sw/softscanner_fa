@@ -232,6 +232,87 @@ export class TemplateAstUtils {
   }
 
   /**
+   * Extract nested component selectors with their composition-site structural context.
+   * Returns a map from lowercase selector → context indicating if the composition
+   * site is inside a structural directive (ng-template, *ngIf, *ngFor).
+   */
+  static extractNestedComponentContexts(
+    ast: TemplateAstNode[],
+    selectorPrefix: string,
+  ): Record<string, { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string }> {
+    const HTML_ELEMENTS = new Set([
+      'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo',
+      'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup',
+      'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em',
+      'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4',
+      'h5', 'h6', 'head', 'header', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd',
+      'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'menu', 'meta', 'meter', 'nav',
+      'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'picture', 'pre',
+      'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small',
+      'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td',
+      'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul',
+      'var', 'video', 'wbr', 'ng-container', 'ng-content', 'ng-template',
+    ]);
+
+    const contexts: Record<string, { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string }> = {};
+
+    const walk = (
+      nodes: TemplateAstNode[],
+      inNgTemplate: boolean,
+      ngIfExpr: string | undefined,
+      ngForExpr: string | undefined,
+    ): void => {
+      for (const n of nodes) {
+        if (n.kind === 'element' && n.name !== undefined) {
+          const name = n.name.toLowerCase();
+          if (!HTML_ELEMENTS.has(name) && (selectorPrefix === '' || name.startsWith(selectorPrefix))) {
+            // This is a component composition site. Record its structural context.
+            const ctx: { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string } = {};
+            if (inNgTemplate) ctx.insideNgTemplate = true;
+            if (ngIfExpr !== undefined) ctx.insideNgIf = ngIfExpr;
+            if (ngForExpr !== undefined) ctx.insideNgFor = ngForExpr;
+            if (Object.keys(ctx).length > 0) {
+              contexts[name] = ctx;
+            }
+          }
+          // Recurse into element children (no structural context change)
+          walk(n.children ?? [], inNgTemplate, ngIfExpr, ngForExpr);
+        } else if (n.kind === 'structural') {
+          // Determine structural context changes
+          const isExplicitTemplate = n.name === 'ng-template';
+          const dirs = n.structuralDirectives ?? [];
+          const hasNgIf = dirs.some(d => d === 'ngIf' || d === 'ngSwitchCase');
+          const hasNgFor = dirs.some(d => d === 'ngForOf' || d === 'ngFor');
+
+          // Extract expression from children attrs
+          let ifExpr: string | undefined;
+          let forExpr: string | undefined;
+          if (hasNgIf) {
+            const ifChild = (n.children ?? []).find(c => (c.kind === 'attr' || c.kind === 'boundAttr') && (c.name === 'ngIf' || c.name === 'ngSwitchCase'));
+            ifExpr = ifChild?.value;
+          }
+          if (hasNgFor) {
+            const forChild = (n.children ?? []).find(c => (c.kind === 'attr' || c.kind === 'boundAttr') && (c.name === 'ngForOf'));
+            forExpr = forChild?.value;
+          }
+
+          walk(
+            n.children ?? [],
+            inNgTemplate || isExplicitTemplate,
+            hasNgIf ? (ifExpr ?? ngIfExpr) : ngIfExpr,
+            hasNgFor ? (forExpr ?? ngForExpr) : ngForExpr,
+          );
+        } else {
+          walk(n.children ?? [], inNgTemplate, ngIfExpr, ngForExpr);
+        }
+      }
+    };
+
+    walk(ast, false, undefined, undefined);
+    return contexts;
+  }
+
+  /**
    * Map a template character span to an Origin.
    * Line/column are computed from the template text if provided.
    *

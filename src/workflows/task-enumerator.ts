@@ -8,11 +8,11 @@
  * Isolation: imports only types from src/models/ and local workflow utilities.
  */
 
-import type { Edge, Phase1Bundle } from '../models/multigraph.js';
+import type { Edge, A1Multigraph } from '../models/multigraph.js';
 import { emptyConstraintSurface } from '../models/multigraph.js';
 import type {
   TaskWorkflow,
-  TaskWorkflowBundle,
+  A2WorkflowSet,
   TaskStep,
   WorkflowVerdict,
   WorkflowExplanation,
@@ -292,11 +292,11 @@ function classifyTask(
 const TASK_ROUTE_VISIT_CAP = 2;
 
 /**
- * Enumerate task workflows from a Phase1Bundle.
+ * Enumerate task workflows from a A1Multigraph.
  * Produces exactly one TaskWorkflow per trigger edge, with handler-scoped
  * effect closure and deterministic redirect resolution.
  */
-export function enumerateTaskWorkflows(bundle: Phase1Bundle): TaskWorkflowBundle {
+export function enumerateTaskWorkflows(bundle: A1Multigraph): A2WorkflowSet {
   const index = buildGraphIndex(bundle);
   const inputRef = computeInputRef(bundle);
 
