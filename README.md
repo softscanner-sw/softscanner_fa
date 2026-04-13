@@ -1,12 +1,12 @@
-# SoftScanner — Automated End-to-End Test Generation for Web Applications
+# SoftScanner FA — Source-Driven E2E Test Generation over a Fixed Workflow Space
 
-> End-to-end automated test generation pipeline for Angular frontends: statically extracts a navigation-interaction multigraph, enumerates user-trigger workflows, derives test plans, generates Selenium WebDriver tests, executes them against a live application, and reports tiered coverage.
+> Replication package for: *Source-Driven E2E Test Generation over a Fixed Workflow Space: An Angular Case Study* (SEAA 2026 submission). Paper: [`docs/paper/main.pdf`](docs/paper/main.pdf).
+
+SoftScanner Frontend Analyzer (SoftScanner FA) implements a source-driven, multi-phase pipeline that statically extracts a UI Interaction Multigraph from Angular source code, enumerates a finite, constraint-aware workflow space *W*, and realizes every workflow into an executable Selenium WebDriver test with structured observability and integrity-verified coverage computation.
 
 ---
 
 ## Overview
-
-SoftScanner Frontend Analyzer (SoftScanner FA) implements a multi-phase pipeline that goes from Angular source code to executable Selenium tests — with zero manual test authoring.
 
 ```
 Source code (TypeScript + Angular templates)
@@ -234,7 +234,7 @@ B0 validates manifests. B1 derives intents and plans (locators, values, precondi
 
 ## Validation subjects
 
-Six Angular applications (Angular 12–18) validate the pipeline. See:
+Six Angular applications (Angular 11-18) validate the pipeline. See:
 - **Subject registry** (paths, frameworks, A1 commands): `docs/validation/empirical reports/subjects.md`
 - **Setup runbooks**: `docs/validation/runbooks/<subject>-setup.md`
 - **Manifest values**: `docs/validation/manifest/subject-onboarding-guide.md`
@@ -256,6 +256,50 @@ Six Angular applications (Angular 12–18) validate the pipeline. See:
 | `docs/validation/empirical reports/subjects.md` | Subject registry (paths, frameworks, commands) |
 | `docs/analysis/phase-b/diagnostic-reclassification-report.md` | Current residual failure catalog |
 | `docs/analysis/phase-b/gt/*.json` | Ground truth data (257 entries across 6 subjects) |
+| `docs/paper/main.pdf` | SEAA 2026 paper (submission-ready PDF) |
+| `docs/paper/seaa-2026-manuscript-basis.md` | Frozen claims, metrics, terminological decisions |
+
+---
+
+## Replication package
+
+This repository serves as the replication package for the SEAA 2026 paper. To reproduce the reported results:
+
+### Coverage metrics (as reported in paper)
+- **C1 (plan coverage):** |{w in W : valid ActionPlan}| / |W| = 257/257 = **100%**
+- **C2 (code coverage):** |{w in W : valid test}| / |W| = 257/257 = **100%**
+- **C3 (execution coverage):** |{w in W_exec* : PASS}| / |W_exec*| = 156/241 = **64.7%**
+
+W = 257 workflows across 6 subjects. W_exec = 241 workflows across 5 executed subjects (softscanner-cqa is generation-only). W_exec* excludes PRUNED (0), FAIL_APP_NOT_READY (0), and user-declared skips (0).
+
+### Reproduce Phase A (deterministic)
+```bash
+npm install
+npm run run:all       # A1 + A2 for all 6 subjects
+npm run verify:determinism -- "<projectRoot>" "<tsConfigPath>"  # per-subject
+```
+
+### Reproduce Phase B generation (deterministic)
+```bash
+npm run b0:validate   # validate all manifests
+npm run b1:intents    # derive RealizationIntents
+npm run b1:plans      # derive ActionPlans
+npm run b2:codegen    # generate Selenium tests
+```
+
+### Reproduce Phase B execution (requires live apps)
+Each subject must be running at its manifest `baseUrl`. See `docs/validation/runbooks/` for setup.
+```bash
+# Canonical invocation (do NOT use npm run b3):
+node node_modules/tsx/dist/cli.mjs src/b3-cli.ts <subject> [--max-retries 1]
+```
+
+### Scope and limitations
+- Phase A and B generation (A1-B2) are fully deterministic and reproducible from this repository alone.
+- Phase B execution (B3) requires running each subject application locally with correct seed data.
+- The softscanner-cqa subject is included for generation validation (C1/C2) but was not executed (C3).
+- The AutoE2E comparison in the paper is structural, not a quantitative C3 head-to-head.
+- Ground truth: `docs/analysis/phase-b/gt/` (257 entries, single-auditor construction).
 
 ---
 
