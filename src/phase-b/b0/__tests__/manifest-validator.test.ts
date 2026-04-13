@@ -209,6 +209,7 @@ describe('manifest-validator schema checks', () => {
 
   it('rejects executionConfig with non-array seedDataNotes', () => {
     const manifest = validManifest({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       executionConfig: { seedDataNotes: 'not an array' as any },
     });
     const result = validateManifest(manifest, simpleA2);

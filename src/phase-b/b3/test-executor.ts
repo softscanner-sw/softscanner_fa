@@ -4,7 +4,7 @@
  * Spec: §B3 — isolated subprocess, sequential, max 3 attempts.
  */
 
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import type { ExecutionAttempt, ExecutionResult } from './b3-types.js';
@@ -173,7 +173,6 @@ function runTestSubprocess(
       // On Windows, SIGTERM may not work; use taskkill as fallback
       if (process.platform === 'win32') {
         try {
-          const { execSync } = require('node:child_process') as typeof import('node:child_process');
           execSync(`taskkill //PID ${child.pid} //F //T`, { stdio: 'pipe', timeout: 5000 });
         } catch { /* already dead */ }
       }
