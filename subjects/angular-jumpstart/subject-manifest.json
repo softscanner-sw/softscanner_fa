@@ -1,0 +1,34 @@
+{
+  "subjectName": "angular-jumpstart",
+  "baseUrl": "http://localhost:8080",
+  "accounts": [
+    {
+      "username": "test@example.com",
+      "password": "password1",
+      "roles": [],
+      "guardSatisfies": ["CanActivateGuard"]
+    }
+  ],
+  "routeParamValues": {
+    "id": "1"
+  },
+  "authSetup": {
+    "loginRoute": "/login",
+    "usernameField": "#email",
+    "passwordField": "#password",
+    "submitButton": "form.login-form .login-submit",
+    "authSuccessSelector": "cm-customers"
+  },
+  "executionConfig": {
+    "readinessEndpoint": "http://localhost:8080",
+    "readinessTimeoutMs": 30000,
+    "enableNetworkEvidence": true
+  },
+  "seedRequirements": {
+    "authGuards": ["CanActivateGuard"],
+    "negativeGuards": [],
+    "routeParams": ["id"],
+    "hasFormWorkflows": true,
+    "seedStatus": "pre-seeded"
+  }
+}

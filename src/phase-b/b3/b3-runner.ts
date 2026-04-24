@@ -210,7 +210,7 @@ export async function runB3(config: B3Config): Promise<B3ResultSet> {
   // --- Step 1: Readiness check ---
   logLines.push('');
   logLines.push('Readiness check…');
-  const readiness = await checkReadiness(config.baseUrl, config.readinessTimeoutMs);
+  const readiness = await checkReadiness(config.readinessEndpoint ?? config.baseUrl, config.readinessTimeoutMs);
   logLines.push(`  passed: ${readiness.passed} (${readiness.durationMs}ms)`);
   if (readiness.error) logLines.push(`  error: ${readiness.error}`);
 
@@ -349,7 +349,7 @@ export async function runB3(config: B3Config): Promise<B3ResultSet> {
         try {
           execSync(config.batchResetCommand, { stdio: 'pipe', timeout: 60000, shell: process.env['SHELL'] ?? 'cmd.exe' });
           // Wait for service to recover after restart
-          const readiness = await checkReadiness(config.baseUrl, config.readinessTimeoutMs);
+          const readiness = await checkReadiness(config.readinessEndpoint ?? config.baseUrl, config.readinessTimeoutMs);
           logLines.push(`  [BATCH] Reset complete, readiness: ${readiness.passed} (${readiness.durationMs}ms)`);
         } catch (resetErr) {
           logLines.push(`  [BATCH] batchResetCommand failed: ${(resetErr as Error).message?.slice(0, 100)}`);

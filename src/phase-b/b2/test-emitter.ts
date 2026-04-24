@@ -322,21 +322,32 @@ export function emitTest(plan: ActionPlan, baseUrl: string, opts?: EmitOptions):
   lines.push(`    await captureScreenshot(driver, 'milestone_after-preconditions');`);
   lines.push(``);
 
-  // B5.2: Emit structurally-derived pre-action waits for async/permission gates
-  // and repeater/list readiness. These are L3 precondition-support mechanisms,
-  // not oracle logic. They ensure the target widget has materialized before the
-  // first interaction step.
+  // B5.2: Emit structurally-derived pre-action waits for visibility gates,
+  // async/permission gates, and repeater/list readiness. These are L-layer
+  // precondition-support mechanisms that ensure the target widget has
+  // materialized before the first interaction step.
   const tc = plan.triggerContext;
-  const hasAsyncGate = (tc?.compositionGates ?? []).some(g => /async|can:/i.test(g));
+  const gates = tc?.compositionGates ?? [];
+  const hasAsyncGate = gates.some(g => /async|can:/i.test(g));
   const hasRepeater = tc?.insideNgFor !== undefined;
-  if ((hasAsyncGate || hasRepeater) && plan.steps.length > 0) {
+  const hasVisGate = gates.length > 0;
+  // Contradictory-auth guardrail: skip pre-wait if the gate requires NOT
+  // authenticated but the plan has an auth precondition (the element will
+  // never render because auth contradicts the visibility predicate).
+  const hasAuth = (plan.preConditions ?? []).some(pc => pc.type === 'auth-setup');
+  const isContradictoryAuth = hasAuth && gates.some(g => /^!is(LoggedIn|Authenticated)/i.test(g.trim()));
+  const shouldEmitPreWait = (hasAsyncGate || hasRepeater || hasVisGate) && !isContradictoryAuth;
+  if (shouldEmitPreWait && plan.steps.length > 0) {
     const firstStep = plan.steps[0]!;
     const waitLocator = emitFindElement(firstStep.locator);
-    const waitTimeout = `IMPLICIT_WAIT`;
+    const waitTimeout = `NAVIGATION_WAIT`;
     const waitReason = hasAsyncGate
-      ? `async/permission gate: ${(tc?.compositionGates ?? []).join('; ').slice(0, 60)}`
-      : `repeater data readiness: *ngFor="${tc?.insideNgFor}"`;
-    lines.push(`    // B5.2: Pre-action wait for ${hasAsyncGate ? 'async/permission gate' : 'repeater data readiness'}`);
+      ? `async/permission gate: ${gates.join('; ').slice(0, 60)}`
+      : hasRepeater
+        ? `repeater data readiness: *ngFor="${tc?.insideNgFor}"`
+        : `visibility gate: ${gates.join('; ').slice(0, 60)}`;
+    const waitLabel = hasAsyncGate ? 'async/permission gate' : hasRepeater ? 'repeater data readiness' : 'visibility gate';
+    lines.push(`    // B5.2: Pre-action wait for ${waitLabel}`);
     lines.push(`    await logStep(driver, 'pre-wait', 'wait-for-element', { strategy: 'b5.2', value: ${quote(waitReason)} }, undefined, async () => {`);
     lines.push(`      await driver.manage().setTimeouts({ implicit: 0 });`);
     lines.push(`      await driver.wait(async () => {`);
@@ -470,6 +481,8 @@ export function emitLocator(loc: ScopedLocator): string {
       return `By.css(${quote(`[placeholder="${loc.value}"]`)})`;
     case 'data-testid':
       return `By.css(${quote(`[data-testid="${loc.value}"]`)})`;
+    case 'linktext':
+      return `By.linkText(${quote(loc.value)})`;
     case 'tag-position': {
       const parsed = parseTagPosition(loc.value);
       return `By.css(${quote(`${parsed.tag}:nth-of-type(${parsed.position})`)})`;
@@ -899,6 +912,19 @@ export function emitPostCondition(post: PostCondition): string[] {
         lines.push(`  }, NAVIGATION_WAIT, ${quote(`Expected URL to contain ${expected}`)});`);
         lines.push(`}`);
       }
+      break;
+    }
+
+    case 'assert-url-matches-or-unchanged': {
+      lines.push(`// PostCondition: assert-url-matches-or-unchanged (conditional navigation)`);
+      const expectedCond = post.expected ?? '/';
+      const fallbackCond = post.fallback ?? '/';
+      lines.push(`{`);
+      lines.push(`  await driver.wait(async () => {`);
+      lines.push(`    const url = await driver.getCurrentUrl();`);
+      lines.push(`    return url.includes(${quote(expectedCond)}) || url.includes(${quote(fallbackCond)});`);
+      lines.push(`  }, NAVIGATION_WAIT, ${quote(`Expected URL to contain ${expectedCond} or ${fallbackCond}`)});`);
+      lines.push(`}`);
       break;
     }
 

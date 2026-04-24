@@ -2,6 +2,7 @@
 
 **Purpose:** Concrete per-subject input reference for manifest generation via the B0 wizard.
 **Usage:** Read this before running the wizard for a subject. It tells you exactly what values to enter and why.
+**Scope:** The seven subjects in the frozen benchmark corpus. See `docs/validation/empirical reports/subjects.md` for the subject registry and `docs/ROADMAP.md` Stage 5 for current metrics.
 
 ---
 
@@ -171,10 +172,82 @@
 - **Port conflicts.** Backend on 8080 (conflicts with airbus), MySQL on 3306 (conflicts with airbus). Never run both simultaneously.
 
 ### Execution config
-- **seedCommand:** `node scripts/seed-traduora.mjs` (transitional — creates accounts, project, locale, terms)
+- **seedCommand:** `node scripts/seed-traduora.mjs` (idempotent — creates accounts, project, locales, terms, translations, labels, team member, API client)
 - **preAttemptCommand:** `docker exec mysqldb mysql -u tr -pchange_me tr_dev -e "UPDATE user SET loginAttempts = 0, lastLogin = NULL;"`
 - **batchResetCommand:** `docker restart traduora && sleep 10`
 - **enableNetworkEvidence:** Yes (auth-heavy, complex API interactions)
+
+---
+
+## angular-jumpstart
+
+### What the wizard infers
+- Route param `id` needed (workflows on `/customers/:id` family)
+- Form workflows present (login, edit)
+- One auth guard (`CanActivateGuard`) on `/customers/:id/edit`
+- Modern control-flow templates (`@if`/`@for`) extracted via the A1 modernization patches
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:8080` | Confirmed | Express server serves the built app on 8080 and exposes `/api/*`; the Angular dev server on 4200 routes API calls to port 7071 (Azure Functions emulator) and silently fails |
+| accounts[0].username | `test@example.com` | Confirmed | Mock backend accepts any RFC-format email |
+| accounts[0].password | `password1` | Confirmed | Validators require ≥6 chars + 1 digit; backend ignores password |
+| accounts[0].guardSatisfies | `["CanActivateGuard"]` | Confirmed | Class-based guard at `/src/app/customer/guards/can-activate.guard.ts` |
+| routeParamValues.id | `"1"` | Confirmed | First customer in `public/data/customers.json` |
+| authSetup.loginRoute | `/login` | Confirmed | Angular route |
+| authSetup.usernameField | `#email` | Confirmed | login.component.html:18 |
+| authSetup.passwordField | `#password` | Confirmed | login.component.html:46 |
+| authSetup.submitButton | `form.login-form .login-submit` | Confirmed | login.component.html:73 (scoped) |
+| authSetup.authSuccessSelector | `cm-customers` | Confirmed | Customer list component selector after `/customers` redirect (`cm-` is JumpStart's component prefix) |
+| seedStatus | `pre-seeded` | Confirmed | Static JSON files committed in `public/data/` |
+
+### Known pitfalls
+- **`CanDeactivateGuard` modal.** The edit form opens a Promise-based modal on dirty-navigation. Generated tests must save before navigating away, or the workflow will hang.
+- **Lazy-loaded Google Maps.** Map workflows fail without an API key (not committed). Treat as known residuals.
+- **Stateful in-memory backend.** Customer modifications persist across tests within a backend session. Restart `node server.js` for a clean baseline between full benchmark runs.
+
+### Execution config
+- **readinessEndpoint:** `http://localhost:4200`
+- **enableNetworkEvidence:** Yes
+- **No seedCommand needed** — static seed in repo
+
+---
+
+## event-booking-mean
+
+### What the wizard infers
+- One class-based auth guard (`AuthGuardService`) on `/create-event`
+- No route parameters (all static paths)
+- Form workflows present (login, register, create-event)
+- Needs a seed command (Mongo + register-at-bootstrap); no static seed data shipped
+
+### What you must provide
+| Field | Value | Confidence | Why |
+|---|---|---|---|
+| baseUrl | `http://localhost:4200` | Confirmed | Angular dev server |
+| accounts[0].username | `alice@example.com` | Confirmed | Matches seeded Alice123 from `SomeDemoData.txt` |
+| accounts[0].password | `password123` | Confirmed | Matches seed |
+| accounts[0].guardSatisfies | `["AuthGuardService"]` | Confirmed | `auth-guard.service.ts` guards `/create-event` |
+| routeParamValues | `{}` | Confirmed | No `:param` placeholders in the routes array |
+| authSetup.loginRoute | `/login` | Confirmed | |
+| authSetup.usernameField | `input#email` | Confirmed | `login.component.html:10` |
+| authSetup.passwordField | `input#password` | Confirmed | `login.component.html:13` |
+| authSetup.submitButton | `form button[type='submit']` | Confirmed | `login.component.html:19` |
+| authSetup.authSuccessSelector | `a.my-events` | Confirmed | Navbar "RSVPs" link only rendered when `isLoggedIn === true` |
+| executionConfig.seedCommand | `node scripts/seed-event-booking-mean.mjs` | Confirmed | Idempotent register-via-API |
+| seedStatus | `needs-command` | Confirmed | MongoDB + account registration required |
+
+### Known pitfalls
+- **Backend crash on malformed event payload.** `Event.js:39` has a typo that crashes the Node process when `/TPL/Events/add` receives a request without an image. B3 attempts to submit the event form without a file and triggers this. Restart the backend before re-runs.
+- **Header `href=""` links.** Navbar uses empty `href` attributes on several links instead of `routerLink`. Workflows that target these as `WIDGET_NAVIGATES_EXTERNAL`/`WIDGET_NAVIGATES_ROUTE` will post-condition-fail because the URL does not change.
+- **SessionStorage-only auth.** No JWT — auth state is stored in sessionStorage. Per-test Selenium isolation handles this correctly (each test logs in fresh via the auth precondition).
+- **No route params.** `routeParamValues = {}`. This is the first authenticated subject in the corpus with no param-driven routes — a useful denominator variant.
+
+### Execution config
+- **seedCommand:** `node scripts/seed-event-booking-mean.mjs` (idempotent register of Alice, Bob, Charlie)
+- **enableNetworkEvidence:** Yes
+- **No preAttemptCommand / batchResetCommand needed** — sessionStorage auth is cleared automatically between tests by Selenium's per-test browser isolation
 
 ---
 
@@ -187,3 +260,5 @@
 | airbus-inventory | Yes (1 account) | None | needs-command | Yes | None needed |
 | spring-petclinic-angular | No | id=1 (9 overrides) | pre-seeded | Yes | None needed |
 | ever-traduora | Yes (2 accounts) | projectId (UUID), localeCode | needs-command | Yes | preAttemptCommand + batchResetCommand |
+| angular-jumpstart | Yes (1 mock account) | id=1 | pre-seeded | Yes | None needed |
+| event-booking-mean | Yes (1 account) | None | needs-command | Yes | None needed |

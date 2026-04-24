@@ -108,7 +108,7 @@ If determinism fails:
 ---
 
 # 4. Validation Subjects (Mandatory, All of Them)
-All declared subjects in `docs/validation/subjects.md` must be run for every Phase A stage.
+All declared subjects in `docs/validation/empirical reports/subjects.md` must be run for every Phase A stage.
 No stage is complete unless:
 
 * All subjects run successfully
@@ -393,15 +393,15 @@ These three categories must never be collapsed. See `docs/paper/approach.md` §B
 
 ## Documentation Structure
 * `docs/paper/approach.md` — normative spec (authoritative)
-* `docs/paper/scientific-report.md` — scientific/technical report
 * `docs/ROADMAP.md` — work sequencing (authoritative)
-* `docs/analysis/phase-b/gt/` — ground truth JSON data
-* `docs/analysis/phase-b/diagnostic-reclassification-report.md` — current residual catalog
+* `docs/analysis/phase-b/gt/` — ground truth JSON data (one file per subject)
+* `docs/analysis/phase-b/baseline-admissibility-study.md` — comparator-selection rationale
+* `docs/analysis/phase-b/baseline-family-audit.md` — baseline-family audit
 * `docs/validation/protocols/` — benchmark execution protocol, diagnostic protocol
 * `docs/validation/manifest/` — B0 manifest guide, subject onboarding guide
 * `docs/validation/runbooks/` — per-subject setup runbooks
-* `docs/validation/empirical reports/` — AutoE2E comparison, subject registry
-* `docs/archive/` — historical/forensic docs (read-only)
+* `docs/validation/empirical reports/` — subject registry, AutoE2E empirical run record
+* `docs/architecture/` — PlantUML pipeline and dependency diagrams
 
 ## B3 Execution Invariants
 * Canonical B3 invocation: `node node_modules/tsx/dist/cli.mjs src/b3-cli.ts <subject> [flags]`

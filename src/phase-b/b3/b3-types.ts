@@ -69,6 +69,9 @@ export interface B3ResultSet {
 export interface B3Config {
   subjectName: string;
   baseUrl: string;
+  /** URL to poll for readiness. Defaults to baseUrl. Use the backend health
+   *  endpoint when baseUrl points to a frontend that stays up during backend restarts. */
+  readinessEndpoint?: string;
   outputDir: string;             // where b3-results.json goes
   testsDir: string;              // where B2 test files are
   screenshotDir: string;         // where screenshots go

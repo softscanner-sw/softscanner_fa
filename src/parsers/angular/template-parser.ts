@@ -210,6 +210,83 @@ export class AngularTemplateParser {
       return [structural];
     }
 
+    // @for block (TmplAstForLoopBlock) — Angular v17+ new control flow.
+    // Map to a synthetic 'structural' node with structuralDirectives:['ngForOf']
+    // and ngForExpression set from the iterable expression source. Body children
+    // are descended; widgets inside inherit insideNgFor via WidgetProcessor.
+    // The optional @empty branch is emitted as a separate synthetic structural
+    // node carrying no constraint (its widgets are captured but unconstrained).
+    if ('item' in n && 'trackBy' in n && 'expression' in n && Array.isArray(n['children'])) {
+      const out: TemplateAstNode[] = [];
+
+      const synthetic: TemplateAstNode = { kind: 'structural', children: [] };
+      const span = AngularTemplateParser._extractSpan(n);
+      if (span !== undefined) synthetic.span = span;
+      synthetic.structuralDirectives = ['ngForOf'];
+      const exprText = AngularTemplateParser._astToString(n['expression']);
+      if (exprText !== undefined) synthetic.ngForExpression = exprText;
+
+      // Synthesize a boundAttr child for predicate consumers; carries the
+      // iterable expression as the directive 'value' (parallels *ngFor's
+      // ngForOf BoundAttribute).
+      const ngForChild: TemplateAstNode = { kind: 'boundAttr', name: 'ngForOf' };
+      if (exprText !== undefined) ngForChild.value = exprText;
+      if (span !== undefined) ngForChild.span = span;
+      synthetic.children!.push(ngForChild);
+
+      for (const child of (n['children'] as unknown[])) {
+        synthetic.children!.push(...AngularTemplateParser._convertNode(child));
+      }
+      out.push(synthetic);
+
+      // @empty branch: capture children unconstrained (no ngForOf context,
+      // no negation predicate). Widgets inside bias toward FEASIBLE.
+      const emptyBranch = n['empty'] as Record<string, unknown> | null | undefined;
+      if (emptyBranch !== null && emptyBranch !== undefined && typeof emptyBranch === 'object') {
+        const emptyNode: TemplateAstNode = { kind: 'structural', children: [] };
+        const emptySpan = AngularTemplateParser._extractSpan(emptyBranch);
+        if (emptySpan !== undefined) emptyNode.span = emptySpan;
+        for (const child of (emptyBranch['children'] as unknown[] | undefined) ?? []) {
+          emptyNode.children!.push(...AngularTemplateParser._convertNode(child));
+        }
+        out.push(emptyNode);
+      }
+      return out;
+    }
+
+    // @if block (TmplAstIfBlock) — Angular v17+ new control flow.
+    // Each branch has an expression (null for @else) and children.
+    // Map each branch to a synthetic 'structural' node with an 'ngIf'
+    // boundAttr child so downstream analyzers that understand *ngIf
+    // (WidgetProcessor, TemplateConstraintExtractor) work unchanged.
+    // The @else branch carries no predicate: widgets inside are treated
+    // as unconstrained (a conservative bias toward FEASIBLE workflows).
+    if ('branches' in n && Array.isArray(n['branches'])) {
+      const out: TemplateAstNode[] = [];
+      for (const branch of n['branches'] as unknown[]) {
+        if (branch === null || typeof branch !== 'object') continue;
+        const b = branch as Record<string, unknown>;
+        const synthetic: TemplateAstNode = { kind: 'structural', children: [] };
+        const span = AngularTemplateParser._extractSpan(b);
+        if (span !== undefined) synthetic.span = span;
+
+        const expression = b['expression'];
+        const exprText = AngularTemplateParser._astToString(expression);
+        if (expression !== null && expression !== undefined && exprText !== undefined) {
+          synthetic.structuralDirectives = ['ngIf'];
+          const predicateChild: TemplateAstNode = { kind: 'boundAttr', name: 'ngIf', value: exprText };
+          if (span !== undefined) predicateChild.span = span;
+          synthetic.children!.push(predicateChild);
+        }
+
+        for (const child of (b['children'] as unknown[] | undefined) ?? []) {
+          synthetic.children!.push(...AngularTemplateParser._convertNode(child));
+        }
+        out.push(synthetic);
+      }
+      return out;
+    }
+
     return [];
   }
 
