@@ -41,6 +41,18 @@ export interface ParsedRouteRecord {
   loadChildrenExpr?: string;
   /** Raw loadComponent() expression text (standalone lazy component). */
   loadComponentExpr?: string;
+  /**
+   * Module specifier extracted from the `import(...)` call inside
+   * loadComponent (e.g. "./features/settings/settings.component").
+   * Consumed by RouteAnalyzer for lazy-component resolution.
+   */
+  loadComponentImportSpecifier?: string;
+  /**
+   * Exported class name hinted by `.then(m => m.X)` on loadComponent.
+   * Undefined when the expression uses the implicit default-export form
+   * `() => import("./x.component")`. Consumed by RouteAnalyzer.
+   */
+  loadComponentExportHint?: string;
   /** Inline children route array (parsed recursively). */
   children?: ParsedRouteRecord[];
 
@@ -157,6 +169,23 @@ export class RouteParser {
     return elements;
   }
 
+  /**
+   * Count ArrowFunction / FunctionExpression elements in an ArrayLiteralExpression.
+   * Used to detect inline functional guards (CanActivateFn) without resolving them.
+   */
+  private static _countInlineFunctionElements(arrayNode: Node): number {
+    let count = 0;
+    for (const child of arrayNode.getChildren()) {
+      for (const el of child.getChildren()) {
+        const kind = el.getKindName();
+        if (kind === 'ArrowFunction' || kind === 'FunctionExpression') {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
   private static _parseRouteObject(node: Node, cfg: AnalyzerConfig): ParsedRouteRecord | null {
     const maxLen = cfg.maxTemplateSnippetLength ?? 200;
     const origin = TsAstUtils.getOrigin(node);
@@ -168,6 +197,8 @@ export class RouteParser {
     let pathMatch: 'full' | 'prefix' | undefined;
     let loadChildrenExpr: string | undefined;
     let loadComponentExpr: string | undefined;
+    let loadComponentImportSpecifier: string | undefined;
+    let loadComponentExportHint: string | undefined;
     let children: ParsedRouteRecord[] | undefined;
 
     const guards: ParsedRouteRecord['guards'] = [];
@@ -202,6 +233,15 @@ export class RouteParser {
           break;
         case 'loadComponent':
           loadComponentExpr = TsAstUtils.truncateDeterministically(rawValue, maxLen);
+          {
+            // Extract the import specifier (covers both `import('x')` and `import("x")`
+            // and optional whitespace around the argument).
+            const specMatch = rawValue.match(/import\s*\(\s*['"]([^'"]+)['"]\s*\)/);
+            if (specMatch?.[1] !== undefined) loadComponentImportSpecifier = specMatch[1];
+            // Extract the class-name hint from `.then(m => m.X)` when present.
+            const hintMatch = rawValue.match(/\.then\s*\(\s*\(?\s*\w+\s*\)?\s*=>\s*\w+\s*\.\s*(\w+)\s*\)/);
+            if (hintMatch?.[1] !== undefined) loadComponentExportHint = hintMatch[1];
+          }
           break;
         case 'children':
           if (valueNode.getKindName() === 'ArrayLiteralExpression') {
@@ -217,6 +257,15 @@ export class RouteParser {
           if (GUARD_KINDS.has(propName)) {
             for (const guardName of TsAstUtils.extractArrayOfIdentifiers(valueNode)) {
               guards.push({ kind: propName, guardName, origin: TsAstUtils.getOrigin(valueNode, guardName) });
+            }
+            // Inline functional guards (Angular v15+ CanActivateFn): presence-only
+            // capture so the route is not silently classified as guard-free.
+            // The synthetic name remains unresolvable downstream, keeping the
+            // workflow CONDITIONAL instead of FEASIBLE.
+            const inlineCount = RouteParser._countInlineFunctionElements(valueNode);
+            for (let i = 0; i < inlineCount; i++) {
+              const synthName = `__inline_${propName}_${i}__`;
+              guards.push({ kind: propName, guardName: synthName, origin: TsAstUtils.getOrigin(valueNode) });
             }
           }
           // Resolve map
@@ -246,8 +295,18 @@ export class RouteParser {
       }
     }
 
-    // Require at least a path property to consider this a route object
-    if (path === '' && componentName === undefined && redirectTo === undefined && loadChildrenExpr === undefined) {
+    // Require at least a path property to consider this a route object.
+    // A path:"" is valid when paired with a component, loadComponent,
+    // loadChildren, redirect, or children array (e.g., the root route in
+    // standalone apps, or a grouping container for nested routes).
+    if (
+      path === '' &&
+      componentName === undefined &&
+      redirectTo === undefined &&
+      loadChildrenExpr === undefined &&
+      loadComponentExpr === undefined &&
+      (children === undefined || children.length === 0)
+    ) {
       return null;
     }
 
@@ -259,6 +318,8 @@ export class RouteParser {
     if (pathMatch !== undefined) record.pathMatch = pathMatch;
     if (loadChildrenExpr !== undefined) record.loadChildrenExpr = loadChildrenExpr;
     if (loadComponentExpr !== undefined) record.loadComponentExpr = loadComponentExpr;
+    if (loadComponentImportSpecifier !== undefined) record.loadComponentImportSpecifier = loadComponentImportSpecifier;
+    if (loadComponentExportHint !== undefined) record.loadComponentExportHint = loadComponentExportHint;
     if (children !== undefined && children.length > 0) record.children = children;
     return record;
   }

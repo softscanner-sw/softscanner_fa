@@ -211,6 +211,17 @@ export class ComponentRegistryBuilder {
     const nestedSelectors = extractNestedComponentsFromAst(ast);
     const nestedContexts = extractNestedComponentContextsFromAst(ast);
 
+    // Detect dynamically composed components via createComponent(ClassName)
+    // in the class body (Angular ViewContainerRef.createComponent pattern).
+    const classText = classDecl.getText();
+    const createCompMatches = classText.matchAll(/\.createComponent\s*\(\s*(\w+)\s*\)/g);
+    for (const match of createCompMatches) {
+      const dynClassName = match[1];
+      if (dynClassName !== undefined && dynClassName !== className) {
+        nestedSelectors.push(dynClassName);
+      }
+    }
+
     // Build stable symbol
     const symbol = {
       className,

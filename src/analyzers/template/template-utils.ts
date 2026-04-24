@@ -97,7 +97,7 @@ export function flattenWidgets(widgets: WidgetInfo[]): WidgetInfo[] {
  */
 export function extractNestedComponentsFromAst(
   ast: TemplateAstNode[],
-  selectorPrefix = 'app-',
+  selectorPrefix = '',
 ): string[] {
   return TemplateAstUtils.extractNestedComponentSelectors(ast, selectorPrefix);
 }
@@ -107,7 +107,7 @@ export function extractNestedComponentsFromAst(
  */
 export function extractNestedComponentContextsFromAst(
   ast: TemplateAstNode[],
-  selectorPrefix = 'app-',
+  selectorPrefix = '',
 ): Record<string, { insideNgTemplate?: boolean; insideNgIf?: string; insideNgFor?: string }> {
   return TemplateAstUtils.extractNestedComponentContexts(ast, selectorPrefix);
 }

@@ -164,7 +164,19 @@ function deriveTriggerWidget(
     ...(widget.meta.insideNgForOrdinal !== undefined ? { insideNgForOrdinal: widget.meta.insideNgForOrdinal } : {}),
     ...(widget.meta.ngForItemTag !== undefined ? { ngForItemTag: widget.meta.ngForItemTag } : {}),
     ...(widget.meta.text !== undefined ? { text: widget.meta.text } : {}),
-    ...(widget.meta.compositionGates !== undefined && widget.meta.compositionGates.length > 0 ? { compositionGates: widget.meta.compositionGates } : {}),
+    ...((() => {
+      // Merge widget-level visibility gates with CCC-level composition gates.
+      // Widget-own *ngIf/@if predicates (visibleExprText) act as activation gates
+      // just like CCC-level insideNgIf wrappers — the widget won't render until
+      // the predicate is satisfied. Including both enables B5.2 pre-wait emission
+      // for ALL visibility-gated widgets, not just CCC-wrapped ones.
+      const gates = [...(widget.meta.compositionGates ?? [])];
+      const widgetVis = widget.meta.ui.visibleExprText;
+      if (widgetVis && !gates.includes(widgetVis)) {
+        gates.push(widgetVis);
+      }
+      return gates.length > 0 ? { compositionGates: gates } : {};
+    })()),
   };
 }
 

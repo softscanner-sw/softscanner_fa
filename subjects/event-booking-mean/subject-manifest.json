@@ -1,0 +1,38 @@
+{
+  "subjectName": "event-booking-mean",
+  "baseUrl": "http://localhost:4200",
+  "accounts": [
+    {
+      "username": "alice@example.com",
+      "password": "password123",
+      "roles": [],
+      "guardSatisfies": ["AuthGuardService"]
+    }
+  ],
+  "routeParamValues": {},
+  "authSetup": {
+    "loginRoute": "/login",
+    "usernameField": "input#email",
+    "passwordField": "input#password",
+    "submitButton": "form button[type='submit']",
+    "authSuccessSelector": "a.my-events"
+  },
+  "executionConfig": {
+    "readinessEndpoint": "http://localhost:4200",
+    "readinessTimeoutMs": 30000,
+    "seedCommand": "node scripts/seed-event-booking-mean.mjs",
+    "seedDataNotes": [
+      "Backend is Express + Mongoose on localhost:3000, MongoDB at mongodb://localhost:27017/TPL.",
+      "Seed script POSTs /TPL/Users/register for alice@example.com (Alice123), bob@example.com (Bob456), charlie@example.com (Charlie789).",
+      "Registration is idempotent against repeated runs: duplicate email returns 400 and is ignored."
+    ],
+    "enableNetworkEvidence": true
+  },
+  "seedRequirements": {
+    "authGuards": ["AuthGuardService"],
+    "negativeGuards": [],
+    "routeParams": [],
+    "hasFormWorkflows": true,
+    "seedStatus": "needs-command"
+  }
+}

@@ -1,0 +1,2289 @@
+{
+  "subject": "angular-jumpstart",
+  "generatedDate": "2026-04-17",
+  "a2Source": "output/angular-jumpstart/json/a2-workflows.json",
+  "totalEntries": 47,
+  "difficultyBreakdown": {
+    "D1": 29,
+    "D6": 4,
+    "D5": 1,
+    "D3": 12,
+    "D2": 1
+  },
+  "entries": [
+    {
+      "gtId": "js-GT-01",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/about/about.component.ts#AboutComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\about\\about.component.html:14:40|Link|1::WIDGET_NAVIGATES_EXTERNAL::__ext__6c15f98a::0",
+      "a2WorkflowIndex": 0,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "href",
+            "locatorValue": "http://blog.codewithdan.com",
+            "componentScope": "cm-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-02",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/about/about.component.ts#AboutComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\about\\about.component.html:19:40|Link|2::WIDGET_NAVIGATES_EXTERNAL::__ext__d9cb6fd9::0",
+      "a2WorkflowIndex": 1,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "href",
+            "locatorValue": "https://github.com/DanWahlin/Angular-JumpStart",
+            "componentScope": "cm-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-03",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/about/about.component.ts#AboutComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\about\\about.component.html:9:40|Link|0::WIDGET_NAVIGATES_EXTERNAL::__ext__2593f51e::0",
+      "a2WorkflowIndex": 2,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNE",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-about",
+        "startRouteFullPaths": [
+          "/about"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": null,
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/about"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "href",
+            "locatorValue": "http://twitter.com/DanWahlin",
+            "componentScope": "cm-about",
+            "edgeKind": "WIDGET_NAVIGATES_EXTERNAL"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-04",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\modal\\modal.component.html:14:21|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent::0",
+      "a2WorkflowIndex": 3,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-modal",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          },
+          {
+            "type": "trigger-dialog-open"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-modal",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-05",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\modal\\modal.component.html:16:17|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent::0",
+      "a2WorkflowIndex": 4,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-modal",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          },
+          {
+            "type": "trigger-dialog-open"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-modal",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-06",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\modal\\modal.component.html:6:17|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/core/modal/modal.component.ts#ModalComponent::0",
+      "a2WorkflowIndex": 5,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-modal",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          },
+          {
+            "type": "trigger-dialog-open"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-modal",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-07",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:11:13|Link|0::WIDGET_NAVIGATES_ROUTE::/customers@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 6,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/customers",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-08",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:16:51|Link|1::WIDGET_NAVIGATES_ROUTE::/customers@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 7,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/customers",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-09",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:17:51|Link|2::WIDGET_NAVIGATES_ROUTE::/orders@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 8,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/orders",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/orders",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/orders"
+      }
+    },
+    {
+      "gtId": "js-GT-10",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:18:51|Link|3::WIDGET_NAVIGATES_ROUTE::/about@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 9,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/about",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/about"
+      }
+    },
+    {
+      "gtId": "js-GT-11",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:19:21|Unknown|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent::0",
+      "a2WorkflowIndex": 10,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "li",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "li:1",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-12",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\core\\navbar\\navbar.component.html:4:13|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/core/navbar/navbar.component.ts#NavbarComponent::0",
+      "a2WorkflowIndex": 11,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-navbar",
+        "startRouteFullPaths": [
+          "/about",
+          "/customers",
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders",
+          "/login",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/about",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-navbar",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-13",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer-edit\\customer-edit.component.html:52:15|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent::0",
+      "a2WorkflowIndex": 12,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customer-edit",
+        "startRouteFullPaths": [
+          "/customers/:id/edit"
+        ],
+        "requiresAuth": true,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "button:1",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-14",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer-edit\\customer-edit.component.html:53:15|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent::0",
+      "a2WorkflowIndex": 13,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customer-edit",
+        "startRouteFullPaths": [
+          "/customers/:id/edit"
+        ],
+        "requiresAuth": true,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/edit",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "button:2",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-15",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer-edit\\customer-edit.component.html:62:19|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent::0",
+      "a2WorkflowIndex": 14,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customer-edit",
+        "startRouteFullPaths": [
+          "/customers/:id/edit"
+        ],
+        "requiresAuth": true,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/edit",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-16",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer-edit\\customer-edit.component.html:66:15|Button|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent::0",
+      "a2WorkflowIndex": 15,
+      "difficultyClass": "D6",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customer-edit",
+        "startRouteFullPaths": [
+          "/customers/:id/edit"
+        ],
+        "requiresAuth": true,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-17",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer-edit\\customer-edit.component.html:9:5|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer-edit/customer-edit.component.ts#CustomerEditComponent::0",
+      "a2WorkflowIndex": 16,
+      "difficultyClass": "D5",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "cm-customer-edit",
+        "startRouteFullPaths": [
+          "/customers/:id/edit"
+        ],
+        "requiresAuth": true,
+        "requiresParams": true,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/customers",
+        "formFields": [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {
+            "firstName": "test-firstName-cb44",
+            "lastName": "test-lastName-cb44",
+            "address": "123 Test St",
+            "city": "TestCity",
+            "state": "option-1"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1/edit"
+          }
+        ],
+        "steps": [
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "name",
+            "locatorValue": "firstName",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": ""
+          },
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "name",
+            "locatorValue": "lastName",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": ""
+          },
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "name",
+            "locatorValue": "address",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": ""
+          },
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "name",
+            "locatorValue": "city",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": ""
+          },
+          {
+            "type": "select-option",
+            "locatorStrategy": "name",
+            "locatorValue": "state",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": ""
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "custom",
+            "locatorValue": ".customer-form",
+            "componentScope": "cm-customer-edit",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-18",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer.component.ts#CustomerComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer.component.html:10:21|Link|0::WIDGET_NAVIGATES_ROUTE::/customers/:id/details@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 17,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-orders",
+        "startRouteFullPaths": [
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/details",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "a:1",
+            "componentScope": "cm-orders",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/details"
+      }
+    },
+    {
+      "gtId": "js-GT-19",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer.component.ts#CustomerComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer.component.html:16:21|Link|1::WIDGET_NAVIGATES_ROUTE::/orders@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 18,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-orders",
+        "startRouteFullPaths": [
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/orders",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "a:2",
+            "componentScope": "cm-orders",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/orders"
+      }
+    },
+    {
+      "gtId": "js-GT-20",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer.component.ts#CustomerComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer.component.html:22:21|Link|2::WIDGET_NAVIGATES_ROUTE::/customers/:id/edit@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 19,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-orders",
+        "startRouteFullPaths": [
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/edit",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "a:3",
+            "componentScope": "cm-orders",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/edit"
+      }
+    },
+    {
+      "gtId": "js-GT-21",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/customer.component.ts#CustomerComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customer\\customer.component.html:35:5|Link|3::WIDGET_NAVIGATES_ROUTE::/customers@C:/Users/basha/git/github/Angular-JumpStart/src/main.ts::0",
+      "a2WorkflowIndex": 20,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-orders",
+        "startRouteFullPaths": [
+          "/customers/:id",
+          "/customers/:id/details",
+          "/customers/:id/edit",
+          "/customers/:id/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers/1"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/customers",
+            "componentScope": "cm-orders",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-22",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-card/customers-card.component.ts#CustomersCardComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-card\\customers-card.component.html:13:25|Link|1::WIDGET_NAVIGATES_ROUTE::/customers/:id/edit@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 21,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-card",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/edit",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'edit']",
+            "componentScope": "cm-customers-card",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/edit"
+      }
+    },
+    {
+      "gtId": "js-GT-23",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-card/customers-card.component.ts#CustomersCardComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-card\\customers-card.component.html:21:25|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-card/customers-card.component.ts#CustomersCardComponent::0",
+      "a2WorkflowIndex": 22,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customers-card",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".action-btn.action-btn--small.action-btn--delete",
+            "componentScope": "cm-customers-card",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-24",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-card/customers-card.component.ts#CustomersCardComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-card\\customers-card.component.html:46:29|Link|2::WIDGET_NAVIGATES_ROUTE::/customers/:id/orders@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 23,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-card",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/orders",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'orders']",
+            "componentScope": "cm-customers-card",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/orders"
+      }
+    },
+    {
+      "gtId": "js-GT-25",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-card/customers-card.component.ts#CustomersCardComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-card\\customers-card.component.html:8:25|Link|0::WIDGET_NAVIGATES_ROUTE::/customers/:id/details@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 24,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-card",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/details",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'details']",
+            "componentScope": "cm-customers-card",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/details"
+      }
+    },
+    {
+      "gtId": "js-GT-26",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:10:17|Unknown|5::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 25,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-27",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:16:13|Link|0::WIDGET_NAVIGATES_ROUTE::/customers/:id/details@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 26,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "tr",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/details",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "tr:1",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/details"
+      }
+    },
+    {
+      "gtId": "js-GT-28",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:18:21|Link|1::WIDGET_NAVIGATES_ROUTE::/customers/:id/details@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 27,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/details",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'details']",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/details"
+      }
+    },
+    {
+      "gtId": "js-GT-29",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:27:17|Unknown|6::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 28,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "td",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "td:7",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-30",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:29:25|Link|2::WIDGET_NAVIGATES_ROUTE::/customers/:id/details@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 29,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/details",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'details']",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/details"
+      }
+    },
+    {
+      "gtId": "js-GT-31",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:37:25|Link|3::WIDGET_NAVIGATES_ROUTE::/customers/:id/edit@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 30,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/edit",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'edit']",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/edit"
+      }
+    },
+    {
+      "gtId": "js-GT-32",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:45:25|Link|4::WIDGET_NAVIGATES_ROUTE::/customers/:id/orders@C:/Users/basha/git/github/Angular-JumpStart/src/app/customer/routes.ts::0",
+      "a2WorkflowIndex": 31,
+      "difficultyClass": "D3",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": true,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers/:id/orders",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {
+            "id": "1"
+          },
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "['/customers',customer.id,'orders']",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers/1/orders"
+      }
+    },
+    {
+      "gtId": "js-GT-33",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:5:17|Unknown|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 32,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "sorted",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-34",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:6:17|Unknown|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 33,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "sorted",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-35",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:7:17|Unknown|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 34,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "sorted",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-36",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:8:17|Unknown|3::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 35,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "sorted",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-37",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers-grid\\customers-grid.component.html:9:17|Unknown|4::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers-grid/customers-grid.component.ts#CustomersGridComponent::0",
+      "a2WorkflowIndex": 36,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "sorted",
+        "triggerWidgetTag": "th",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-customers-grid",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".sortable",
+            "componentScope": "cm-customers-grid",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-38",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers.component.html:21:17|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent::0",
+      "a2WorkflowIndex": 37,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customers",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".view-btn",
+            "componentScope": "cm-customers",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-39",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers.component.html:34:17|Button|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent::0",
+      "a2WorkflowIndex": 38,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customers",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".view-btn",
+            "componentScope": "cm-customers",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-40",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers.component.html:49:17|Button|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent::0",
+      "a2WorkflowIndex": 39,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-customers",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": ".view-btn",
+            "componentScope": "cm-customers",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-41",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/customers/customers.component.ts#CustomersComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\customers\\customers.component.html:8:17|Link|0::WIDGET_NAVIGATES_ROUTE::__null__::0",
+      "a2WorkflowIndex": 40,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WNR",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "a",
+        "triggerWidgetKind": "Link",
+        "componentSelector": "cm-customers",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "routerlink",
+            "locatorValue": "/customers/0/edit",
+            "componentScope": "cm-customers",
+            "edgeKind": "WIDGET_NAVIGATES_ROUTE"
+          }
+        ],
+        "terminalUrl": "/customers"
+      }
+    },
+    {
+      "gtId": "js-GT-42",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/login/login.component.ts#LoginComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\login\\login.component.html:13:9|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/Angular-JumpStart/src/app/login/login.component.ts#LoginComponent::0",
+      "a2WorkflowIndex": 41,
+      "difficultyClass": "D2",
+      "expectedIntent": {
+        "triggerKind": "WSF",
+        "triggerEvent": "ngSubmit",
+        "triggerWidgetTag": "form",
+        "triggerWidgetKind": "Form",
+        "componentSelector": "cm-login",
+        "startRouteFullPaths": [
+          "/login"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": true,
+        "terminalRoutePath": "/login",
+        "formFields": [
+          "",
+          ""
+        ]
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {
+            "email": "test-9e2f@example.com",
+            "password": "Test123!"
+          }
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/login"
+          }
+        ],
+        "steps": [
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "formcontrolname",
+            "locatorValue": "email",
+            "componentScope": "cm-login",
+            "edgeKind": ""
+          },
+          {
+            "type": "clear-and-type",
+            "locatorStrategy": "formcontrolname",
+            "locatorValue": "password",
+            "componentScope": "cm-login",
+            "edgeKind": ""
+          },
+          {
+            "type": "submit",
+            "locatorStrategy": "custom",
+            "locatorValue": ".login-form",
+            "componentScope": "cm-login",
+            "edgeKind": "WIDGET_SUBMITS_FORM"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-43",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/filter-textbox/filter-textbox.component.ts#FilterTextboxComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\shared\\filter-textbox\\filter-textbox.component.html:13:5|Button|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/filter-textbox/filter-textbox.component.ts#FilterTextboxComponent::0",
+      "a2WorkflowIndex": 42,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "button",
+        "triggerWidgetKind": "Button",
+        "componentSelector": "cm-filter-textbox",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "custom",
+            "locatorValue": "button[type=\"button\"]",
+            "componentScope": "cm-filter-textbox",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-44",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/filter-textbox/filter-textbox.component.ts#FilterTextboxComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\shared\\filter-textbox\\filter-textbox.component.html:6:5|Input|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/filter-textbox/filter-textbox.component.ts#FilterTextboxComponent::0",
+      "a2WorkflowIndex": 43,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "keyup",
+        "triggerWidgetTag": "input",
+        "triggerWidgetKind": "Input",
+        "componentSelector": "cm-filter-textbox",
+        "startRouteFullPaths": [
+          "/customers"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/customers"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "name",
+            "locatorValue": "filter",
+            "componentScope": "cm-filter-textbox",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-45",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\shared\\pagination\\pagination.component.html:13:5|Unknown|2::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent::0",
+      "a2WorkflowIndex": 44,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "li",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-pagination",
+        "startRouteFullPaths": [
+          "/customers",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/orders"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "li:3",
+            "componentScope": "cm-pagination",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-46",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\shared\\pagination\\pagination.component.html:3:5|Unknown|0::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent::0",
+      "a2WorkflowIndex": 45,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "li",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-pagination",
+        "startRouteFullPaths": [
+          "/customers",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/orders"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "li:1",
+            "componentScope": "cm-pagination",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    },
+    {
+      "gtId": "js-GT-47",
+      "workflowId": "C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent|C:\\Users\\basha\\git\\github\\Angular-JumpStart\\src\\app\\shared\\pagination\\pagination.component.html:9:9|Unknown|1::WIDGET_TRIGGERS_HANDLER::C:/Users/basha/git/github/Angular-JumpStart/src/app/shared/pagination/pagination.component.ts#PaginationComponent::0",
+      "a2WorkflowIndex": 46,
+      "difficultyClass": "D1",
+      "expectedIntent": {
+        "triggerKind": "WTH",
+        "triggerEvent": "click",
+        "triggerWidgetTag": "li",
+        "triggerWidgetKind": "OtherInteractive",
+        "componentSelector": "cm-pagination",
+        "startRouteFullPaths": [
+          "/customers",
+          "/orders"
+        ],
+        "requiresAuth": false,
+        "requiresParams": false,
+        "hasFormSchema": false,
+        "terminalRoutePath": "/customers",
+        "formFields": []
+      },
+      "expectedPlan": {
+        "assignment": {
+          "account": null,
+          "routeParams": {},
+          "formData": {}
+        },
+        "preConditions": [
+          {
+            "type": "navigate-to-route",
+            "url": "/orders"
+          }
+        ],
+        "steps": [
+          {
+            "type": "click",
+            "locatorStrategy": "tag-position",
+            "locatorValue": "li:2",
+            "componentScope": "cm-pagination",
+            "edgeKind": "WIDGET_TRIGGERS_HANDLER"
+          }
+        ],
+        "terminalUrl": null
+      }
+    }
+  ]
+}

@@ -18,8 +18,9 @@
  *   - Workflow/journey/path enumeration
  */
 
+import * as path from 'node:path';
 import type { Project } from 'ts-morph';
-import type { ComponentRegistry } from '../../models/components.js';
+import type { ComponentRegistry, ComponentInfo } from '../../models/components.js';
 import type { AnalyzerConfig } from '../../models/analyzer-config.js';
 import type { Route, RouteMap, ComponentRouteMap, ComponentRoute, RedirectRoute, WildcardRoute } from '../../models/routes.js';
 import { RouteParser, type ParsedRouteRecord } from '../../parsers/angular/route-parser.js';
@@ -200,14 +201,31 @@ export class RouteAnalyzer {
         }
         route = w;
       } else {
-        // ComponentRoute (or lazy — treat as ComponentRoute with unknown componentId)
-        const componentId = this._resolveComponentId(
-          record.componentName,
-          record.componentImportPathHint,
-          componentRegistry,
-        );
+        // ComponentRoute (or lazy). Classic `component: X` is resolved by
+        // className lookup in the registry. Lazy `loadComponent: () => import(...)`
+        // is resolved by importing the referenced file and matching its exported
+        // components (Patch 4).
+        let componentId: string;
+        let resolvedName: string | undefined = record.componentName;
+        if (record.componentName !== undefined) {
+          componentId = this._resolveComponentId(
+            record.componentName,
+            record.componentImportPathHint,
+            componentRegistry,
+          );
+        } else if (record.loadComponentExpr !== undefined) {
+          const lazy = this._resolveLazyComponent(record, componentRegistry);
+          if (lazy !== null) {
+            componentId = lazy.id;
+            resolvedName = lazy.name;
+          } else {
+            componentId = '__unknown__';
+          }
+        } else {
+          componentId = '__unknown__';
+        }
         const cr: ComponentRoute = { ...base, kind: 'ComponentRoute', componentId };
-        if (record.componentName !== undefined) cr.componentName = record.componentName;
+        if (resolvedName !== undefined) cr.componentName = resolvedName;
         route = cr;
       }
 
@@ -308,6 +326,74 @@ export class RouteAnalyzer {
     }
 
     return canonical;
+  }
+
+  /**
+   * Resolve a `loadComponent: () => import('./x').then(m => m.X)` reference to
+   * the corresponding registered component (Patch 4).
+   *
+   * Two expression shapes are supported:
+   *   1. Named-export form:      `import('./x.component').then(m => m.X)` — uses
+   *      the `.then(m => m.X)` class-name hint to pick the match.
+   *   2. Default-export form:    `import('./x.component')` — resolves to the
+   *      import file and uses the sole component defined there. If multiple
+   *      components live in the same file and no hint is present, remains
+   *      unresolved to avoid silent miscategorization.
+   *
+   * Returns null if the import cannot be resolved or no unambiguous match is
+   * found. The caller treats null as `__unknown__`.
+   */
+  private _resolveLazyComponent(
+    record: ParsedRouteRecord,
+    componentRegistry: ComponentRegistry,
+  ): { id: string; name: string } | null {
+    if (record.loadComponentImportSpecifier === undefined) return null;
+
+    const resolvedPath = this._resolveRelativeImport(
+      record.origin.file,
+      record.loadComponentImportSpecifier,
+    );
+    if (resolvedPath === null) return null;
+
+    const candidates = componentRegistry.components.filter(
+      (c) => this._normalizePath(c.symbol.file) === resolvedPath,
+    );
+    if (candidates.length === 0) return null;
+
+    let picked: ComponentInfo | undefined;
+    if (record.loadComponentExportHint !== undefined) {
+      picked = candidates.find((c) => c.symbol.className === record.loadComponentExportHint);
+    } else if (candidates.length === 1) {
+      picked = candidates[0];
+    }
+
+    if (picked === undefined) return null;
+    return { id: picked.id, name: picked.symbol.className };
+  }
+
+  /**
+   * Resolve a relative module specifier (as used by `import()`) to an absolute
+   * source-file path known to the ts-morph project. Returns null when no
+   * matching source file is found. Tries `<base>.ts` and `<base>/index.ts`.
+   * Forward-slash paths are used throughout for cross-platform consistency.
+   */
+  private _resolveRelativeImport(fromFile: string, specifier: string): string | null {
+    if (!specifier.startsWith('.')) return null;
+    const fromDir = path.dirname(fromFile);
+    const base = this._normalizePath(path.resolve(fromDir, specifier));
+    const candidates = [
+      base,            // specifier already includes extension (rare for Angular)
+      `${base}.ts`,    // conventional: "./x.component" → "./x.component.ts"
+      `${base}/index.ts`,
+    ];
+    for (const candidate of candidates) {
+      if (this._project.getSourceFile(candidate) !== undefined) return candidate;
+    }
+    return null;
+  }
+
+  private _normalizePath(p: string): string {
+    return p.replace(/\\/g, '/');
   }
 
   private _resolveComponentId(

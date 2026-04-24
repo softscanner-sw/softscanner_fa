@@ -23,6 +23,7 @@ export type LocatorStrategy =
   | 'routerlink'
   | 'href'
   | 'placeholder'
+  | 'linktext'
   | 'tag-position'
   | 'custom';
 
@@ -78,11 +79,16 @@ export interface PreCondition {
 
 export type PostConditionType =
   | 'assert-url-matches'
+  | 'assert-url-matches-or-unchanged'
   | 'assert-no-crash';
 
 export interface PostCondition {
   type: PostConditionType;
   expected?: string;
+  /** Fallback URL for conditional-navigation assertions: the URL the page was at
+   *  before the action step. If the handler's navigation doesn't fire, the URL
+   *  stays here and the assertion still passes. */
+  fallback?: string;
 }
 
 // ---------------------------------------------------------------------------

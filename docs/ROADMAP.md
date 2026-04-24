@@ -13,7 +13,7 @@ Global engineering rules (apply to all stages):
 
 ## Stage 0 — Paper + spec binding (DONE)
 Artifacts:
-- `docs/paper/main.pdf`
+- `docs/paper/main.pdf` (SEAA 2026 submission PDF)
 - `docs/paper/approach.md` (authoritative Phase A contract)
 
 Exit criteria:
@@ -45,12 +45,12 @@ Blocking acceptance gates:
 - `npm run verify:determinism`
 
 Blocking validation protocol (non-negotiable):
-- Run **all declared subjects** in `docs/validation/subjects.md`.
+- Run **all declared subjects** in `docs/validation/empirical reports/subjects.md`.
 - For each subject:
   - run the analyzer twice with identical inputs and config
   - confirm **byte-identical** outputs for the required artifacts (as defined by determinism policy)
 - Any change that modifies counts/shape for a subject must:
-  - update `docs/validation/subjects.md` with the new expected deltas
+  - update `docs/validation/empirical reports/subjects.md` with the new expected deltas
   - include a short, concrete explanation of the semantic reason (spec alignment or bug fix)
 
 Work items (A1):
@@ -120,7 +120,7 @@ Deliverables:
 Exit criteria:
 - All 5 acceptance gates pass.
 - A2 outputs are deterministic across repeated runs.
-- **All 6 validation subjects** produce stable A2 outputs.
+- **All 7 validation subjects** produce stable A2 outputs.
 - Visualization renders real A2 task workflows from A2 outputs for all subjects.
 
 ---
@@ -229,18 +229,22 @@ Pre-B3 execution-readiness audit and correction pass. All executability contract
 - Validation docs: subject runbooks, runtime conventions, README added.
 - Documentation alignment audit completed; spec amendments S1–S5 applied to approach.md.
 
-### Stage 5 — Multi-Subject B3/B4 Rollout (IN PROGRESS)
-Sequential single-subject rollout with per-subject runbooks, hardening, and residual adjudication.
+### Stage 5 — Multi-Subject B3/B4 Rollout (DONE)
+Sequential single-subject rollout with per-subject runbooks, hardening, and residual adjudication. Corpus frozen at seven subjects.
 
-| Subject | C3 | Pass/Total | Status |
-|---|---|---|---|
-| posts-users-ui-ng | 88.9% | 16/18 | CLOSED — 2 residuals (1 *ngIf precondition, 1 parameterized postcondition) |
-| heroes-angular | 89.5% | 17/19 | CLOSED — 2 residuals (AboutComponent external URL assertion) |
-| airbus-inventory | 90.5% | 19/21 | CLOSED — 2 residuals (dialog componentSelector gap) |
-| spring-petclinic-angular | 74.3% | 55/74 | CLOSED — 19 residuals (B5: timing, *ngFor, data-dependent, non-navigating) |
-| ever-traduora | 45.0% | 49/109 | CLOSED — 60 residuals (env-clean: 0 rate-limit, 53 async-gate/timeout, 7 locator/other) |
-| softscanner-cqa-frontend | — | — | NOT EXECUTED (out of scope) |
-| **Aggregate (5 subjects)** | **64.7%** | **156/241** | **85 total residuals (env-clean baseline)** |
+| Subject | C3 | Pass/Total |
+|---|---|---|
+| posts-users-ui-ng | 94.4% | 17/18 |
+| heroes-angular | 89.5% | 17/19 |
+| airbus-inventory | 90.5% | 19/21 |
+| spring-petclinic-angular | 86.5% | 64/74 |
+| ever-traduora | 47.7% | 52/109 |
+| angular-jumpstart | 76.6% | 36/47 |
+| event-booking-mean | 53.3% | 8/15 |
+| **Aggregate (7 subjects)** | **70.3%** | **213/303** |
+| **Median per-subject** | **86.5%** | — |
+
+Integrity-verified: 303/303 per-test logs, 0 FAIL_INTEGRITY. 90 residuals classified into six diagnostic families, dominated (71%) by asynchronous permission-gate / repeater-readiness timeouts. See `docs/validation/empirical reports/subjects.md` for the subject registry and `docs/analysis/phase-b/baseline-family-audit.md` for the comparator-selection rationale.
 
 B5 deferred work formalized in `docs/paper/approach.md` §B5.
 

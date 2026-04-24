@@ -352,6 +352,27 @@ function resolveAssignment(
  *   4. Shortest fullPath
  *   5. Alphabetical by fullPath
  */
+/**
+ * Check if parentCompId transitively composes childCompId via CCC edges.
+ * Bounded depth + cycle-safe. Used by selectStartRoute to match composed
+ * children to routes that activate their CCC ancestors.
+ */
+function composesTransitively(
+  parentCompId: string,
+  childCompId: string,
+  index: GraphIndex,
+  maxDepth: number,
+): boolean {
+  if (maxDepth <= 0) return false;
+  const parentEdges = index.edgesByFrom.get(parentCompId) ?? [];
+  for (const e of parentEdges) {
+    if (e.kind !== 'COMPONENT_COMPOSES_COMPONENT' || !e.to) continue;
+    if (e.to === childCompId) return true;
+    if (composesTransitively(e.to, childCompId, index, maxDepth - 1)) return true;
+  }
+  return false;
+}
+
 function selectStartRoute(
   startRoutes: IntentStartRoute[],
   index: GraphIndex,
@@ -360,12 +381,20 @@ function selectStartRoute(
 ): IntentStartRoute | undefined {
   if (startRoutes.length === 0) return undefined;
 
-  // Step 0: prefer routes that activate the trigger's component (if known).
-  // This prevents selecting a list-page route when the trigger is on an add-page route.
+  // Step 0: prefer routes that render the trigger's component (if known).
+  // Check both direct route-activation AND transitive CCC composition.
+  // This ensures composed child components (not directly route-activated but
+  // rendered via a parent's template) are tested on a route where they exist.
   if (triggerComponentId !== undefined) {
     const activatingRoutes = startRoutes.filter(r => {
       const routeEdges = index.edgesByFrom.get(r.routeId) ?? [];
-      return routeEdges.some(e => e.kind === 'ROUTE_ACTIVATES_COMPONENT' && e.to === triggerComponentId);
+      return routeEdges.some(e => {
+        if (e.kind !== 'ROUTE_ACTIVATES_COMPONENT' || !e.to) return false;
+        // Direct match: route activates the trigger's component
+        if (e.to === triggerComponentId) return true;
+        // Transitive: route activates a CCC ancestor that composes the trigger
+        return composesTransitively(e.to, triggerComponentId, index, 4);
+      });
     });
     if (activatingRoutes.length > 0) {
       startRoutes = activatingRoutes;
@@ -591,7 +620,8 @@ export function resolveWidgetLocator(
     _locatorDebug = 'primary: placeholder attr present';
   // (g) routerLink / href — navigation elements only
   } else if (w.routerLinkText !== undefined && w.routerLinkText !== '' && w.tagName === 'a' &&
-      !w.routerLinkText.includes('{{') && !_isBindingExpression(w.routerLinkText.replace(/^['"]|['"]$/g, ''))) {
+      !w.routerLinkText.includes('{{') && !w.routerLinkText.trimStart().startsWith('[') &&
+      !_isBindingExpression(w.routerLinkText.replace(/^['"]|['"]$/g, ''))) {
     strategy = 'routerlink';
     value = w.routerLinkText.replace(/^['"]|['"]$/g, '');
     _locatorDebug = 'primary: routerLink on <a>';
@@ -609,6 +639,15 @@ export function resolveWidgetLocator(
     strategy = 'custom';
     value = attrs['class'].split(/\s+/).map(c => `.${c}`).join('');
     _locatorDebug = 'fallback: semantic CSS class';
+  // (i.5) Visible text content — linkText for <a> tags with stable, non-binding text.
+  // Selenium's By.linkText() matches the full visible text of an <a> element.
+  // Only used for <a> tags with non-empty, short, non-interpolated text — avoids
+  // positional fallback when a semantically strong text selector is available.
+  } else if (w.tagName === 'a' && w.text !== undefined && w.text.trim() !== '' &&
+             w.text.trim().length <= 40 && !_isBindingExpression(w.text)) {
+    strategy = 'linktext';
+    value = w.text.trim();
+    _locatorDebug = 'fallback: linkText from stable visible text';
   // (j) Repeater-relative locator — for widgets inside *ngFor
   // Uses A1 repeater metadata: insideNgFor, insideNgForOrdinal, ngForItemTag.
   // Targets the first repeater instance and uses ordinal within the repeater template.
@@ -1230,6 +1269,7 @@ function resolvePostConditions(
   index: GraphIndex,
   manifest: SubjectManifest,
   startRoutePath?: string,
+  preConditions?: PreCondition[],
 ): PostCondition[] {
   const pcs: PostCondition[] = [];
 
@@ -1241,6 +1281,28 @@ function resolvePostConditions(
       manifest.authSetup !== undefined &&
       startRoutePath === manifest.authSetup.loginRoute &&
       intent.terminalRoutePath === startRoutePath) {
+    pcs.push({ type: 'assert-no-crash' });
+    return pcs;
+  }
+
+  // B1-G2c: WSF with terminal route = login route (NoAuth redirect).
+  // When a form submission's A2-derived terminal route is the login page, the actual
+  // navigation is server-determined (success callback redirects to a user-specific
+  // page). The postcondition is unpredictable — use assert-no-crash.
+  if (intent.triggerKind === 'WIDGET_SUBMITS_FORM' &&
+      manifest.authSetup !== undefined &&
+      intent.terminalRoutePath === manifest.authSetup.loginRoute &&
+      startRoutePath !== manifest.authSetup.loginRoute) {
+    pcs.push({ type: 'assert-no-crash' });
+    return pcs;
+  }
+
+  // B1-G2d: Dialog-form WSF postcondition.
+  // Forms opened via trigger-dialog-open submit inline — the dialog closes and
+  // the URL stays on the parent page, not the A2-derived terminal route.
+  if (intent.triggerKind === 'WIDGET_SUBMITS_FORM' &&
+      preConditions !== undefined &&
+      preConditions.some(pc => pc.type === 'trigger-dialog-open')) {
     pcs.push({ type: 'assert-no-crash' });
     return pcs;
   }
@@ -1323,8 +1385,12 @@ function resolvePostConditions(
         }
       }
 
-      // No navigation evidence: handler stays on page → assert start route URL
-      // (A2's terminal guess is unreliable without CNR — prefer start route)
+      // No navigation evidence and no special-case match: the handler has no
+      // statically-detectable navigation effect. Asserting URL stability is unsound
+      // because guards, promise callbacks, and service-mediated navigation can change
+      // the URL after the handler returns. Use assert-no-crash.
+      pcs.push({ type: 'assert-no-crash' });
+      return pcs;
     }
   }
 
@@ -1340,18 +1406,10 @@ function resolvePostConditions(
       pcs.push({ type: 'assert-no-crash' });
     }
   } else if (intent.terminalRoutePath !== undefined) {
-    // WTH without CNR: A2's terminal guess is unreliable — prefer start route.
-    // The handler has no navigation evidence, so the page should stay at start route.
-    const isWthNoCNR = intent.triggerKind === 'WIDGET_TRIGGERS_HANDLER' &&
-      !intent.effectSteps.some(s => s.kind === 'COMPONENT_NAVIGATES_ROUTE');
-    const effectivePath = isWthNoCNR && startRoutePath !== undefined
-      ? startRoutePath
-      : intent.terminalRoutePath;
+    // Determine if the handler has statically-detected navigation (CNR edge).
+    const hasCNR = intent.effectSteps.some(s => s.kind === 'COMPONENT_NAVIGATES_ROUTE');
 
     // For WSF (form submission) workflows: detect server-generated params.
-    // If the terminal route has params NOT in any start route, the entity is likely
-    // created by the form handler and the ID is server-generated. Keep :param
-    // placeholder in the expected URL (B2 emits regex match).
     let paramsToSubstitute = assignment.routeParams;
     if (intent.triggerKind === 'WIDGET_SUBMITS_FORM') {
       const startParamNames = new Set<string>();
@@ -1366,11 +1424,32 @@ function resolvePostConditions(
       }
       paramsToSubstitute = filtered;
     }
-    const expected = substituteParams(effectivePath, paramsToSubstitute);
-    pcs.push({
-      type: 'assert-url-matches',
-      expected,
-    });
+    const expected = substituteParams(intent.terminalRoutePath, paramsToSubstitute);
+
+    // Conditional-navigation oracle: when a WTH or WSF handler has a CNR edge
+    // but navigation is statically indeterminate (might be inside a success
+    // callback, if/else, or conditional chain), assert that the URL is EITHER
+    // the predicted terminal route OR the pre-action baseline (start route).
+    const isConditionalNav =
+      hasCNR &&
+      (intent.triggerKind === 'WIDGET_TRIGGERS_HANDLER' ||
+       intent.triggerKind === 'WIDGET_SUBMITS_FORM') &&
+      startRoutePath !== undefined &&
+      startRoutePath !== expected;
+
+    if (isConditionalNav) {
+      const fallback = substituteParams(startRoutePath!, assignment.routeParams);
+      pcs.push({
+        type: 'assert-url-matches-or-unchanged',
+        expected,
+        fallback,
+      });
+    } else {
+      pcs.push({
+        type: 'assert-url-matches',
+        expected,
+      });
+    }
   } else {
     pcs.push({ type: 'assert-no-crash' });
   }
@@ -1420,7 +1499,7 @@ export function derivePlans(
     const assignment = resolveAssignment(intent, manifest, startRouteGuards, startRoute);
     const preConditions = resolvePreConditions(intent, assignment, manifest, index, startRoute);
     const steps = generateSteps(intent, assignment, index);
-    const postConditions = resolvePostConditions(intent, assignment, index, manifest, startRoute?.fullPath);
+    const postConditions = resolvePostConditions(intent, assignment, index, manifest, startRoute?.fullPath, preConditions);
 
     // B5.2: propagate trigger context for wait emission in B2
     const triggerContext: import('./plan-types.js').TriggerContext = {};

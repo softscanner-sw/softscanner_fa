@@ -26,7 +26,7 @@
   ],
   "routeParamValues": {
     "localeCode": "en",
-    "projectId": "879e879c-1b69-4c07-b9ec-f7b246610d79"
+    "projectId": "c9f8eb8e-710d-4483-b9e1-f2bbdbabe5c1"
   },
   "authSetup": {
     "loginRoute": "/login",
@@ -36,10 +36,18 @@
     "authSuccessSelector": "app-bar [routerLink='/projects']"
   },
   "executionConfig": {
-    "seedCommand": "node scripts/seed-traduora.mjs",
+    "readinessEndpoint": "http://localhost:8080/health",
+    "readinessTimeoutMs": 30000,
     "preAttemptCommand": "docker exec mysqldb mysql -u tr -pchange_me tr_dev -e \"UPDATE user SET loginAttempts = 0, lastLogin = NULL;\"",
-    "batchResetCommand": "docker restart traduora && sleep 10",
-    "enableNetworkEvidence": true
+    "batchResetCommand": "docker restart traduora && sleep 15",
+    "enableNetworkEvidence": true,
+    "seedCommand": "node scripts/seed-traduora.mjs"
+  },
+  "formDataOverrides": {
+    "C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/app/auth/components/user-settings/user-settings.component.ts#UserSettingsComponent|C:\\Users\\basha\\git\\github\\autoe2e\\benchmark\\ever-traduora\\webapp\\src\\app\\auth\\components\\user-settings\\user-settings.component.html:13:11|Form|0::WIDGET_SUBMITS_FORM::C:/Users/basha/git/github/autoe2e/benchmark/ever-traduora/webapp/src/app/auth/components/user-settings/user-settings.component.ts#UserSettingsComponent::0": {
+      "email": "admin@test.com",
+      "name": "Admin"
+    }
   },
   "seedRequirements": {
     "authGuards": [

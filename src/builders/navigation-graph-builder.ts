@@ -694,16 +694,24 @@ export class NavigationGraphBuilder {
       }
     }
 
-    // COMPONENT_COMPOSES_COMPONENT — resolve selectors to component IDs
+    // COMPONENT_COMPOSES_COMPONENT — resolve selectors (or class names from
+    // createComponent() detection) to component IDs.
+    const compByClassNameLower = new Map<string, ComponentInfo>();
+    for (const c of sortedComponents) compByClassNameLower.set(c.symbol.className.toLowerCase(), c);
+
     for (const comp of sortedComponents) {
-      for (const usedSelector of comp.usesComponentIds) {
-        const usedComp = compBySelectorLower.get(usedSelector.toLowerCase());
+      for (const usedRef of comp.usesComponentIds) {
+        // Try selector-based lookup first, then class-name fallback
+        // (createComponent(ClassName) adds class names, not selectors)
+        const usedComp =
+          compBySelectorLower.get(usedRef.toLowerCase()) ??
+          compByClassNameLower.get(usedRef.toLowerCase());
         if (usedComp !== undefined && nodeIds.has(usedComp.id) && usedComp.id !== comp.id) {
           const edge = addEdge('COMPONENT_COMPOSES_COMPONENT', comp.id, usedComp.id, [
             toRef(comp.origin, projectRoot),
           ]);
           // Attach composition-site structural context if available
-          const ctx = comp.compositionContexts?.[usedSelector.toLowerCase()];
+          const ctx = comp.compositionContexts?.[usedRef.toLowerCase()];
           if (ctx !== undefined && edge !== undefined) {
             edge.compositionContext = ctx;
           }
@@ -726,7 +734,27 @@ export class NavigationGraphBuilder {
 
     // MODULE_PROVIDES_SERVICE for providedIn:'root' services
     if (serviceInfos !== undefined) {
-      const rootModuleId = this._resolveRootModuleId(moduleRegistry);
+      let rootModuleId = this._resolveRootModuleId(moduleRegistry);
+
+      // Standalone apps (Angular v15+): no NgModule exists, so create a synthetic
+      // __standalone_root__ Module node as the anchor for providedIn:'root' services.
+      // Without this, all services in standalone apps are orphan nodes.
+      if (rootModuleId === undefined && moduleRegistry.modules.length === 0 &&
+          serviceInfos.some((s) => s.providedIn === 'root')) {
+        const syntheticId = '__standalone_root__';
+        const syntheticRef = { file: 'main.ts', start: 0, end: 0 };
+        nodes.push({
+          kind: 'Module',
+          id: syntheticId,
+          label: '__standalone_root__',
+          refs: [syntheticRef],
+          meta: { name: '__standalone_root__', file: 'main.ts', isStandaloneRoot: true },
+        } as unknown as Node);
+        nodeIds.add(syntheticId);
+        rootModuleId = syntheticId;
+        this._log.debug('Created synthetic __standalone_root__ Module for standalone app');
+      }
+
       if (rootModuleId !== undefined && nodeIds.has(rootModuleId)) {
         // Collect services that already have MODULE_PROVIDES_SERVICE edges
         const alreadyProvided = new Set<string>();

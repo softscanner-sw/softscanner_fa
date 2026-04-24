@@ -71,11 +71,12 @@ if (!resume && !failedOnly && fs.existsSync(screenshotDir)) {
 const config: B3Config = {
   subjectName,
   baseUrl: manifest.baseUrl,
+  readinessEndpoint: manifest.executionConfig?.readinessEndpoint ?? manifest.baseUrl,
   outputDir,
   testsDir,
   screenshotDir,
   maxRetries,
-  readinessTimeoutMs: 30_000,
+  readinessTimeoutMs: manifest.executionConfig?.readinessTimeoutMs ?? 30_000,
   testTimeoutMs: 60_000,
   skipWorkflows: manifest.skipWorkflows,
   ...(manifest.executionConfig?.preAttemptCommand
